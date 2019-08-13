@@ -1,0 +1,28 @@
+set_io clk 60
+set_io reset 143
+
+set_io io_led 55
+
+set_io -nowarn io_ili9341_dout[0] 17
+set_io -nowarn io_ili9341_dout[1] 18
+set_io -nowarn io_ili9341_dout[2] 31
+set_io -nowarn io_ili9341_dout[3] 32
+set_io -nowarn io_ili9341_dout[4] 37
+set_io -nowarn io_ili9341_dout[5] 38
+set_io -nowarn io_ili9341_dout[6] 11
+set_io -nowarn io_ili9341_dout[7] 12
+set_io -nowarn io_ili9341_nReset 34
+set_io -nowarn io_ili9341_cmdData  33
+set_io -nowarn io_ili9341_writeEdge 28
+set_io -nowarn io_ili9341_backLight 9
+
+set_io io_leds[0] 141
+set_io io_leds[1] 142
+set_io io_leds[2] 138
+set_io io_leds[3] 139
+set_io io_leds[4] 136
+set_io io_leds[5] 137
+set_io io_leds[6] 134
+set_io io_leds[7] 135
+
+
