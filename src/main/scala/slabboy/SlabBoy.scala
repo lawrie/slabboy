@@ -35,7 +35,6 @@ object Cpu {
     val HL = 4
     val SP = 5
     val PC = 6
-    val T = 7
   }
 
   object Reg8 {
@@ -46,9 +45,8 @@ object Cpu {
     val H = 8; val L = 9
     val SPH = 10; val SPL = 11
     val PCH = 12; val PCL = 13
-    val TH = 14; val TL = 15
     // auto calculate bits needed to represent register index
-    def DataType = UInt(log2Up(TL) bits)
+    def DataType = UInt(log2Up(PCL) bits)
   }
 
   object Flags {
@@ -64,12 +62,8 @@ object Cpu {
       Rlca, Rrca, Rla, Rra = newElement()
   }
 
-  object AluOp16 extends SpinalEnum {
-    val Nop, Add, Inc = newElement()
-  }
-
   object AddrSrc extends SpinalEnum {
-    val PC, HL, BC, DE, WZ, FFZ, FFC = newElement()
+    val PC, HL, BC, DE, WZ, FFZ, FFC, SP = newElement()
   }
 
   object AddrOp extends SpinalEnum {
@@ -106,12 +100,11 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   val ir = RegInit(U(0x00, 8 bits))
 
   // register file
-  val registers16 = Vec(Reg(UInt(16 bits)), 8)
+  val registers16 = Vec(Reg(UInt(16 bits)), 7)
   // A, F, WZ, BC, DE, HL and T are all initialized to zero
   for (i <- (0 until 5)) {
     registers16(i).init(0)
   }
-  registers16(Reg16.T).init(0)
   // SP and PC have defined init values
   registers16(Reg16.SP).init(spInit)
   registers16(Reg16.PC).init(bootVector)
@@ -149,15 +142,13 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   alu.io.operandA := opA
   alu.io.operandB := temp
 
-  val alu16 = new CpuAlu16
-  alu16.io.op := decoder.io.aluOp16
-
   switch(decoder.io.addrSrc) {
     is(AddrSrc.PC) { io.address := registers16(Reg16.PC) }
     is(AddrSrc.HL) { io.address := registers16(Reg16.HL) }
     is(AddrSrc.BC) { io.address := registers16(Reg16.BC) }
     is(AddrSrc.DE) { io.address := registers16(Reg16.DE) }
     is(AddrSrc.WZ) { io.address := registers16(Reg16.WZ) }
+    is(AddrSrc.SP) { io.address := registers16(Reg16.SP) }
     is(AddrSrc.FFZ) {
       io.address(15 downto 8) := 0xFF
       io.address(7 downto 0) := registers8(Reg8.Z)
@@ -216,7 +207,6 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
 
         def doAddrOp(reg: UInt) {
           switch(decoder.io.addrOp) {
-            //is(AddrOp.Nop) { reg := reg }
             is(AddrOp.Inc) { reg := reg + 1 }
             is(AddrOp.Dec) { reg := reg - 1 }
           }
@@ -227,6 +217,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
           is(AddrSrc.HL) { doAddrOp(registers16(Reg16.HL)) }
           is(AddrSrc.BC) { doAddrOp(registers16(Reg16.BC)) }
           is(AddrSrc.DE) { doAddrOp(registers16(Reg16.DE)) }
+          is(AddrSrc.SP) { doAddrOp(registers16(Reg16.SP)) }
           is(AddrSrc.FFZ) { }
         }
 
@@ -256,17 +247,14 @@ object CpuDecoder {
     addrSrc: SpinalEnumElement[AddrSrc.type],
     addrOp: SpinalEnumElement[AddrOp.type],
     halt: Boolean,
-    condition: Option[SpinalEnumElement[Condition.type]],
-    aluOp16: SpinalEnumElement[AluOp16.type],
-    opB16Select: Option[Int],
-    store16Select: Option[Int]
+    condition: Option[SpinalEnumElement[Condition.type]]
   )
 
   def fetchCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, AluOp16.Nop, None, None)
+           AddrSrc.PC, AddrOp.Inc, false, None)
   }
 
   def fetchCycle1(aluOp: SpinalEnumElement[AluOp.type],
@@ -274,7 +262,7 @@ object CpuDecoder {
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, AluOp16.Nop, None, None)
+           AddrSrc.PC, AddrOp.Inc, false, None)
   }
 
   def dummyCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -282,15 +270,23 @@ object CpuDecoder {
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.HL, AddrOp.Nop, false, None, AluOp16.Nop, None, None)
+           AddrSrc.HL, AddrOp.Nop, false, None)
   }
-                 
+
+  def condDummyCycle(aluOp: SpinalEnumElement[AluOp.type],
+                 opA: Int,
+                 opBSelect: Option[Int],
+                 storeSelect: Option[Int],
+                   condition: Option[SpinalEnumElement[Condition.type]] = None) = {
+    MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
+           AddrSrc.HL, AddrOp.Nop, false, condition)
+  }
 
   def memReadCycle(aluOp: SpinalEnumElement[AluOp.type],
                    storeSelect: Option[Int],
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, None, AluOp16.Nop, None, None)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, None)
   }
 
   def condMemReadCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -298,7 +294,7 @@ object CpuDecoder {
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop,
                    condition: Option[SpinalEnumElement[Condition.type]] = None) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition, AluOp16.Nop, None, None)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition)
   }
 
   def memWriteCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -306,7 +302,7 @@ object CpuDecoder {
                     storeSelect: Option[Int],
                     addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                     addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp, false, None, AluOp16.Nop, None, None)
+    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp, false, None)
   }
 
   // helper function for the regular op code pattern
@@ -355,7 +351,7 @@ object CpuDecoder {
     (0xfb, Seq(fetchCycle(AluOp.Nop, None, None))),
     // halt
     (0x76, Seq(MCycle(AluOp.Nop, Reg8.A, None, None, false, false,
-               AddrSrc.PC, AddrOp.Nop, true, None, AluOp16.Nop, None, None)))
+               AddrSrc.PC, AddrOp.Nop, true, None)))
   ) ++
   arithmetic8Bit(0x80, AluOp.Add) ++ arithmetic8Bit(0x88, AluOp.Adc) ++
   arithmetic8Bit(0x90, AluOp.Sub) ++ arithmetic8Bit(0x98, AluOp.Sbc) ++
@@ -445,6 +441,30 @@ object CpuDecoder {
     (0x2F, Seq(fetchCycle(AluOp.Cpl, Some(Reg8.A), Some(Reg8.A)))),
     // ccf
     (0x3F, Seq(fetchCycle(AluOp.Ccf, None, None))),
+    // cp d8
+    (0xFE, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Cp, None, addrOp=AddrOp.Inc))),
+    // add a, d8
+    (0xC6, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Add, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // sub a, d8
+    (0xD6, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Sub, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // and a, d8
+    (0xE6, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.And, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // or a, d8
+    (0xF6, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Or, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // adc a, d8
+    (0xCE, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Adc, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // sbc a, d8
+    (0xDE, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Sbc, Some(Reg8.A), addrOp=AddrOp.Inc))),
+    // xor d8
+    (0xEE, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Xor, Some(Reg8.A), addrOp=AddrOp.Inc))),
     // add HL, BC
     (0x09, Seq(fetchCycle1(AluOp.Add, Reg8.L, Some(Reg8.C), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.B), Some(Reg8.H)))),
@@ -555,6 +575,14 @@ object CpuDecoder {
              memReadCycle(AluOp.Nop, Some(Reg8.W), addrOp=AddrOp.Inc),
              memWriteCycle(AluOp.Nop, Some(Reg8.A), None,
                            addrSrc=AddrSrc.WZ, addrOp=AddrOp.Nop))),
+    // ld (a16), SP
+    (0x08, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.W), addrOp=AddrOp.Inc),
+             memWriteCycle(AluOp.Nop, Some(Reg8.SPL), None,
+                           addrSrc=AddrSrc.WZ, addrOp=AddrOp.Inc),
+             memWriteCycle(AluOp.Nop, Some(Reg8.SPH), None,
+                           addrSrc=AddrSrc.WZ, addrOp=AddrOp.Nop))),
     // ldh a, (a16)
     (0xFA, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
@@ -577,15 +605,36 @@ object CpuDecoder {
     (0x31, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop,Some(Reg8.SPL), addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop,Some(Reg8.SPH), addrOp=AddrOp.Inc))),
+    // pop bc
+    (0xC1, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.B), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
+    // pop de
+    (0xD1, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.E), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.D), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
+    // pop hl
+    (0xE1, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.L), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.H), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
+    // pop af
+    (0xF1, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.F), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.A), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
+    // jr d8
+    (0x18, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
+             dummyCycle(AluOp.Add, Reg8.PCL, Some(Reg8.Z), Some(Reg8.PCL)))), 
     // jp nz,a16
     (0xC2, Seq(fetchCycle(AluOp.Nop, None, None),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCL), addrOp=AddrOp.Inc, condition=Some(Condition.NZ)),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.NZ)))),
+             condMemReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc, condition=Some(Condition.NZ)),
+             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.NZ)),
+             condDummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL), condition=Some(Condition.NZ)))),
     // jp a16
     (0xC3, Seq(fetchCycle(AluOp.Nop, None, None),
-             memReadCycle(AluOp.Nop, Some(Reg8.TL), addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Nop),
-             dummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.TL), Some(Reg8.PCL)))),
+             dummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL)))),
     // jp z,a16
     (0xCA, Seq(fetchCycle(AluOp.Nop, None, None),
              condMemReadCycle(AluOp.Nop, Some(Reg8.PCL), addrOp=AddrOp.Inc, condition=Some(Condition.Z)),
@@ -626,12 +675,10 @@ class CpuDecoder extends Component {
     val addrOp = out(AddrOp())
     val nextHalt = out Bool
     val flags = in UInt(8 bits)
-    val aluOp16 = out(AluOp16())
   }
 
   def decodeCycle(cycle: MCycle, nextCycle: Option[MCycle]=None) = {
     io.aluOp := cycle.aluOp
-    io.aluOp16 := cycle.aluOp16
     io.opA := cycle.opA
     cycle.opBSelect match {
       case Some(x) => {
@@ -716,29 +763,6 @@ class CpuDecoder extends Component {
   }
 }
 
-class CpuAlu16 extends Component {
-  import Cpu.AluOp16
-
-  val io = new Bundle {
-    val op = in(AluOp16())
-    val operandA = in UInt(16 bits)
-    val operandB = in UInt(16 bits)
-    val result = out UInt(16 bits)
-  }
-
-  switch(io.op) {
-    is(AluOp16.Nop) {
-      io.result := 0
-    }
-    is(AluOp16.Inc) {
-      io.result := io.operandA + 1
-    }
-    is(AluOp16.Add) {
-      io.result := io.operandA + io.operandB
-    }
-  }
-}
-    
 class CpuAlu extends Component {
   import Cpu.AluOp
 
