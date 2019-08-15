@@ -60,7 +60,8 @@ object Cpu {
 
   object AluOp extends SpinalEnum {
     val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp,
-      Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap = newElement()
+      Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap,
+      Rlca, Rrca, Rla, Rra = newElement()
   }
 
   object AluOp16 extends SpinalEnum {
@@ -430,6 +431,14 @@ object CpuDecoder {
                              addrSrc=AddrSrc.HL))),
     // dec A
     (0x3D, Seq(fetchCycle(AluOp.Dec, Some(Reg8.A), Some(Reg8.A)))),
+    // rlca
+    (0x07, Seq(fetchCycle(AluOp.Rlca, Some(Reg8.A), Some(Reg8.A)))),
+    // rrca
+    (0x0f, Seq(fetchCycle(AluOp.Rrca, Some(Reg8.A), Some(Reg8.A)))),
+    // rla
+    (0x17, Seq(fetchCycle(AluOp.Rla, Some(Reg8.A), Some(Reg8.A)))),
+    // rra
+    (0x1f, Seq(fetchCycle(AluOp.Rra, Some(Reg8.A), Some(Reg8.A)))),
     // scf
     (0x37, Seq(fetchCycle(AluOp.Scf, None, None))),
     // cpl
@@ -842,6 +851,22 @@ class CpuAlu extends Component {
     }
     is(AluOp.Swap) {
       wideResult := U"0" @@ wideOpA(3 downto 0) @@ wideOpA(7 downto 4)
+      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+    }
+    is(AluOp.Rlca) {
+      wideResult := wideOpA(7 downto 0) @@ wideOpA(7)
+      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+    }
+    is(AluOp.Rrca) {
+      wideResult := wideOpA(0).asUInt @@ wideOpA(0) @@ wideOpA(7 downto 1)
+      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+    }
+    is(AluOp.Rla) {
+      wideResult := wideOpA.rotateLeft(1)
+      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+    }
+    is(AluOp.Rra) {
+      wideResult := wideOpA.rotateRight(1)
       setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
     }
   }
