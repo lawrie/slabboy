@@ -1,99 +1,34 @@
 SECTION "ROM0", ROM0
+nop                ; opcode 0x00
+ld bc, data1       ; opcode 0x01
+ld [bc], a         ; opcode 0x02
+inc bc             ; opcode 0x03
+inc b              ; opcode 0x04
+dec b              ; opcode 0x05
+ld b, $42          ; opcode 0x06
+rlc a              ; opcode 0x07
+ld [$0099], sp     ; opcode 0x08
+add hl, bc         ; opcode 0x09
+ld a, [bc]         ; opcode 0x0a
+dec bc             ; opcode 0x0b
+inc c              ; opcode 0x0c
+dec c              ; opcode 0x0d
+ld c, $56          ; opcode 0x0e
+rrc a              ; opcode 0x0f
+stop               ; opcode 0x10
+ld de,$1234        ; opcode 0x11
+ld [de], a         ; opcode 0x12
+inc de             ; opcode 0x13
+inc d              ; opcode 0x14
+dec d              ; opcode 0x15
+ld d,$73           ; opcode 0x16
+rla                ; opcode 0x17
 
-inc a
+halt               ; opcode 0x76
 
-inc b
-inc b
-inc b
 
-add a, b
+data1:
+db $99
 
-inc c
-inc c
 
-sub a, c
-sub a, c
 
-dec c
-sub a, c
-
-dec h
-xor a, h
-
-inc a
-inc a
-inc a
-inc a
-
-inc l
-
-or a, l
-
-ld a, $AA
-ld b, $BB
-ld c, $CC
-ld d, $DD
-ld e, $EE
-ld h, $55
-ld l, $77
-
-ld a, b
-ld b, l
-ld h, d
-ld d, c
-
-ld h, $0
-ld l, $4
-ld a, [hl]
-ld h, $0
-ld l, $3
-add a, [hl]
-
-ld h, $20
-ld l, $00
-ld b, a
-ld [hl], b
-
-inc l
-ld [hl], $58
-inc l
-ld [hl+], a
-ld [hl+], a
-ld [hl-], a
-
-ld h, $00
-ld l, $00
-ld a, [hl+]
-ld a, [hl+]
-ld a, [hl+]
-
-ld a, $7F
-ldh [$27], a
-ld a, $AA
-ldh a, [$27]
-
-ld c, $40
-ld [c], a
-ld a, $AA
-ld a, [c]
-
-ld h, $30
-ld l, $00
-inc [hl]
-inc [hl]
-inc [hl]
-dec [hl]
-
-ld a, $75
-ld [$3040], a
-ld a, $AA
-ld a, [$3040]
-
-scf
-ccf
-ccf
-
-ld a, $0F
-cpl
-
-halt
