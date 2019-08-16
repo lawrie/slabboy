@@ -63,11 +63,11 @@ object Cpu {
   }
 
   object AddrSrc extends SpinalEnum {
-    val PC, HL, BC, DE, WZ, FFZ, FFC, SP = newElement()
+    val PC, HL, BC, DE, WZ, FFZ, FFC, SP, SP1 = newElement()
   }
 
   object AddrOp extends SpinalEnum {
-    val Nop, Inc, Dec = newElement()
+    val Nop, Inc, Dec, Rst, ToPC, R8, HLR8 = newElement()
   }
 
   object Condition extends SpinalEnum {
@@ -149,6 +149,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
     is(AddrSrc.DE) { io.address := registers16(Reg16.DE) }
     is(AddrSrc.WZ) { io.address := registers16(Reg16.WZ) }
     is(AddrSrc.SP) { io.address := registers16(Reg16.SP) }
+    is(AddrSrc.SP1) { io.address := registers16(Reg16.SP) - 1 }
     is(AddrSrc.FFZ) {
       io.address(15 downto 8) := 0xFF
       io.address(7 downto 0) := registers8(Reg8.Z)
@@ -209,6 +210,10 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
           switch(decoder.io.addrOp) {
             is(AddrOp.Inc) { reg := reg + 1 }
             is(AddrOp.Dec) { reg := reg - 1 }
+            is(AddrOp.Rst) { reg := (ir - 0xC7).resize(16) }
+            is(AddrOp.ToPC) { registers16(Reg16.PC) := reg }
+            is(AddrOp.R8)  { reg := reg + (temp.asSInt).resize(16).asUInt }
+            is(AddrOp.HLR8)  { registers16(Reg16.HL) := reg + (temp.asSInt).resize(16).asUInt }
           }
         }
 
@@ -218,6 +223,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
           is(AddrSrc.BC) { doAddrOp(registers16(Reg16.BC)) }
           is(AddrSrc.DE) { doAddrOp(registers16(Reg16.DE)) }
           is(AddrSrc.SP) { doAddrOp(registers16(Reg16.SP)) }
+          is(AddrSrc.SP1) { doAddrOp(registers16(Reg16.SP)) }
           is(AddrSrc.FFZ) { }
         }
 
@@ -487,6 +493,9 @@ object CpuDecoder {
     // add HL, SP
     (0x39, Seq(fetchCycle1(AluOp.Add, Reg8.L, Some(Reg8.SPL), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.SPH), Some(Reg8.H)))),
+    // ls sp, hl
+    (0xF9, Seq(fetchCycle1(AluOp.Nop, Reg8.L, None, Some(Reg8.L)),
+               dummyCycle(AluOp.Nop, Reg8.H, None, Some(Reg8.H)))),
     // ld B, d8
     (0x06, Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(AluOp.Nop, Some(Reg8.B), addrOp=AddrOp.Inc))),
@@ -622,9 +631,47 @@ object CpuDecoder {
              memWriteCycle(AluOp.Nop, None, Some(Reg8.PCH)))),
     // rst 00
     (0xC7, Seq(fetchCycle(AluOp.Nop, None, None),
-             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
-             memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
-             dummyCycle1(AluOp.Nop, Reg8.Z, Some(Reg8.PCH), None))),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 08
+    (0xCF, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 10
+    (0xD7, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 18
+    (0xDF, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 20
+    (0xE7, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 28
+    (0xEF, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 30
+    (0xF7, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // rst 38
+    (0xFF, Seq(fetchCycle(AluOp.Nop, None, None),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+    // prefix
+    (0xCB, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc))),
     // pop bc
     (0xC1, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
@@ -661,6 +708,14 @@ object CpuDecoder {
              dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
              memWriteCycle(AluOp.Nop, Some(Reg8.A), None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
              memWriteCycle(AluOp.Nop, Some(Reg8.F), None, addrSrc=AddrSrc.SP))),
+    // add sp, r8
+    (0xE8, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.R8))),
+    // ld hl, SP+r8
+    (0xF8, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.HLR8))),
     // jr d8
     (0x18, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
@@ -922,23 +977,35 @@ class CpuAlu extends Component {
     }
     is(AluOp.Swap) {
       wideResult := U"0" @@ wideOpA(3 downto 0) @@ wideOpA(7 downto 4)
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+      setFlags(False, False, False)
     }
     is(AluOp.Rlca) {
       wideResult := wideOpA(7 downto 0) @@ wideOpA(7)
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+      io.flagsOut(Cpu.Flags.C) := carry
+      io.flagsOut(Cpu.Flags.H) := False
+      io.flagsOut(Cpu.Flags.N) := False
+      io.flagsOut(Cpu.Flags.Z) := False
     }
     is(AluOp.Rrca) {
       wideResult := wideOpA(0).asUInt @@ wideOpA(0) @@ wideOpA(7 downto 1)
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+      io.flagsOut(Cpu.Flags.C) := carry
+      io.flagsOut(Cpu.Flags.H) := False
+      io.flagsOut(Cpu.Flags.N) := False
+      io.flagsOut(Cpu.Flags.Z) := False
     }
     is(AluOp.Rla) {
       wideResult := wideOpA.rotateLeft(1)
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+      io.flagsOut(Cpu.Flags.C) := carry
+      io.flagsOut(Cpu.Flags.H) := False
+      io.flagsOut(Cpu.Flags.N) := False
+      io.flagsOut(Cpu.Flags.Z) := False
     }
     is(AluOp.Rra) {
       wideResult := wideOpA.rotateRight(1)
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
+      io.flagsOut(Cpu.Flags.C) := carry
+      io.flagsOut(Cpu.Flags.H) := False
+      io.flagsOut(Cpu.Flags.N) := False
+      io.flagsOut(Cpu.Flags.Z) := False
     }
   }
 }
