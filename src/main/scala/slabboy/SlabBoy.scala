@@ -273,6 +273,16 @@ object CpuDecoder {
            AddrSrc.HL, AddrOp.Nop, false, None)
   }
 
+  def dummyCycle1(aluOp: SpinalEnumElement[AluOp.type],
+                 opA: Int,
+                 opBSelect: Option[Int],
+                 storeSelect: Option[Int],
+                 addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.SP,
+                 addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
+    MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
+           addrSrc, addrOp, false, None)
+  }
+
   def condDummyCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opA: Int,
                  opBSelect: Option[Int],
@@ -605,6 +615,16 @@ object CpuDecoder {
     (0x31, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop,Some(Reg8.SPL), addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop,Some(Reg8.SPH), addrOp=AddrOp.Inc))),
+    // ret 
+    (0xC9, Seq(fetchCycle(AluOp.Nop, None, None),
+             dummyCycle1(AluOp.Nop, Reg8.Z, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc ),
+             memWriteCycle(AluOp.Nop, None, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memWriteCycle(AluOp.Nop, None, Some(Reg8.PCH)))),
+    // rst 00
+    (0xC7, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.Z, Some(Reg8.PCH), None))),
     // pop bc
     (0xC1, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
@@ -621,6 +641,26 @@ object CpuDecoder {
     (0xF1, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.F), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop, Some(Reg8.A), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
+    // push bc
+    (0xC5, Seq(fetchCycle(AluOp.Nop, None, None),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.B), None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.C), None, addrSrc=AddrSrc.SP))),
+    // push de
+    (0xD5, Seq(fetchCycle(AluOp.Nop, None, None),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.D), None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.E), None, addrSrc=AddrSrc.SP))),
+    // push hl
+    (0xE5, Seq(fetchCycle(AluOp.Nop, None, None),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.H), None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.L), None, addrSrc=AddrSrc.SP))),
+    // push af
+    (0xF5, Seq(fetchCycle(AluOp.Nop, None, None),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.A), None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.F), None, addrSrc=AddrSrc.SP))),
     // jr d8
     (0x18, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
@@ -747,17 +787,24 @@ class CpuDecoder extends Component {
         s"Op-code 0x${icode._1.toHexString} already assigned!")
     }
     assignedOpCodes(icode._1) = true
-    when(io.ir === icode._1) {
-      for((cycle, i) <- icode._2.zipWithIndex) {
-        when(io.mCycle === i) {
-          if(i == icode._2.length - 1) {
-            decodeCycle(cycle)
-            io.nextMCycle := 0
-          } else {
-            decodeCycle(cycle, Some(icode._2(i + 1)))
-            io.nextMCycle := io.mCycle + 1
+    if (icode._2.length > 1) {
+      when(io.ir === icode._1) {
+        for((cycle, i) <- icode._2.zipWithIndex) {
+          when(io.mCycle === i) {
+            if(i == icode._2.length - 1) {
+              decodeCycle(cycle)
+              io.nextMCycle := 0
+            } else {
+              decodeCycle(cycle, Some(icode._2(i + 1)))
+              io.nextMCycle := io.mCycle + 1
+            }
           }
         }
+      }
+    } else {
+      when(io.ir === icode._1) {
+        decodeCycle(icode._2(0))
+        io.nextMCycle := 0
       }
     }
   }
