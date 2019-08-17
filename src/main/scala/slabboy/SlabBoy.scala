@@ -221,6 +221,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
         switch(decoder.io.addrSrc) {
           is(AddrSrc.PC) { doAddrOp(registers16(Reg16.PC)) }
           is(AddrSrc.HL) { doAddrOp(registers16(Reg16.HL)) }
+          is(AddrSrc.WZ) { doAddrOp(registers16(Reg16.WZ)) }
           is(AddrSrc.BC) { doAddrOp(registers16(Reg16.BC)) }
           is(AddrSrc.DE) { doAddrOp(registers16(Reg16.DE)) }
           is(AddrSrc.SP) { doAddrOp(registers16(Reg16.SP)) }
@@ -627,9 +628,8 @@ object CpuDecoder {
              memReadCycle(AluOp.Nop,Some(Reg8.SPH), addrOp=AddrOp.Inc))),
     // ret 
     (0xC9, Seq(fetchCycle(AluOp.Nop, None, None),
-             dummyCycle1(AluOp.Nop, Reg8.Z, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc ),
-             memWriteCycle(AluOp.Nop, None, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
-             memWriteCycle(AluOp.Nop, None, Some(Reg8.PCH)))),
+             memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.PCH), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
     // rst 00
     (0xC7, Seq(fetchCycle(AluOp.Nop, None, None),
              memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
@@ -673,6 +673,13 @@ object CpuDecoder {
     // prefix
     (0xCB, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc))),
+    // call nn
+    (0xCD, Seq(fetchCycle(AluOp.Nop, None, None),
+             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             memReadCycle(AluOp.Nop, Some(Reg8.W), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // pop bc
     (0xC1, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
