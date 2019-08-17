@@ -59,7 +59,8 @@ object Cpu {
   object AluOp extends SpinalEnum {
     val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp,
       Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap,
-      Rlca, Rrca, Rla, Rra = newElement()
+      Rlca, Rrca, Rla, Rra, Bit, Set, Reset,
+      Rlc, Rrc, Rl, Rr, Sla, Sra, Srl = newElement()
   }
 
   object AddrSrc extends SpinalEnum {
@@ -986,12 +987,20 @@ class CpuAlu extends Component {
       io.flagsOut(Cpu.Flags.N) := False
       io.flagsOut(Cpu.Flags.Z) := False
     }
+    is(AluOp.Rlc) {
+      wideResult := wideOpB(7 downto 0) @@ wideOpB(7)
+      setFlags(carry, False, False)
+    }
     is(AluOp.Rrca) {
       wideResult := wideOpA(0).asUInt @@ wideOpA(0) @@ wideOpA(7 downto 1)
       io.flagsOut(Cpu.Flags.C) := carry
       io.flagsOut(Cpu.Flags.H) := False
       io.flagsOut(Cpu.Flags.N) := False
       io.flagsOut(Cpu.Flags.Z) := False
+    }
+    is(AluOp.Rrc) {
+      wideResult := wideOpB(0).asUInt @@ wideOpB(0) @@ wideOpB(7 downto 1)
+      setFlags(carry, False, False)
     }
     is(AluOp.Rla) {
       wideResult := wideOpA.rotateLeft(1)
@@ -1000,12 +1009,47 @@ class CpuAlu extends Component {
       io.flagsOut(Cpu.Flags.N) := False
       io.flagsOut(Cpu.Flags.Z) := False
     }
+    is(AluOp.Rl) {
+      wideResult := wideOpB.rotateLeft(1)
+      setFlags(carry, False, False)
+    }
     is(AluOp.Rra) {
       wideResult := wideOpA.rotateRight(1)
       io.flagsOut(Cpu.Flags.C) := carry
       io.flagsOut(Cpu.Flags.H) := False
       io.flagsOut(Cpu.Flags.N) := False
       io.flagsOut(Cpu.Flags.Z) := False
+    }
+    is(AluOp.Rr) {
+      wideResult := wideOpB.rotateRight(1)
+      setFlags(carry, False, False)
+    }
+    is(AluOp.Sla) {
+      wideResult := wideOpB |<< 1
+      setFlags(carry, False, False)
+    }
+    is(AluOp.Sra) {
+      wideResult := wideOpB(0).asUInt @@ wideOpB(7) @@ wideOpB(7 downto 1)
+      setFlags(carry, False, False)
+    }
+    is(AluOp.Srl) {
+      wideResult := wideOpB(0).asUInt @@ U"0" @@ wideOpB(7 downto 1)
+      setFlags(carry, False, False)
+    }
+    is(AluOp.Bit) {
+      wideResult := 0
+      io.flagsOut(Cpu.Flags.C) := io.flagsIn(Cpu.Flags.C)
+      io.flagsOut(Cpu.Flags.H) := True
+      io.flagsOut(Cpu.Flags.N) := False
+      io.flagsOut(Cpu.Flags.Z) := ~io.operandB(io.operandA)
+    }
+    is(AluOp.Set) {
+      wideResult := wideOpB | (U"1" |<< io.operandA).resize(9)
+      io.flagsOut := io.flagsIn
+    }
+    is(AluOp.Reset) {
+      wideResult := wideOpB & ~(U"1" |<< io.operandA).resize(9)
+      io.flagsOut := io.flagsIn
     }
   }
 }
