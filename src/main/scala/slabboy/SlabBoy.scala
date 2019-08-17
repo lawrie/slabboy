@@ -29,6 +29,7 @@ class SlabBoy extends Component {
 
 object Cpu {
   object Reg16 {
+    val AF = 0
     val WZ = 1
     val BC = 2
     val DE = 3
@@ -740,16 +741,19 @@ object CpuDecoder {
              dummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL)))),
     // jp z,a16
     (0xCA, Seq(fetchCycle(AluOp.Nop, None, None),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCL), addrOp=AddrOp.Inc, condition=Some(Condition.Z)),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.Z)))),
+             condMemReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc, condition=Some(Condition.Z)),
+             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.Z)),
+             condDummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL), condition=Some(Condition.Z)))),
     // jp nc,a16
     (0xD2, Seq(fetchCycle(AluOp.Nop, None, None),
              condMemReadCycle(AluOp.Nop, Some(Reg8.PCL), addrOp=AddrOp.Inc, condition=Some(Condition.NC)),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.NC)))),
+             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.NC)),
+             condDummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL), condition=Some(Condition.NC)))),
     // jp c,a16
     (0xDA, Seq(fetchCycle(AluOp.Nop, None, None),
              condMemReadCycle(AluOp.Nop, Some(Reg8.PCL), addrOp=AddrOp.Inc, condition=Some(Condition.C)),
-             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.C))))
+             condMemReadCycle(AluOp.Nop, Some(Reg8.PCH), addrOp=AddrOp.Inc, condition=Some(Condition.C)),
+             condDummyCycle(AluOp.Nop, Reg8.A, Some(Reg8.Z), Some(Reg8.PCL), condition=Some(Condition.C))))
   )
 
   val DefaultCycle = Microcode(0)._2(0)
