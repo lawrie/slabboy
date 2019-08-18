@@ -261,14 +261,15 @@ object CpuDecoder {
     addrOp: SpinalEnumElement[AddrOp.type],
     halt: Boolean,
     condition: Option[SpinalEnumElement[Condition.type]],
-    prefix:Boolean
+    prefix:Boolean,
+    condBreak: Boolean
   )
 
   def fetchCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, false)
+           AddrSrc.PC, AddrOp.Inc, false, None, false, false)
   }
 
   def fetchCycle1(aluOp: SpinalEnumElement[AluOp.type],
@@ -276,7 +277,7 @@ object CpuDecoder {
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, false)
+           AddrSrc.PC, AddrOp.Inc, false, None, false, false)
   }
 
   def dummyCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -284,7 +285,7 @@ object CpuDecoder {
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.HL, AddrOp.Nop, false, None, false)
+           AddrSrc.HL, AddrOp.Nop, false, None, false, false)
   }
 
   def dummyCycle1(aluOp: SpinalEnumElement[AluOp.type],
@@ -294,23 +295,30 @@ object CpuDecoder {
                  addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.SP,
                  addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           addrSrc, addrOp, false, None, false)
+           addrSrc, addrOp, false, None, false, false)
+  }
+
+  def condBreakCycle(condition: Option[SpinalEnumElement[Condition.type]] = None,
+                 addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
+                 addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
+    MCycle(AluOp.Nop, Reg8.A, None, None, true, false,
+           addrSrc, addrOp, false, condition, false, true)
   }
 
   def condDummyCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opA: Int,
                  opBSelect: Option[Int],
                  storeSelect: Option[Int],
-                   condition: Option[SpinalEnumElement[Condition.type]] = None) = {
+                 condition: Option[SpinalEnumElement[Condition.type]] = None) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.HL, AddrOp.Nop, false, condition, false)
+           AddrSrc.PC, AddrOp.Nop, false, condition, false, false)
   }
 
   def memReadCycle(aluOp: SpinalEnumElement[AluOp.type],
                    storeSelect: Option[Int],
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, None, false)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, None, false, false)
   }
 
   def condMemReadCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -318,7 +326,7 @@ object CpuDecoder {
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop,
                    condition: Option[SpinalEnumElement[Condition.type]] = None) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition, false)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition, false, false)
   }
 
   def memWriteCycle(aluOp: SpinalEnumElement[AluOp.type],
@@ -326,7 +334,7 @@ object CpuDecoder {
                     storeSelect: Option[Int],
                     addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                     addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp, false, None, false)
+    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp, false, None, false, false)
   }
 
   // helper function for the regular op code pattern
@@ -425,7 +433,7 @@ object CpuDecoder {
     (0xfb, Seq(fetchCycle(AluOp.Nop, None, None))),
     // halt
     (0x76, Seq(MCycle(AluOp.Nop, Reg8.A, None, None, false, false,
-               AddrSrc.PC, AddrOp.Nop, true, None, false)))
+               AddrSrc.PC, AddrOp.Nop, true, None, false, false)))
   ) ++
   arithmetic8Bit(0x80, AluOp.Add) ++ arithmetic8Bit(0x88, AluOp.Adc) ++
   arithmetic8Bit(0x90, AluOp.Sub) ++ arithmetic8Bit(0x98, AluOp.Sbc) ++
@@ -728,7 +736,7 @@ object CpuDecoder {
              dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // prefix
     (0xCB, Seq(MCycle(AluOp.Nop, Reg8.A, None, None, false, false,
-               AddrSrc.PC, AddrOp.Inc, false, None, true))),
+               AddrSrc.PC, AddrOp.Inc, false, None, true, false))),
     // call nn
     (0xCD, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
@@ -782,8 +790,24 @@ object CpuDecoder {
              dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.HLR8))),
     // jr d8
     (0x18, Seq(fetchCycle(AluOp.Nop, None, None),
-             memReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc),
-             dummyCycle(AluOp.Add, Reg8.PCL, Some(Reg8.Z), Some(Reg8.PCL)))), 
+             memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+    // jr z, d8
+    (0x28, Seq(fetchCycle(AluOp.Nop, None, None),
+             condBreakCycle(condition=Some(Condition.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+    // jr c, d8
+    (0x38, Seq(fetchCycle(AluOp.Nop, None, None),
+             condBreakCycle(condition=Some(Condition.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+    // jr nz, d8
+    (0x20, Seq(fetchCycle(AluOp.Nop, None, None),
+             condBreakCycle(condition=Some(Condition.NZ), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+    // jr nc, d8
+    (0x30, Seq(fetchCycle(AluOp.Nop, None, None),
+             condBreakCycle(condition=Some(Condition.NC), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+             dummyCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jp nz,a16
     (0xC2, Seq(fetchCycle(AluOp.Nop, None, None),
              condMemReadCycle(AluOp.Nop, Some(Reg8.Z), addrOp=AddrOp.Inc, condition=Some(Condition.NZ)),
@@ -860,13 +884,13 @@ class CpuDecoder extends Component {
         
         cycle.condition match {
           case Some(x) => {
-            when (x === Condition.Z) {
+            if (x == Condition.Z) {
               io.store := io.flags(Flags.Z)
-            } elsewhen (x === Condition.NZ) {
+            } else if (x == Condition.NZ) {
               io.store := ~io.flags(Flags.Z)
-            } elsewhen (x === Condition.C) {
+            } else if (x == Condition.C) {
               io.store := io.flags(Flags.C)
-            } elsewhen (x === Condition.NC) {
+            } else if (x == Condition.NC) {
               io.store := ~io.flags(Flags.C)
             }
           }
@@ -928,7 +952,40 @@ class CpuDecoder extends Component {
                 io.nextMCycle := 0
               } else {
                 decodeCycle(cycle, Some(icode._2(i + 1)))
-                io.nextMCycle := io.mCycle + 1
+                if (cycle.condBreak) {
+                  cycle.condition match {
+                    case Some(x) => {
+                      if (x == Condition.Z) {
+                        when (io.flags(Flags.Z)) {
+                          io.nextMCycle := io.mCycle + 1
+                        } otherwise {
+                          io.nextMCycle := 0
+                        }
+                      } else if (x == Condition.NZ) {
+                        when (~io.flags(Flags.Z)) {
+                          io.nextMCycle := io.mCycle + 1
+                        } otherwise {
+                          io.nextMCycle := 0
+                        }
+                      } else if (x == Condition.C) {
+                        when (io.flags(Flags.C)) {
+                          io.nextMCycle := io.mCycle + 1
+                        } otherwise {
+                          io.nextMCycle := 0
+                        }
+                      } else if (x == Condition.NC) {
+                        when (~io.flags(Flags.C)) {
+                          io.nextMCycle := io.mCycle + 1
+                        } otherwise {
+                          io.nextMCycle := 0
+                        }
+                      }
+                    }
+                    case None =>
+                  }
+                } else { 
+                  io.nextMCycle := io.mCycle + 1
+                }
               }
             }
           }
