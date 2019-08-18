@@ -919,16 +919,16 @@ class CpuDecoder extends Component {
   }
 
   def decodeCycle(cycle: MCycle, nextCycle: Option[MCycle]=None) = {
-    io.aluOp := cycle.aluOp
-    io.opA := cycle.opA
+    if (cycle.aluOp != AluOp.Nop) io.aluOp := cycle.aluOp
+    if (cycle.opA != Reg8.A) io.opA := cycle.opA
     cycle.opBSelect match {
       case Some(x) => {
         io.opBSelect := x
         io.loadOpB := True
       }
       case None => {
-        io.opBSelect := 0
-        io.loadOpB := False
+        //io.opBSelect := 0
+        //io.loadOpB := False
       }
     }
     cycle.storeSelect match {
@@ -953,15 +953,15 @@ class CpuDecoder extends Component {
         }
       }
       case None => {
-        io.storeSelect := 0
-        io.store := False
+        //io.storeSelect := 0
+        //io.store := False
       }
     }
-    io.memRead := Bool(cycle.memRead)
-    io.addrSrc := cycle.addrSrc
-    io.addrOp := cycle.addrOp
-    io.nextHalt := Bool(cycle.halt)
-    io.nextPrefix := Bool(cycle.prefix)
+    if (cycle.memRead) io.memRead := Bool(cycle.memRead)
+    if (cycle.addrSrc != AddrSrc.PC) io.addrSrc := cycle.addrSrc
+    if (cycle.addrOp != AddrOp.Nop) io.addrOp := cycle.addrOp
+    if (cycle.halt) io.nextHalt := Bool(cycle.halt)
+    if (cycle.prefix) io.nextPrefix := Bool(cycle.prefix)
 
     // some signals have to be set here for the next cycle
     nextCycle match {
@@ -969,14 +969,26 @@ class CpuDecoder extends Component {
         io.memWrite := Bool(nCycle.memWrite)
       }
       case None => {
-        io.memWrite := False
+        //io.memWrite := False
       }
     }
   }
 
   // default to NOP
-  decodeCycle(DefaultCycle)
+  //decodeCycle(DefaultCycle)
+  io.aluOp := AluOp.Nop
+  io.opA := Reg8.A
+  io.opBSelect := 0
+  io.loadOpB := False
   io.nextMCycle := 0
+  io.storeSelect := 0
+  io.store := False
+  io.memRead := False
+  io.addrOp := AddrOp.Nop
+  io.addrSrc := AddrSrc.PC
+  io.nextHalt := False
+  io.nextPrefix := False
+  io.memWrite := False
 
   // decode microcode instructions
   when (io.prefix) {
@@ -1002,7 +1014,7 @@ class CpuDecoder extends Component {
             when(io.mCycle === i) {
               if(i == icode._2.length - 1) {
                 decodeCycle(cycle)
-                io.nextMCycle := 0
+                //io.nextMCycle := 0
               } else {
                 decodeCycle(cycle, Some(icode._2(i + 1)))
                 if (cycle.condBreak) {
@@ -1012,25 +1024,25 @@ class CpuDecoder extends Component {
                         when (io.flags(Flags.Z)) {
                           io.nextMCycle := io.mCycle + 1
                         } otherwise {
-                          io.nextMCycle := 0
+                          //io.nextMCycle := 0
                         }
                       } else if (x == Condition.NZ) {
                         when (~io.flags(Flags.Z)) {
                           io.nextMCycle := io.mCycle + 1
                         } otherwise {
-                          io.nextMCycle := 0
+                          //io.nextMCycle := 0
                         }
                       } else if (x == Condition.C) {
                         when (io.flags(Flags.C)) {
                           io.nextMCycle := io.mCycle + 1
                         } otherwise {
-                          io.nextMCycle := 0
+                          //io.nextMCycle := 0
                         }
                       } else if (x == Condition.NC) {
                         when (~io.flags(Flags.C)) {
                           io.nextMCycle := io.mCycle + 1
                         } otherwise {
-                          io.nextMCycle := 0
+                          //io.nextMCycle := 0
                         }
                       }
                     }
@@ -1046,7 +1058,7 @@ class CpuDecoder extends Component {
       } else {
         when(io.ir === icode._1) {
           decodeCycle(icode._2(0))
-          io.nextMCycle := 0
+          //io.nextMCycle := 0
         }
       }
     }
