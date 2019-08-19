@@ -3,6 +3,7 @@ package slabboy
 import spinal.core._
 import spinal.lib._
 import spinal.lib.fsm._
+import java.io.FileInputStream
 
 class SlabBoy extends Component {
   val io = new Bundle {
@@ -59,7 +60,7 @@ object Cpu {
 
   object AluOp extends SpinalEnum {
     val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp,
-      Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap,
+      Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap, Add1, Adc1,
       Rlca, Rrca, Rla, Rra, Bit, Set, Reset,
       Rlc, Rrc, Rl, Rr, Sla, Sra, Srl = newElement()
   }
@@ -117,7 +118,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   )
 
   // Led diagnostics
-  io.diag := tCount.resized
+  io.diag := registers8(0)
 
   val temp = Reg(UInt(8 bits)) init(0)
   io.dataOut := temp
@@ -432,8 +433,8 @@ object CpuDecoder {
     // inc C
     (0x0C, Seq(fetchCycle(AluOp.Inc, Some(Reg8.C), Some(Reg8.C)))),
     // inc BC
-    (0x03, Seq(fetchCycle(AluOp.Inc, Some(Reg8.C), Some(Reg8.C)),
-               dummyCycle(AluOp.Incc, Reg8.A, Some(Reg8.B), Some(Reg8.B)))),
+    (0x03, Seq(fetchCycle(AluOp.Add1, Some(Reg8.C), Some(Reg8.C)),
+               dummyCycle(AluOp.Adc1, Reg8.A, Some(Reg8.B), Some(Reg8.B)))),
     // inc D
     (0x14, Seq(fetchCycle(AluOp.Inc, Some(Reg8.D), Some(Reg8.D)))),
     // inc E
@@ -1099,8 +1100,16 @@ class CpuAlu extends Component {
       wideResult := wideOpA + wideOpB
       setFlags(carry, halfCarry, False)
     }
+    is(AluOp.Add1) {
+      wideResult := wideOpB + 1
+      setFlags(carry, halfCarry, False)
+    }
     is(AluOp.Adc) {
       wideResult := wideOpA + wideOpB + io.flagsIn(Cpu.Flags.C).asUInt
+      setFlags(carry, halfCarry, False)
+    }
+    is(AluOp.Adc1) {
+      wideResult := wideOpB + io.flagsIn(Cpu.Flags.C).asUInt
       setFlags(carry, halfCarry, False)
     }
     is(AluOp.Sub) {
@@ -1244,30 +1253,54 @@ object TopLevelVerilog {
   }
 }
 
+object BinTools {
+  def initRam[T <: Data](ram: Mem[T], path: String, swapEndianness: Boolean = false): Unit ={
+    val initContent = Array.fill[BigInt](ram.wordCount)(0)
+    val readTmp = Array.fill[Byte](ram.width / 8)(0)
+    val initFile = new FileInputStream(path)
+    for ((e, i) <- initContent.zipWithIndex)
+      if (initFile.read(readTmp) > 0)
+        /* read() stores the data in reserved order */
+        initContent(i) = BigInt(1, if (swapEndianness) readTmp else readTmp.reverse)
+    ram.initBigInt(initContent)
+  }
+}
+
 class SlabBoyTest extends Component {
   val io = new Bundle {
     val led = out Bool
     val leds = out UInt(8 bits)
   }
 
-  val memSize = 1024
+  val memSize = (14 * 1024) + 512
 
   val memory = Mem(UInt(8 bits), memSize)
 
-  memory(0) := 0x3c // inc a
-  memory(1) := 0x76 // halt
-  memory(memSize-1) := 0x76
+  BinTools.initRam(memory, "sw/test.gb")
 
   val cpu = new Cpu(
     bootVector = 0x0000,
-    spInit = memSize
+    spInit = 0xFFFE
   )
 
-  val address = cpu.io.address
+  val address = UInt(16 bits)
   val dataIn = Reg(UInt(8 bits))
   val dataOut = cpu.io.dataOut
   val enable = cpu.io.mreq
   val write = cpu.io.write
+
+  // Reduce Gameboy 64kb memory down to 14.5k
+  // ROM reduced to 4kb and RAM to 2kb
+  // Video and high memory kept full size
+  when (cpu.io.address >= 0xfe00) {
+    address := cpu.io.address - 0xC600
+  } elsewhen (cpu.io.address >=  0xC000) {
+    address := cpu.io.address - 0x9000
+  } elsewhen (cpu.io.address >= 0x8000) {
+    address := cpu.io.address - 0x7000
+  } otherwise {
+    address := cpu.io.address
+  }
 
   dataIn := memory(address.resized)
  
