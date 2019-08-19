@@ -357,19 +357,19 @@ object CpuDecoder {
     )
   }
 
-  def bit8Bit(base: Int,
+  def bit8Bit(base: Seq[Int],
                      aluOp: SpinalEnumElement[AluOp.type]
-                    ) : Seq[(Int, Seq[MCycle])] = {
+                    ) : Seq[(Seq[Int], Seq[MCycle])] = {
     Seq(
-      (base + 0, Seq(fetchCycle(aluOp, Some(Reg8.B), Some(Reg8.B)))),
-      (base + 1, Seq(fetchCycle(aluOp, Some(Reg8.C), Some(Reg8.C)))),
-      (base + 2, Seq(fetchCycle(aluOp, Some(Reg8.D), Some(Reg8.D)))),
-      (base + 3, Seq(fetchCycle(aluOp, Some(Reg8.E), Some(Reg8.E)))),
-      (base + 4, Seq(fetchCycle(aluOp, Some(Reg8.H), Some(Reg8.H)))),
-      (base + 5, Seq(fetchCycle(aluOp, Some(Reg8.L), Some(Reg8.H)))),
-      (base + 6, Seq(fetchCycle(AluOp.Nop, None, None),
+      (base.map(_ + 0), Seq(fetchCycle(aluOp, Some(Reg8.B), Some(Reg8.B)))),
+      (base.map(_ + 1), Seq(fetchCycle(aluOp, Some(Reg8.C), Some(Reg8.C)))),
+      (base.map(_ + 2), Seq(fetchCycle(aluOp, Some(Reg8.D), Some(Reg8.D)))),
+      (base.map(_ + 3), Seq(fetchCycle(aluOp, Some(Reg8.E), Some(Reg8.E)))),
+      (base.map(_ + 4), Seq(fetchCycle(aluOp, Some(Reg8.H), Some(Reg8.H)))),
+      (base.map(_ + 5), Seq(fetchCycle(aluOp, Some(Reg8.L), Some(Reg8.H)))),
+      (base.map(_ + 6), Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(aluOp, None, addrSrc=AddrSrc.HL))),
-      (base + 7, Seq(fetchCycle(aluOp, Some(Reg8.A), Some(Reg8.A))))
+      (base.map(_ + 7), Seq(fetchCycle(aluOp, Some(Reg8.A), Some(Reg8.A))))
     )
   }
 
@@ -390,38 +390,17 @@ object CpuDecoder {
   }
 
   val prefixMicrocode = 
-    bit8Bit(0x00, AluOp.Rlc) ++
-    bit8Bit(0x08, AluOp.Rrc) ++
-    bit8Bit(0x10, AluOp.Rl) ++
-    bit8Bit(0x18, AluOp.Rr) ++
-    bit8Bit(0x20, AluOp.Sla) ++
-    bit8Bit(0x28, AluOp.Sra) ++
-    bit8Bit(0x30, AluOp.Swap) ++
-    bit8Bit(0x38, AluOp.Srl) ++
-    bit8Bit(0x40, AluOp.Bit) ++
-    bit8Bit(0x48, AluOp.Bit) ++
-    bit8Bit(0x50, AluOp.Bit) ++
-    bit8Bit(0x58, AluOp.Bit) ++
-    bit8Bit(0x60, AluOp.Bit) ++
-    bit8Bit(0x68, AluOp.Bit) ++
-    bit8Bit(0x70, AluOp.Bit) ++
-    bit8Bit(0x78, AluOp.Bit) ++
-    bit8Bit(0x80, AluOp.Reset) ++
-    bit8Bit(0x88, AluOp.Reset) ++
-    bit8Bit(0x90, AluOp.Reset) ++
-    bit8Bit(0x98, AluOp.Reset) ++
-    bit8Bit(0xA0, AluOp.Reset) ++
-    bit8Bit(0xA8, AluOp.Reset) ++
-    bit8Bit(0xB0, AluOp.Reset) ++
-    bit8Bit(0xB8, AluOp.Reset) ++
-    bit8Bit(0xC0, AluOp.Set) ++
-    bit8Bit(0xC8, AluOp.Set) ++
-    bit8Bit(0xD0, AluOp.Set) ++
-    bit8Bit(0xD8, AluOp.Set) ++
-    bit8Bit(0xE0, AluOp.Set) ++
-    bit8Bit(0xE8, AluOp.Set) ++
-    bit8Bit(0xF0, AluOp.Set) ++
-    bit8Bit(0xF8, AluOp.Set)
+    bit8Bit(Seq(0x00), AluOp.Rlc) ++
+    bit8Bit(Seq(0x08), AluOp.Rrc) ++
+    bit8Bit(Seq(0x10), AluOp.Rl) ++
+    bit8Bit(Seq(0x18), AluOp.Rr) ++
+    bit8Bit(Seq(0x20), AluOp.Sla) ++
+    bit8Bit(Seq(0x28), AluOp.Sra) ++
+    bit8Bit(Seq(0x30), AluOp.Swap) ++
+    bit8Bit(Seq(0x38), AluOp.Srl) ++
+    bit8Bit(Seq(0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78), AluOp.Bit) ++
+    bit8Bit(Seq(0x80, 0x88, 0x90, 0x98, 0xA0, 0xA8, 0xB0, 0xB8), AluOp.Reset) ++
+    bit8Bit(Seq(0xC0, 0xC8, 0xD0, 0xD8, 0xE0, 0xE8, 0xF0), AluOp.Set)
 
   val Microcode = Seq(
     // nop
@@ -974,6 +953,11 @@ class CpuDecoder extends Component {
     }
   }
 
+  def testOpCode(opCodes: Seq[Int]):Bool = {
+    if (opCodes.length == 1) return (io.ir === opCodes(0))
+    else return ((io.ir === opCodes(0)) || testOpCode(opCodes.tail))
+  } 
+
   // default to most common options
   //decodeCycle(DefaultCycle)
   io.aluOp := AluOp.Nop
@@ -993,7 +977,7 @@ class CpuDecoder extends Component {
   // decode microcode instructions
   when (io.prefix) {
     for(icode <- prefixMicrocode) {
-      when (io.ir === icode._1) {
+      when (testOpCode(icode._1)) {
         decodeCycle(icode._2(0))
       }
     }
