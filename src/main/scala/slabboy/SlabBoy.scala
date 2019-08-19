@@ -959,7 +959,7 @@ class CpuDecoder extends Component {
     }
     if (cycle.memRead) io.memRead := Bool(cycle.memRead)
     if (cycle.addrSrc != AddrSrc.PC) io.addrSrc := cycle.addrSrc
-    if (cycle.addrOp != AddrOp.Nop) io.addrOp := cycle.addrOp
+    if (cycle.addrOp != AddrOp.Inc) io.addrOp := cycle.addrOp
     if (cycle.halt) io.nextHalt := Bool(cycle.halt)
     if (cycle.prefix) io.nextPrefix := Bool(cycle.prefix)
 
@@ -974,7 +974,7 @@ class CpuDecoder extends Component {
     }
   }
 
-  // default to NOP
+  // default to most common options
   //decodeCycle(DefaultCycle)
   io.aluOp := AluOp.Nop
   io.opA := Reg8.A
@@ -984,7 +984,7 @@ class CpuDecoder extends Component {
   io.storeSelect := 0
   io.store := False
   io.memRead := False
-  io.addrOp := AddrOp.Nop
+  io.addrOp := AddrOp.Inc
   io.addrSrc := AddrSrc.PC
   io.nextHalt := False
   io.nextPrefix := False
@@ -1266,16 +1266,24 @@ class SlabBoyTest extends Component {
     val leds = out UInt(8 bits)
   }
 
-  val memory = Mem(UInt(8 bits), 1024)
+  val memSize = 1024
+
+  val memory = Mem(UInt(8 bits), memSize)
 
   memory(0) := 0x3c // inc a
   memory(1) := 0x76 // halt
+  memory(memSize-1) := 0x76
 
-  val address = Reg(UInt(16 bits))
+  val cpu = new Cpu(
+    bootVector = 0x0000,
+    spInit = memSize
+  )
+
+  val address = cpu.io.address
   val dataIn = Reg(UInt(8 bits))
-  val dataOut = Reg(UInt(8 bits))
-  val enable = Reg(Bool)
-  val write = Reg(Bool)
+  val dataOut = cpu.io.dataOut
+  val enable = cpu.io.mreq
+  val write = cpu.io.write
 
   dataIn := memory(address.resized)
  
@@ -1283,18 +1291,9 @@ class SlabBoyTest extends Component {
     memory(address.resized) := dataOut
   }
  
-  val cpu = new Cpu(
-    bootVector = 0x0000,
-    spInit = 0x0400
-  )
-
   io.leds := cpu.io.diag 
 
-  address := cpu.io.address
   cpu.io.dataIn := dataIn
-  dataOut := cpu.io.dataOut
-  enable := cpu.io.mreq
-  write := cpu.io.write
   io.led := !cpu.io.halt
 }
 
