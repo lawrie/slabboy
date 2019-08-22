@@ -1,6 +1,6 @@
 set_io io_clk 60
-#set_io io_reset 143
-set_io io_nReset 49
+set_io io_nReset 143
+#set_io io_nReset 49
 
 set_io io_led 55
 
