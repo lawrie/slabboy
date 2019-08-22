@@ -102,20 +102,12 @@ case class Ili9320Ctrl() extends Component {
   val ILI932X_PANEL_IF_CTRL5     = 0x97
   val ILI932X_PANEL_IF_CTRL6     = 0x98
 
-  val COLADDRSET     = B(0x2A, 8 bits)
-  val PAGEADDRSET    = B(0x2B, 8 bits)
-  val MEMORYWRITE    = B(0x2C, 8 bits)
+  val COL_ADDR_SET    = B(0x2A, 8 bits)
+  val PAGE_ADDR_SET   = B(0x2B, 8 bits)
+  val MEMORY_WRITE    = B(0x2C, 8 bits)
 
   val CD_DATA = B"1"
   val CD_CMD = B"0"
-
-  val initSeq1Len = 48
-  val initSeq2Len = 6
-  val initSeq3Len = 3
-  val initSeq4Len = 6
-  val initSeq5Len = 84
-  
-  val cursorSeqLen = 11
 
   val clkFreq = 16000000
   val txClkFreq = 16000000
@@ -135,6 +127,14 @@ case class Ili9320Ctrl() extends Component {
   //val ms5   = 5
   //val ms500 = 500
 
+  val initSeq1Len = 64
+  val initSeq2Len = 8
+  val initSeq3Len = 4
+  val initSeq4Len = 8
+  val initSeq5Len = 112
+  
+  val cursorSeqLen = 26
+
   val state = Reg(UInt(4 bits)) init State.RESET
   val txReady = Reg(Bool) init False
   val sendingPixel = Reg(Bool) init False
@@ -152,213 +152,283 @@ case class Ili9320Ctrl() extends Component {
 
   io.diag := B"00" ## sendingPixel ## txReady ## state
 
-  initSeq1(0)  := CD_CMD ## B(0xe5, 8 bits) // What is this?
-  initSeq1(1)  := CD_DATA ## B(0x80, 8 bits)
-  initSeq1(2)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(0)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(1)  := CD_CMD ## B(0xe5, 8 bits) // What is this?
+  initSeq1(2)  := CD_DATA ## B(0x80, 8 bits)
+  initSeq1(3)  := CD_DATA ## B(0x00, 8 bits)
   
-  initSeq1(3)  := CD_CMD ## B(ILI932X_START_OSC, 8 bits)
-  initSeq1(4)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(5)  := CD_DATA ## B(0x01, 8 bits)
-  
-  initSeq1(6)  := CD_CMD ## B(ILI932X_DRIV_OUT_CTRL, 8 bits)
+  initSeq1(4)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(5)  := CD_CMD ## B(ILI932X_START_OSC, 8 bits)
+  initSeq1(6)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(7)  := CD_DATA ## B(0x01, 8 bits)
-  initSeq1(8)  := CD_DATA ## B(0x00, 8 bits)
   
-  initSeq1(9)  := CD_CMD ## B(ILI932X_DRIV_WAV_CTRL, 8 bits)
-  initSeq1(10)  := CD_DATA ## B(0x70, 8 bits)
+  initSeq1(8)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(9)  := CD_CMD ## B(ILI932X_DRIV_OUT_CTRL, 8 bits)
+  initSeq1(10)  := CD_DATA ## B(0x01, 8 bits)
   initSeq1(11)  := CD_DATA ## B(0x00, 8 bits)
   
-  initSeq1(12)  := CD_CMD ## B(ILI932X_ENTRY_MOD, 8 bits)
-  initSeq1(13)  := CD_DATA ## B(0x10, 8 bits)
-  initSeq1(14)  := CD_DATA ## B(0x30, 8 bits)
+  initSeq1(12)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(13)  := CD_CMD ## B(ILI932X_DRIV_WAV_CTRL, 8 bits)
+  initSeq1(14)  := CD_DATA ## B(0x70, 8 bits)
+  initSeq1(15)  := CD_DATA ## B(0x00, 8 bits)
+  
+  initSeq1(16)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(17)  := CD_CMD ## B(ILI932X_ENTRY_MOD, 8 bits)
+  initSeq1(18)  := CD_DATA ## B(0x10, 8 bits)
+  initSeq1(19)  := CD_DATA ## B(0x30, 8 bits)
 
-  initSeq1(15)  := CD_CMD ## B(ILI932X_RESIZE_CTRL, 8 bits)
-  initSeq1(16)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(17)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq1(18)  := CD_CMD ## B(ILI932X_DISP_CTRL2, 8 bits)
-  initSeq1(19)  := CD_DATA ## B(0x02, 8 bits)
-  initSeq1(20)  := CD_DATA ## B(0x02, 8 bits)
-
-  initSeq1(21)  := CD_CMD ## B(ILI932X_DISP_CTRL3, 8 bits)
+  initSeq1(20)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(21)  := CD_CMD ## B(ILI932X_RESIZE_CTRL, 8 bits)
   initSeq1(22)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(23)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq1(24)  := CD_CMD ## B(ILI932X_DISP_CTRL4, 8 bits)
-  initSeq1(25)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(26)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(24)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(25)  := CD_CMD ## B(ILI932X_DISP_CTRL2, 8 bits)
+  initSeq1(26)  := CD_DATA ## B(0x02, 8 bits)
+  initSeq1(27)  := CD_DATA ## B(0x02, 8 bits)
 
-  initSeq1(27)  := CD_CMD ## B(ILI932X_RGB_DISP_IF_CTRL1, 8 bits)
-  initSeq1(28)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(29)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq1(30)  := CD_CMD ## B(ILI932X_FRM_MARKER_POS, 8 bits)
+  initSeq1(28)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(29)  := CD_CMD ## B(ILI932X_DISP_CTRL3, 8 bits)
+  initSeq1(30)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(31)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(32)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq1(33)  := CD_CMD ## B(ILI932X_RGB_DISP_IF_CTRL2, 8 bits)
+  initSeq1(32)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(33)  := CD_CMD ## B(ILI932X_DISP_CTRL4, 8 bits)
   initSeq1(34)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(35)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq1(36)  := CD_CMD ## B(ILI932X_POW_CTRL1, 8 bits)
-  initSeq1(37)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(36)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(37)  := CD_CMD ## B(ILI932X_RGB_DISP_IF_CTRL1, 8 bits)
   initSeq1(38)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(39)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq1(39)  := CD_CMD ## B(ILI932X_POW_CTRL2, 8 bits)
-  initSeq1(40)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(41)  := CD_DATA ## B(0x07, 8 bits)
-
-  initSeq1(42)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
+  initSeq1(40)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(41)  := CD_CMD ## B(ILI932X_FRM_MARKER_POS, 8 bits)
+  initSeq1(42)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(43)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq1(44)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq1(45)  := CD_CMD ## B(ILI932X_POW_CTRL4, 8 bits)
+  initSeq1(44)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(45)  := CD_CMD ## B(ILI932X_RGB_DISP_IF_CTRL2, 8 bits)
   initSeq1(46)  := CD_DATA ## B(0x00, 8 bits)
   initSeq1(47)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq2(0)  := CD_CMD ## B(ILI932X_POW_CTRL1, 8 bits)
-  initSeq2(1)  := CD_DATA ## B(0x17, 8 bits)
-  initSeq2(2)  := CD_DATA ## B(0xB0, 8 bits)
+  initSeq1(48)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(49)  := CD_CMD ## B(ILI932X_POW_CTRL1, 8 bits)
+  initSeq1(50)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(51)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq2(3)  := CD_CMD ## B(ILI932X_POW_CTRL2, 8 bits)
-  initSeq2(4)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq2(5)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq1(52)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(53)  := CD_CMD ## B(ILI932X_POW_CTRL2, 8 bits)
+  initSeq1(54)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(55)  := CD_DATA ## B(0x07, 8 bits)
 
-  initSeq3(0)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
-  initSeq3(1)  := CD_DATA ## B(0x01, 8 bits)
-  initSeq3(2)  := CD_DATA ## B(0x3A, 8 bits)
+  initSeq1(56)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(57)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
+  initSeq1(58)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(59)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq4(0)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
-  initSeq4(1)  := CD_DATA ## B(0x1A, 8 bits)
-  initSeq4(2)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(60)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq1(61)  := CD_CMD ## B(ILI932X_POW_CTRL4, 8 bits)
+  initSeq1(62)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq1(63)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq4(3)  := CD_CMD ## B(ILI932X_POW_CTRL7, 8 bits)
-  initSeq4(4)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq4(5)  := CD_DATA ## B(0x0C, 8 bits)
+  initSeq2(0)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq2(1)  := CD_CMD ## B(ILI932X_POW_CTRL1, 8 bits)
+  initSeq2(2)  := CD_DATA ## B(0x17, 8 bits)
+  initSeq2(3)  := CD_DATA ## B(0xB0, 8 bits)
 
-  initSeq5(0)  := CD_CMD ## B(ILI932X_GAMMA_CTRL1, 8 bits)
-  initSeq5(1)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq2(4)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq2(5)  := CD_CMD ## B(ILI932X_POW_CTRL2, 8 bits)
+  initSeq2(6)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq2(7)  := CD_DATA ## B(0x07, 8 bits)
+
+  initSeq3(0)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq3(1)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
+  initSeq3(2)  := CD_DATA ## B(0x01, 8 bits)
+  initSeq3(3)  := CD_DATA ## B(0x3A, 8 bits)
+
+  initSeq4(0)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq4(1)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
+  initSeq4(2)  := CD_DATA ## B(0x1A, 8 bits)
+  initSeq4(3)  := CD_DATA ## B(0x00, 8 bits)
+
+  initSeq4(4)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq4(5)  := CD_CMD ## B(ILI932X_POW_CTRL7, 8 bits)
+  initSeq4(6)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq4(7)  := CD_DATA ## B(0x0C, 8 bits)
+
+  initSeq5(0)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(1)  := CD_CMD ## B(ILI932X_GAMMA_CTRL1, 8 bits)
   initSeq5(2)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(3)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(3)  := CD_CMD ## B(ILI932X_GAMMA_CTRL2, 8 bits)
-  initSeq5(4)  := CD_DATA ## B(0x05, 8 bits)
-  initSeq5(5)  := CD_DATA ## B(0x05, 8 bits)
+  initSeq5(4)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(5)  := CD_CMD ## B(ILI932X_GAMMA_CTRL2, 8 bits)
+  initSeq5(6)  := CD_DATA ## B(0x05, 8 bits)
+  initSeq5(7)  := CD_DATA ## B(0x05, 8 bits)
 
-  initSeq5(6)  := CD_CMD ## B(ILI932X_GAMMA_CTRL3, 8 bits)
-  initSeq5(7)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(8)  := CD_DATA ## B(0x04, 8 bits)
-
-  initSeq5(9)  := CD_CMD ## B(ILI932X_GAMMA_CTRL4, 8 bits)
+  initSeq5(8)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(9)  := CD_CMD ## B(ILI932X_GAMMA_CTRL3, 8 bits)
   initSeq5(10)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(11)  := CD_DATA ## B(0x06, 8 bits)
+  initSeq5(11)  := CD_DATA ## B(0x04, 8 bits)
 
-  initSeq5(12)  := CD_CMD ## B(ILI932X_GAMMA_CTRL5, 8 bits)
-  initSeq5(13)  := CD_DATA ## B(0x07, 8 bits)
-  initSeq5(14)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(12)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(13)  := CD_CMD ## B(ILI932X_GAMMA_CTRL4, 8 bits)
+  initSeq5(14)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(15)  := CD_DATA ## B(0x06, 8 bits)
 
-  initSeq5(15)  := CD_CMD ## B(ILI932X_GAMMA_CTRL6, 8 bits)
-  initSeq5(16)  := CD_DATA ## B(0x01, 8 bits)
-  initSeq5(17)  := CD_DATA ## B(0x05, 8 bits)
+  initSeq5(16)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(17)  := CD_CMD ## B(ILI932X_GAMMA_CTRL5, 8 bits)
+  initSeq5(18)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(19)  := CD_DATA ## B(0x07, 8 bits)
 
-  initSeq5(18)  := CD_CMD ## B(ILI932X_GAMMA_CTRL7, 8 bits)
-  initSeq5(19)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(20)  := CD_DATA ## B(0x02, 8 bits)
+  initSeq5(20)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(21)  := CD_CMD ## B(ILI932X_GAMMA_CTRL6, 8 bits)
+  initSeq5(22)  := CD_DATA ## B(0x01, 8 bits)
+  initSeq5(23)  := CD_DATA ## B(0x05, 8 bits)
 
-  initSeq5(21)  := CD_CMD ## B(ILI932X_GAMMA_CTRL8, 8 bits)
-  initSeq5(22)  := CD_DATA ## B(0x07, 8 bits)
-  initSeq5(23)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(24)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(25)  := CD_CMD ## B(ILI932X_GAMMA_CTRL7, 8 bits)
+  initSeq5(26)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(27)  := CD_DATA ## B(0x02, 8 bits)
 
-  initSeq5(24)  := CD_CMD ## B(ILI932X_GAMMA_CTRL9, 8 bits)
-  initSeq5(25)  := CD_DATA ## B(0x07, 8 bits)
-  initSeq5(26)  := CD_DATA ## B(0x04, 8 bits)
+  initSeq5(28)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(29)  := CD_CMD ## B(ILI932X_GAMMA_CTRL8, 8 bits)
+  initSeq5(30)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(31)  := CD_DATA ## B(0x07, 8 bits)
 
-  initSeq5(27)  := CD_CMD ## B(ILI932X_GAMMA_CTRL10, 8 bits)
-  initSeq5(28)  := CD_DATA ## B(0x08, 8 bits)
-  initSeq5(29)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(32)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(33)  := CD_CMD ## B(ILI932X_GAMMA_CTRL9, 8 bits)
+  initSeq5(34)  := CD_DATA ## B(0x07, 8 bits)
+  initSeq5(35)  := CD_DATA ## B(0x04, 8 bits)
 
-  initSeq5(30)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL1, 8 bits)
-  initSeq5(31)  := CD_DATA ## B(0xA7, 8 bits)
-  initSeq5(32)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(36)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(37)  := CD_CMD ## B(ILI932X_GAMMA_CTRL10, 8 bits)
+  initSeq5(38)  := CD_DATA ## B(0x08, 8 bits)
+  initSeq5(39)  := CD_DATA ## B(0x07, 8 bits)
 
-  initSeq5(33)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL2, 8 bits)
-  initSeq5(34)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(35)  := CD_DATA ## B(0x01, 8 bits)
-
-  initSeq5(36)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL3, 8 bits)
-  initSeq5(37)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(38)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq5(39)  := CD_CMD ## B(ILI932X_GRAM_VER_AD, 8 bits)
-  initSeq5(40)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(41)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq5(42)  := CD_CMD ## B(ILI932X_GRAM_HOR_AD, 8 bits)
+  initSeq5(40)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(41)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL1, 8 bits)
+  initSeq5(42)  := CD_DATA ## B(0xA7, 8 bits)
   initSeq5(43)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(44)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(45)  := CD_CMD ## B(ILI932X_PART_IMG1_DISP_POS, 8 bits)
+  initSeq5(44)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(45)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL2, 8 bits)
   initSeq5(46)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(47)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(47)  := CD_DATA ## B(0x01, 8 bits)
 
-  initSeq5(48)  := CD_CMD ## B(ILI932X_PART_IMG1_START_AD, 8 bits)
-  initSeq5(49)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(48)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(49)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL3, 8 bits)
   initSeq5(50)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(51)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(51)  := CD_CMD ## B(ILI932X_PART_IMG1_END_AD, 8 bits)
-  initSeq5(52)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(53)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq5(54)  := CD_CMD ## B(ILI932X_PART_IMG2_DISP_POS, 8 bits)
+  initSeq5(52)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(53)  := CD_CMD ## B(ILI932X_GRAM_VER_AD, 8 bits)
+  initSeq5(54)  := CD_DATA ## B(0x00, 8 bits)
   initSeq5(55)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(56)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(57)  := CD_CMD ## B(ILI932X_PART_IMG2_START_AD, 8 bits)
+  initSeq5(56)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(57)  := CD_CMD ## B(ILI932X_GRAM_HOR_AD, 8 bits)
   initSeq5(58)  := CD_DATA ## B(0x00, 8 bits)
   initSeq5(59)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(60)  := CD_CMD ## B(ILI932X_PART_IMG2_END_AD, 8 bits)
-  initSeq5(61)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(60)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(61)  := CD_CMD ## B(ILI932X_PART_IMG1_DISP_POS, 8 bits)
   initSeq5(62)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(63)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(63)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL1, 8 bits)
-  initSeq5(64)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(65)  := CD_DATA ## B(0x10, 8 bits)
-
-  initSeq5(66)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL2, 8 bits)
+  initSeq5(64)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(65)  := CD_CMD ## B(ILI932X_PART_IMG1_START_AD, 8 bits)
+  initSeq5(66)  := CD_DATA ## B(0x00, 8 bits)
   initSeq5(67)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(68)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(69)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL3, 8 bits)
+  initSeq5(68)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(69)  := CD_CMD ## B(ILI932X_PART_IMG1_END_AD, 8 bits)
   initSeq5(70)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(71)  := CD_DATA ## B(0x03, 8 bits)
+  initSeq5(71)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(72)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL4, 8 bits)
-  initSeq5(73)  := CD_DATA ## B(0x01, 8 bits)
-  initSeq5(74)  := CD_DATA ## B(0x10, 8 bits)
+  initSeq5(72)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(73)  := CD_CMD ## B(ILI932X_PART_IMG2_DISP_POS, 8 bits)
+  initSeq5(74)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(75)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(75)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL5, 8 bits)
-  initSeq5(76)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(77)  := CD_DATA ## B(0x00, 8 bits)
-
-  initSeq5(78)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL6, 8 bits)
+  initSeq5(76)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(77)  := CD_CMD ## B(ILI932X_PART_IMG2_START_AD, 8 bits)
+  initSeq5(78)  := CD_DATA ## B(0x00, 8 bits)
   initSeq5(79)  := CD_DATA ## B(0x00, 8 bits)
-  initSeq5(80)  := CD_DATA ## B(0x00, 8 bits)
 
-  initSeq5(81)  := CD_CMD ## B(ILI932X_DISP_CTRL1, 8 bits) // Turn display on
-  initSeq5(82)  := CD_DATA ## B(0x01, 8 bits)
-  initSeq5(83)  := CD_DATA ## B(0x73, 8 bits)
+  initSeq5(80)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(81)  := CD_CMD ## B(ILI932X_PART_IMG2_END_AD, 8 bits)
+  initSeq5(82)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(83)  := CD_DATA ## B(0x00, 8 bits)
 
-  cursorSeq(0)  := CD_CMD ## COLADDRSET
-  cursorSeq(1)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(84)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(85)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL1, 8 bits)
+  initSeq5(86)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(87)  := CD_DATA ## B(0x10, 8 bits)
+
+  initSeq5(88)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(89)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL2, 8 bits)
+  initSeq5(90)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(91)  := CD_DATA ## B(0x00, 8 bits)
+
+  initSeq5(92)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(93)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL3, 8 bits)
+  initSeq5(94)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(95)  := CD_DATA ## B(0x03, 8 bits)
+
+  initSeq5(96)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(97)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL4, 8 bits)
+  initSeq5(98)  := CD_DATA ## B(0x01, 8 bits)
+  initSeq5(99)  := CD_DATA ## B(0x10, 8 bits)
+
+  initSeq5(100)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(101)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL5, 8 bits)
+  initSeq5(102)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(103)  := CD_DATA ## B(0x00, 8 bits)
+
+  initSeq5(104)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(105)  := CD_CMD ## B(ILI932X_PANEL_IF_CTRL6, 8 bits)
+  initSeq5(106)  := CD_DATA ## B(0x00, 8 bits)
+  initSeq5(107)  := CD_DATA ## B(0x00, 8 bits)
+
+  initSeq5(108)  := CD_CMD ## B(0x00, 8 bits)
+  initSeq5(109)  := CD_CMD ## B(ILI932X_DISP_CTRL1, 8 bits) // Turn display on
+  initSeq5(110)  := CD_DATA ## B(0x01, 8 bits)
+  initSeq5(111)  := CD_DATA ## B(0x73, 8 bits)
+
+  cursorSeq(0)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(1)  := CD_CMD ## COL_ADDR_SET
   cursorSeq(2)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(3)  := CD_DATA ## B(0x01, 8 bits)
-  cursorSeq(4)  := CD_DATA ## B(0x3f, 8 bits)
-  cursorSeq(5)  := CD_CMD ## PAGEADDRSET
+  cursorSeq(3)  := CD_DATA ## B(0x00, 8 bits)
+
+  cursorSeq(4)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(5)  := CD_CMD ## PAGE_ADDR_SET
   cursorSeq(6)  := CD_DATA ## B(0x00, 8 bits)
   cursorSeq(7)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(8)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(9)  := CD_DATA ## B(0xEF, 8 bits)
-  cursorSeq(10) := CD_CMD ## MEMORYWRITE
+
+  cursorSeq(8)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(9)  := CD_CMD ## B(ILI932X_HOR_START_AD, 8 bits)
+  cursorSeq(10)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(11)  := CD_DATA ## B(0x00, 8 bits)
+
+  cursorSeq(12)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(13)  := CD_CMD ## B(ILI932X_HOR_END_AD, 8 bits)
+  cursorSeq(14)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(15)  := CD_DATA ## B(0x3F, 8 bits)
+
+  cursorSeq(16)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(17)  := CD_CMD ## B(ILI932X_VER_START_AD, 8 bits)
+  cursorSeq(18)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(19)  := CD_DATA ## B(0x00, 8 bits)
+
+  cursorSeq(20)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(21)  := CD_CMD ## B(ILI932X_VER_END_AD, 8 bits)
+  cursorSeq(22)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(23)  := CD_DATA ## B(0xEF, 8 bits)
+
+  cursorSeq(24)  := CD_CMD ## B(0x00, 8 bits)
+  cursorSeq(25)  := CD_CMD ## MEMORY_WRITE
 
   io.pixels.ready := (state === State.READY) && !sendingPixel && !txReady
 
@@ -461,8 +531,9 @@ case class Ili9320Ctrl() extends Component {
             txReady := True
           }
         } otherwise {
-          //state := State.CURSOR
-          state := State.HALT
+          //cmdData := True
+          //dout := 0
+          state := State.CURSOR
           delayTicks := ms120
           cursorSeqCounter := 0
           initSeqCounter := 0
@@ -471,8 +542,8 @@ case class Ili9320Ctrl() extends Component {
       is(State.CURSOR) {
         when (cursorSeqCounter < cursorSeqLen) {
           when (!txReady) {
-            cmdData := cursorSeq(cursorSeqCounter)(8)
-            dout := cursorSeq(cursorSeqCounter)(7 downto 0)
+            cmdData := cursorSeq(cursorSeqCounter.resized)(8)
+            dout := cursorSeq(cursorSeqCounter.resized)(7 downto 0)
             cursorSeqCounter := cursorSeqCounter + 1
             txReady := True
           }
@@ -536,7 +607,7 @@ class StripedIli9320() extends Component{
     val ctrl = new Ili9320Ctrl()
     ctrl.io.resetCursor := False
     ctrl.io.pixels.valid := True
-    ctrl.io.pixels.payload := 0x007f // colors(columnCounter(4 downto 3))
+    ctrl.io.pixels.payload := 0x0000 // colors(columnCounter(4 downto 3))
     ctrl.io.ili9320 <> io.ili9320
     io.leds := ctrl.io.diag
 
@@ -560,7 +631,7 @@ object StripedIli9320 {
   }
 }
 
-/*case class TiledIli9320() extends Component{
+case class TiledIli9320() extends Component{
   val io = new Bundle{
     val ili9320 = master(Ili9320())
     val writeEnable = in Bool
@@ -618,4 +689,3 @@ object StripedIli9320 {
     }
   }
 }
-*/

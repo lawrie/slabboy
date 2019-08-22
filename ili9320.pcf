@@ -1,6 +1,5 @@
 set_io io_clk 60
-set_io io_nReset 143
-#set_io io_nReset 49
+set_io -pullup yes io_nReset 143
 
 set_io io_led 55
 
@@ -16,7 +15,6 @@ set_io -nowarn io_ili9320_nReset 34
 set_io -nowarn io_ili9320_cs 33
 set_io -nowarn io_ili9320_cmdData  29
 set_io -nowarn io_ili9320_writeEdge 28
-set_io -nowarn io_ili9320_backLight 9
 
 set_io io_leds[0] 141
 set_io io_leds[1] 142
