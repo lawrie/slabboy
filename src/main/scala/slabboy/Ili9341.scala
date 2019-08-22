@@ -8,10 +8,10 @@ case class Ili9341() extends Bundle with IMasterSlave {
   val cmdData = Reg(Bool)
   val writeEdge = Reg(Bool)
   val dout = Reg(Bits(8 bits))
-  val backLight = Bool
+  val cs = Bool
 
   override def asMaster(): Unit = {
-    out(nReset, cmdData, writeEdge, dout, backLight)
+    out(nReset, cmdData, writeEdge, dout, cs)
   }
 }
 
@@ -137,7 +137,7 @@ case class Ili9341Ctrl() extends Component {
 
   io.pixels.ready := (state === State.READY) && !sendingPixel && !txReady
 
-  io.ili9341.backLight := True
+  io.ili9341.cs := False
 
   when(!txReady) {
     io.ili9341.writeEdge := False
