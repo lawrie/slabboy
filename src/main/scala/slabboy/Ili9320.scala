@@ -102,9 +102,9 @@ case class Ili9320Ctrl(sim: Boolean = false) extends Component {
   val ILI932X_PANEL_IF_CTRL5     = 0x97
   val ILI932X_PANEL_IF_CTRL6     = 0x98
 
-  val COL_ADDR_SET    = B(0x2A, 8 bits)
-  val PAGE_ADDR_SET   = B(0x2B, 8 bits)
-  val MEMORY_WRITE    = B(0x2C, 8 bits)
+  val COL_ADDR_SET    = B(0x20, 8 bits)
+  val PAGE_ADDR_SET   = B(0x21, 8 bits)
+  val MEMORY_WRITE    = B(0x22, 8 bits)
 
   val CD_DATA = B"1"
   val CD_CMD = B"0"
@@ -314,7 +314,7 @@ case class Ili9320Ctrl(sim: Boolean = false) extends Component {
 
   initSeq5(40)  := CD_CMD ## B(0x00, 8 bits)
   initSeq5(41)  := CD_CMD ## B(ILI932X_GATE_SCAN_CTRL1, 8 bits)
-  initSeq5(42)  := CD_DATA ## B(0xA7, 8 bits)
+  initSeq5(42)  := CD_DATA ## B(0x27, 8 bits)
   initSeq5(43)  := CD_DATA ## B(0x00, 8 bits)
 
   initSeq5(44)  := CD_CMD ## B(0x00, 8 bits)
@@ -425,11 +425,11 @@ case class Ili9320Ctrl(sim: Boolean = false) extends Component {
   cursorSeq(16)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(17)  := CD_CMD ## B(ILI932X_HOR_END_AD, 8 bits)
   cursorSeq(18)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(19)  := CD_DATA ## B(0x3F, 8 bits)
+  cursorSeq(19)  := CD_DATA ## B(0xEF, 8 bits)
 
   cursorSeq(20)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(21)  := CD_CMD ## B(ILI932X_VER_END_AD, 8 bits)
-  cursorSeq(22)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(22)  := CD_DATA ## B(0x01, 8 bits)
   cursorSeq(23)  := CD_DATA ## B(0x3F, 8 bits)
 
   cursorSeq(24)  := CD_CMD ## B(0x00, 8 bits)
@@ -609,7 +609,7 @@ class StripedIli9320() extends Component{
     val ctrl = new Ili9320Ctrl()
     ctrl.io.resetCursor := False
     ctrl.io.pixels.valid := True
-    ctrl.io.pixels.payload := 0x007f // colors(columnCounter(4 downto 3))
+    ctrl.io.pixels.payload := colors(columnCounter(4 downto 3))
     ctrl.io.ili9320 <> io.ili9320
     io.leds := ctrl.io.diag
 
