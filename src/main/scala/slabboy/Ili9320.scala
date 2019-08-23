@@ -15,7 +15,7 @@ case class Ili9320() extends Bundle with IMasterSlave {
   }
 }
 
-case class Ili9320Ctrl() extends Component {
+case class Ili9320Ctrl(sim: Boolean = false) extends Component {
   val io = new Bundle {
     val ili9320 = master(Ili9320())
     val resetCursor = in Bool
@@ -23,16 +23,16 @@ case class Ili9320Ctrl() extends Component {
     val diag = out Bits(8 bits)
   }
 
-  val nReset = Reg(Bool)
+  val nReset = Reg(Bool) init False
   io.ili9320.nReset := nReset
 
-  val cmdData = Reg(Bool)
+  val cmdData = Reg(Bool) init True
   io.ili9320.cmdData := cmdData
 
-  val writeEdge = Reg(Bool)
+  val writeEdge = Reg(Bool) init False
   io.ili9320.writeEdge := writeEdge
 
-  val dout = Reg(Bits(8 bits))
+  val dout = Reg(Bits(8 bits)) init 0
   io.ili9320.dout := dout
 
   io.ili9320.cs := False
@@ -114,11 +114,12 @@ case class Ili9320Ctrl() extends Component {
   val txClkDiv = (clkFreq / txClkFreq) - 1
 
   val secPerTick = (1.0 / txClkFreq)
-  val ms120 = (0.120 / secPerTick).toInt
-  val ms50  = (0.050 / secPerTick).toInt
-  val ms10  = (0.005 / secPerTick).toInt
-  val ms5   = (0.005 / secPerTick).toInt
-  val ms500 = (0.500 / secPerTick).toInt
+  val ms120 = if (sim) 120 else (0.120 / secPerTick).toInt
+  val ms100 = if (sim) 100 else (0.100 / secPerTick).toInt
+  val ms50  = if (sim) 50 else (0.050 / secPerTick).toInt
+  val ms10  = if (sim) 10 else (0.005 / secPerTick).toInt
+  val ms5   = if (sim) 5 else (0.005 / secPerTick).toInt
+  val ms500 = if (sim) 500 else (0.500 / secPerTick).toInt
 
   // Simulation only
   //val ms120 = 120
@@ -150,7 +151,11 @@ case class Ili9320Ctrl() extends Component {
 
   val cursorSeq = Vec(Bits(9 bits), cursorSeqLen)
 
-  io.diag := B"00" ## sendingPixel ## txReady ## state
+  when (state < State.READY) {
+    io.diag := B"00" ## sendingPixel ## txReady ## state
+  } otherwise {
+    io.diag := dout
+  }
 
   initSeq1(0)  := CD_CMD ## B(0x00, 8 bits)
   initSeq1(1)  := CD_CMD ## B(0xe5, 8 bits) // What is this?
@@ -248,7 +253,7 @@ case class Ili9320Ctrl() extends Component {
   initSeq3(3)  := CD_DATA ## B(0x3A, 8 bits)
 
   initSeq4(0)  := CD_CMD ## B(0x00, 8 bits)
-  initSeq4(1)  := CD_CMD ## B(ILI932X_POW_CTRL3, 8 bits)
+  initSeq4(1)  := CD_CMD ## B(ILI932X_POW_CTRL4, 8 bits)
   initSeq4(2)  := CD_DATA ## B(0x1A, 8 bits)
   initSeq4(3)  := CD_DATA ## B(0x00, 8 bits)
 
@@ -396,7 +401,7 @@ case class Ili9320Ctrl() extends Component {
   initSeq5(109)  := CD_CMD ## B(ILI932X_DISP_CTRL1, 8 bits) // Turn display on
   initSeq5(110)  := CD_DATA ## B(0x01, 8 bits)
   initSeq5(111)  := CD_DATA ## B(0x73, 8 bits)
-
+  
   cursorSeq(0)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(1)  := CD_CMD ## COL_ADDR_SET
   cursorSeq(2)  := CD_DATA ## B(0x00, 8 bits)
@@ -413,19 +418,19 @@ case class Ili9320Ctrl() extends Component {
   cursorSeq(11)  := CD_DATA ## B(0x00, 8 bits)
 
   cursorSeq(12)  := CD_CMD ## B(0x00, 8 bits)
-  cursorSeq(13)  := CD_CMD ## B(ILI932X_HOR_END_AD, 8 bits)
+  cursorSeq(13)  := CD_CMD ## B(ILI932X_VER_START_AD, 8 bits)
   cursorSeq(14)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(15)  := CD_DATA ## B(0x3F, 8 bits)
+  cursorSeq(15)  := CD_DATA ## B(0x00, 8 bits)
 
   cursorSeq(16)  := CD_CMD ## B(0x00, 8 bits)
-  cursorSeq(17)  := CD_CMD ## B(ILI932X_VER_START_AD, 8 bits)
+  cursorSeq(17)  := CD_CMD ## B(ILI932X_HOR_END_AD, 8 bits)
   cursorSeq(18)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(19)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(19)  := CD_DATA ## B(0x3F, 8 bits)
 
   cursorSeq(20)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(21)  := CD_CMD ## B(ILI932X_VER_END_AD, 8 bits)
   cursorSeq(22)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(23)  := CD_DATA ## B(0xEF, 8 bits)
+  cursorSeq(23)  := CD_DATA ## B(0x3F, 8 bits)
 
   cursorSeq(24)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(25)  := CD_CMD ## MEMORY_WRITE
@@ -448,19 +453,19 @@ case class Ili9320Ctrl() extends Component {
         dout := 0
         writeEdge := False
         cmdData := False
-        delayTicks := ms10
+        delayTicks := ms120
         state := State.NOT_RESET
       }
       is(State.NOT_RESET) {
         nReset := True;
         state := State.WAKEUP
-        delayTicks := ms120
+        delayTicks := ms50
       }
       is(State.WAKEUP) {
         when (!txReady) {
-          cmdData := False
-          dout := 0x01
-          txReady := True
+          //cmdData := False
+          //dout := 0x01
+          //txReady := True
           initSeqCounter := 0
           state := State.INIT1
           delayTicks := ms120
@@ -531,8 +536,6 @@ case class Ili9320Ctrl() extends Component {
             txReady := True
           }
         } otherwise {
-          //cmdData := True
-          //dout := 0
           state := State.CURSOR
           delayTicks := ms120
           cursorSeqCounter := 0
@@ -591,8 +594,7 @@ class StripedIli9320() extends Component{
                                     config = ClockDomainConfig(clockEdge = RISING,
                                                                resetKind = ASYNC,
                                                                resetActiveLevel = LOW))
-
-  val coreArea = new ClockingArea(coreClockDomain) {
+  val coreClockingArea = new ClockingArea(coreClockDomain) {
     io.led := True
 
     val colors = Vec(Bits(16 bits), 4)
@@ -607,7 +609,7 @@ class StripedIli9320() extends Component{
     val ctrl = new Ili9320Ctrl()
     ctrl.io.resetCursor := False
     ctrl.io.pixels.valid := True
-    ctrl.io.pixels.payload := 0x0000 // colors(columnCounter(4 downto 3))
+    ctrl.io.pixels.payload := 0x007f // colors(columnCounter(4 downto 3))
     ctrl.io.ili9320 <> io.ili9320
     io.leds := ctrl.io.diag
 
@@ -631,7 +633,7 @@ object StripedIli9320 {
   }
 }
 
-case class TiledIli9320() extends Component{
+case class TiledIli9320(sim: Boolean = false) extends Component{
   val io = new Bundle{
     val ili9320 = master(Ili9320())
     val writeEnable = in Bool
@@ -671,7 +673,7 @@ case class TiledIli9320() extends Component{
 
   io.diag := 0
 
-  val ctrl = new Ili9320Ctrl()
+  val ctrl = new Ili9320Ctrl(sim)
   ctrl.io.resetCursor := False
   ctrl.io.pixels.valid := True
   ctrl.io.pixels.payload := colors(color)
@@ -686,6 +688,24 @@ case class TiledIli9320() extends Component{
       when (rowCounter === 239) {
         rowCounter := 0
       }
+    }
+  }
+}
+
+object TiledIli9320 {
+  def main(args: Array[String]) {
+    SpinalVerilog(new TiledIli9320())
+  }
+}
+
+object TiledIli9320Sim {
+  import spinal.core.sim._
+
+  def main(args: Array[String]) {
+    SimConfig.withWave.compile(new TiledIli9320(true)).doSim{ dut =>
+      dut.clockDomain.forkStimulus(100)
+
+      dut.clockDomain.waitSampling(100000)
     }
   }
 }
