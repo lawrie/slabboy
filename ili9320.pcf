@@ -1,5 +1,5 @@
 set_io io_clk 60
-set_io -pullup yes io_nReset 143
+set_io -pullup yes io_nReset 9
 
 set_io io_led 55
 

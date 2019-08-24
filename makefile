@@ -1,14 +1,14 @@
-VERILOG = StripedIli9320.v slabboy_pll.v
+VERILOG = SlabBoyTest.v slabboy_pll.v
 
 generate :
-	sbt "runMain slabboy.StripedIli9320"
+	sbt "runMain slabboy.SlabBoyTest"
 
 SlabBoyTest.v :
-	sbt "runMain slabboy.StripedIli9320"
+	sbt "runMain slabboy.SlabBoyTest"
 
 bin/toplevel.json : ${VERILOG}
 	mkdir -p bin
-	yosys -v3 -p "synth_ice40 -top StripedIli9320 -json bin/toplevel.json" ${VERILOG}
+	yosys -v3 -p "synth_ice40 -top SlabBoyTest -json bin/toplevel.json" ${VERILOG}
 
 bin/toplevel.asc : ili9320.pcf bin/toplevel.json
 	nextpnr-ice40 --freq 25 --hx8k --package tq144:4k --json bin/toplevel.json --pcf ili9320.pcf --asc bin/toplevel.asc --opt-timing --placer heap
