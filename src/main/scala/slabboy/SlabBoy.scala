@@ -440,18 +440,18 @@ object CpuDecoder {
     // inc E
     (0x1C, Seq(fetchCycle(AluOp.Inc, Some(Reg8.E), Some(Reg8.E)))),
     // inc DE
-    (0x13, Seq(fetchCycle(AluOp.Inc, Some(Reg8.E), Some(Reg8.E)),
-               dummyCycle(AluOp.Incc, Reg8.A, Some(Reg8.D), Some(Reg8.D)))),
+    (0x13, Seq(fetchCycle(AluOp.Add1, Some(Reg8.E), Some(Reg8.E)),
+               dummyCycle(AluOp.Adc1, Reg8.A, Some(Reg8.D), Some(Reg8.D)))),
     // inc H
     (0x24, Seq(fetchCycle(AluOp.Inc, Some(Reg8.H), Some(Reg8.H)))),
     // inc L
     (0x2C, Seq(fetchCycle(AluOp.Inc, Some(Reg8.L), Some(Reg8.L)))),
     // inc HL
-    (0x23, Seq(fetchCycle(AluOp.Inc, Some(Reg8.L), Some(Reg8.L)),
-               dummyCycle(AluOp.Incc, Reg8.A, Some(Reg8.H), Some(Reg8.H)))),
+    (0x23, Seq(fetchCycle(AluOp.Add1, Some(Reg8.L), Some(Reg8.L)),
+               dummyCycle(AluOp.Adc1, Reg8.A, Some(Reg8.H), Some(Reg8.H)))),
     // inc SP
-    (0x33, Seq(fetchCycle(AluOp.Inc, Some(Reg8.SPL), Some(Reg8.SPL)),
-               dummyCycle(AluOp.Incc, Reg8.A, Some(Reg8.SPH), Some(Reg8.SPH)))),
+    (0x33, Seq(fetchCycle(AluOp.Add1, Some(Reg8.SPL), Some(Reg8.SPL)),
+               dummyCycle(AluOp.Adc1, Reg8.A, Some(Reg8.SPH), Some(Reg8.SPH)))),
     // inc (HL)
     (0x34, Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(AluOp.Inc, Some(Reg8.Z), addrSrc=AddrSrc.HL),

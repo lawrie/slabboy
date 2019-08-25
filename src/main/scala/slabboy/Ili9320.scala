@@ -180,7 +180,7 @@ case class Ili9320Ctrl(sim: Boolean = false) extends Component {
   initSeq1(16)  := CD_CMD ## B(0x00, 8 bits)
   initSeq1(17)  := CD_CMD ## B(ILI932X_ENTRY_MOD, 8 bits)
   initSeq1(18)  := CD_DATA ## B(0x10, 8 bits)
-  initSeq1(19)  := CD_DATA ## B(0x30, 8 bits)
+  initSeq1(19)  := CD_DATA ## B(0xA0, 8 bits)
 
   initSeq1(20)  := CD_CMD ## B(0x00, 8 bits)
   initSeq1(21)  := CD_CMD ## B(ILI932X_RESIZE_CTRL, 8 bits)
@@ -405,32 +405,32 @@ case class Ili9320Ctrl(sim: Boolean = false) extends Component {
   cursorSeq(0)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(1)  := CD_CMD ## COL_ADDR_SET
   cursorSeq(2)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(3)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(3)  := CD_DATA ## B(0x28, 8 bits)
 
   cursorSeq(4)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(5)  := CD_CMD ## PAGE_ADDR_SET
   cursorSeq(6)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(7)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(7)  := CD_DATA ## B(0x58, 8 bits)
 
   cursorSeq(8)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(9)  := CD_CMD ## B(ILI932X_HOR_START_AD, 8 bits)
   cursorSeq(10)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(11)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(11)  := CD_DATA ## B(0x28, 8 bits)
 
   cursorSeq(12)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(13)  := CD_CMD ## B(ILI932X_VER_START_AD, 8 bits)
   cursorSeq(14)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(15)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(15)  := CD_DATA ## B(0x58, 8 bits)
 
   cursorSeq(16)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(17)  := CD_CMD ## B(ILI932X_HOR_END_AD, 8 bits)
   cursorSeq(18)  := CD_DATA ## B(0x00, 8 bits)
-  cursorSeq(19)  := CD_DATA ## B(0xEF, 8 bits)
+  cursorSeq(19)  := CD_DATA ## B(0xC7, 8 bits)
 
   cursorSeq(20)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(21)  := CD_CMD ## B(ILI932X_VER_END_AD, 8 bits)
-  cursorSeq(22)  := CD_DATA ## B(0x01, 8 bits)
-  cursorSeq(23)  := CD_DATA ## B(0x3F, 8 bits)
+  cursorSeq(22)  := CD_DATA ## B(0x00, 8 bits)
+  cursorSeq(23)  := CD_DATA ## B(0xE7, 8 bits)
 
   cursorSeq(24)  := CD_CMD ## B(0x00, 8 bits)
   cursorSeq(25)  := CD_CMD ## MEMORY_WRITE

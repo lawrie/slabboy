@@ -19,8 +19,8 @@ case class PPU(sim: Boolean = false) extends Component {
   colors(2) := 0x01E0
   colors(3) := 0x03E0
 
-  val x = Reg(UInt(8 bits))
-  val y = Reg(UInt(8 bits))
+  val x = Reg(UInt(8 bits)) init 0
+  val y = Reg(UInt(8 bits)) init 0
 
   val lcd = Ili9320Ctrl(sim)
   lcd.io.resetCursor := False
@@ -37,17 +37,17 @@ case class PPU(sim: Boolean = false) extends Component {
 
   io.address := 0
 
-  when (bitx === 0) {
+  when (bitx === 7) {
     when (bitCycle === 0) {
       // Set address of next tile
-      io.address := (0x1800 + (y(7 downto 3) @@ x(7 downto 3))).resized
+      io.address := U(0x1800) + (U"000" @@ y(7 downto 3) @@ x(7 downto 3))
     } elsewhen (bitCycle === 1) {
       // Save the tile number and set the address of first texture byte
-      io.address := (io.dataIn @@ y(2 downto 0) @@ U"0").resized
+      io.address := U"0" @@ io.dataIn @@ y(2 downto 0) @@ U"0"
       tile := io.dataIn
     } elsewhen (bitCycle === 2) {
       // Save the first texture value and set the address of the second
-      io.address := (tile @@ y(2 downto 0) @@ U"1").resized
+      io.address := U"0" @@ tile @@ y(2 downto 0) @@ U"1"
       texture0 := io.dataIn.asBits
     } elsewhen (bitCycle === 3) {
       // Save the second texture byte
