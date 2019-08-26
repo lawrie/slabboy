@@ -17,7 +17,7 @@ class SlabBoy extends Component {
 
   val cpu = new Cpu(
     bootVector = 0x0000,
-    spInit = 0x0400
+    spInit = 0xFFFE
   )
 
   io.address := cpu.io.address

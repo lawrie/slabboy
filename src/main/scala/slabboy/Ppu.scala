@@ -7,20 +7,28 @@ case class PPU(sim: Boolean = false) extends Component {
   val io = new Bundle {
     val ili9320 = master(Ili9320())
     val address = out UInt(13 bits)
+    val lcdControl = in Bits(8 bits)
     val startX = in UInt(8 bits)
     val startY = in UInt(8 bits)
+    val windowX = in UInt(8 bits)
+    val windowY = in UInt(8 bits)
+    val bgPalette = in Bits(8 bits)
+    val mode = out Bits(2 bits)
+    val currentY = out UInt(8 bits)
     val dataIn = in UInt(8 bits)
     val diag = out Bits(8 bits)
   }
 
   val colors = Vec(Bits(16 bits), 4)
-  colors(0) := 0x0020
-  colors(1) := 0x00E0
-  colors(2) := 0x01E0
-  colors(3) := 0x03E0
+  colors(0) := 0x09a1
+  colors(1) := 0x2b05
+  colors(2) := 0x8541
+  colors(3) := 0x95c1
 
   val x = Reg(UInt(8 bits)) init 104
-  val y = Reg(UInt(8 bits)) init 160
+  val y = Reg(UInt(8 bits)) init 48
+
+  io.currentY := y
 
   val lcd = Ili9320Ctrl(sim)
   lcd.io.resetCursor := False
@@ -65,13 +73,13 @@ case class PPU(sim: Boolean = false) extends Component {
     when (x === 159) {
       x := 0
       y := y + 1
-      when (y === 143) {
+      when (y === 153) {
         y := 0
       }
     }
   }
 
-  lcd.io.pixels.payload := colors(color)  
-  lcd.io.pixels.valid := True
+  lcd.io.pixels.payload := colors(io.bgPalette(color*2, 2 bits).asUInt)  
+  lcd.io.pixels.valid := (x < 160 && y < 144) && io.lcdControl(7)
 }
 
