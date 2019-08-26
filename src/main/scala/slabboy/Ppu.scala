@@ -19,8 +19,8 @@ case class PPU(sim: Boolean = false) extends Component {
   colors(2) := 0x01E0
   colors(3) := 0x03E0
 
-  val x = Reg(UInt(8 bits)) init 0
-  val y = Reg(UInt(8 bits)) init 0
+  val x = Reg(UInt(8 bits)) init 104
+  val y = Reg(UInt(8 bits)) init 160
 
   val lcd = Ili9320Ctrl(sim)
   lcd.io.resetCursor := False
@@ -55,8 +55,8 @@ case class PPU(sim: Boolean = false) extends Component {
     }
   }
 
-  val bit0 = texture0(bitx)
-  val bit1 = texture1(bitx)
+  val bit0 = texture0(7 - bitx)
+  val bit1 = texture1(7 - bitx)
   val color = (bit1 ## bit0).asUInt
 
   when (lcd.io.pixels.ready) {
