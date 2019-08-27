@@ -8,14 +8,17 @@ class GameBoy16(sim: Boolean = false) extends Component {
     val ili9320 = master(Ili9320())
     val led = out Bool
     val leds = out UInt(8 bits)
+    val buttonSelect = out Bits(2 bits)
+    val button = in Bits(4 bits)
   }
 
-  val rSB = 0xff01
-  val rSC = 0xff02
-  val rDIV = 0xff04
-  val tIMAA = 0xff05
-  val rTMA = 0xff06
-  val rTAC = 0xff07
+  val JOYP = 0xff00
+  val SB = 0xff01
+  val SC = 0xff02
+  val DIV = 0xff04
+  val TIMAA = 0xff05
+  val TMA = 0xff06
+  val TAC = 0xff07
 
   val rAUD1SWEEP = 0xff10
   val rAUD1LEN = 0xff11
@@ -69,6 +72,7 @@ class GameBoy16(sim: Boolean = false) extends Component {
 
   val address = UInt(16 bits)
   val dataIn = Reg(UInt(8 bits))
+  val memoryIn = Reg(UInt(8 bits))
   val ppuIn = Reg(UInt(8 bits))
   val dataOut = cpu.io.dataOut
   val enable = cpu.io.mreq
@@ -92,6 +96,11 @@ class GameBoy16(sim: Boolean = false) extends Component {
   val rOBP1 = Reg(Bits(8 bits)) 
   val rWY = Reg(UInt(8 bits)) 
   val rWX = Reg(UInt(8 bits)) 
+  val rJOYP = Reg(Bits(8 bits)) 
+  val rButtonSelect = Reg(Bits(2 bits))
+
+  rJOYP := B"00" ## rButtonSelect ## io.button
+  io.buttonSelect := rButtonSelect
 
   ppu.io.lcdControl := rLCDC
   ppu.io.startX := rSCX
@@ -112,7 +121,7 @@ class GameBoy16(sim: Boolean = false) extends Component {
   }
 
   dataIn := memory(address.resized)
- 
+
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
       vidMem((cpu.io.address - 0x8000).resized) := dataOut
@@ -129,11 +138,28 @@ class GameBoy16(sim: Boolean = false) extends Component {
         is(OBP1) (rOBP1 := dataOut.asBits)
         is(WY) (rWY := dataOut)
         is(WX) (rWX := dataOut)
+        is(JOYP) (rButtonSelect := dataOut(5 downto 4).asBits)
       } 
       memory(address.resized) := dataOut
     }
-  }
-
+  } /*otherwise {
+    switch (cpu.io.address) {
+      is(LCDC) (dataIn := rLCDC.asUInt)
+      is(STAT) (dataIn := rSTAT.asUInt)
+      is(SCY) (dataIn := rSCY)
+      is(SCX) (dataIn := rSCX)
+      is(LY) (dataIn := rLY)
+      is(DMA) (dataIn := rDMA)
+      is(BGP) (dataIn := rBGP.asUInt)
+      is(OBP0) (dataIn := rOBP0.asUInt)
+      is(OBP1) (dataIn := rOBP1.asUInt)
+      is(WY) (dataIn := rWY)
+      is(WX) (dataIn := rWX)
+      is(JOYP) (dataIn := rJOYP.asUInt)
+      default ( dataIn := memoryIn)
+    }
+  }*/
+ 
   io.leds := cpu.io.diag
 
   cpu.io.dataIn := dataIn
@@ -147,6 +173,8 @@ class GameBoy extends Component {
     val ili9320 = master(Ili9320())
     val led = out Bool
     val leds = out UInt(8 bits)
+    val buttonSelect = out Bits(2 bits)
+    val button = in Bits(4 bits)
   }
 
   val pll = SlabBoyPll()
@@ -165,6 +193,9 @@ class GameBoy extends Component {
 
     io.leds := gameboy.io.leds
     io.led := gameboy.io.led
+  
+    io.buttonSelect := gameboy.io.buttonSelect
+    gameboy.io.button := io.button
   }
 }
 
