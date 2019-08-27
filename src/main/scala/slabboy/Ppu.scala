@@ -19,6 +19,9 @@ case class PPU(sim: Boolean = false) extends Component {
     val diag = out Bits(8 bits)
   }
 
+  val mode = Reg(Bits(2 bits)) init 0
+  io.mode := 0
+
   val colors = Vec(Bits(16 bits), 4)
   colors(0) := 0x09a1
   colors(1) := 0x2b05

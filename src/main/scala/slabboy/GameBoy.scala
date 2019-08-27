@@ -16,7 +16,7 @@ class GameBoy16(sim: Boolean = false) extends Component {
   val SB = 0xff01
   val SC = 0xff02
   val DIV = 0xff04
-  val TIMAA = 0xff05
+  val TIMA = 0xff05
   val TMA = 0xff06
   val TAC = 0xff07
 
@@ -97,9 +97,52 @@ class GameBoy16(sim: Boolean = false) extends Component {
   val rWX = Reg(UInt(8 bits)) 
   val rJOYP = Reg(Bits(8 bits)) 
   val rButtonSelect = Reg(Bits(2 bits))
+  val rDIV = Reg(UInt(8 bits)) 
+  val rTIMA = Reg(UInt(8 bits)) 
+  val rTMA = Reg(UInt(8 bits)) 
+  val rTAC = Reg(UInt(8 bits)) 
+
+  val timer = Reg(UInt(12 bits))
+
+  timer := timer + 1
+
+  when ((timer & 0x3FF) === 0) {
+    rDIV := rDIV + 1
+  }
+
+  when (rTAC(2)) {
+    switch (rTAC(1 downto 0)) {
+      is(0) {
+        when((timer & 0xFFF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(1) {
+        when((timer & 0x3F) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(2) {
+        when((timer & 0xFF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(3) {
+        when((timer & 0x3FF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+    }
+
+    when (rTIMA === 0xFF) {
+      rTIMA := rTMA
+    }
+  }
 
   rJOYP := B"00" ## rButtonSelect ## io.button
   io.buttonSelect := rButtonSelect
+
+  rLY := ppu.io.currentY
 
   ppu.io.lcdControl := rLCDC
   ppu.io.startX := rSCX
@@ -130,13 +173,17 @@ class GameBoy16(sim: Boolean = false) extends Component {
         is(STAT) (rSTAT := dataOut.asBits)
         is(SCY) (rSCY := dataOut)
         is(SCX) (rSCX := dataOut)
-        is(LY) (rLY := dataOut)
+        is(LYC) (rLYC := dataOut)
         is(DMA) (rDMA := dataOut)
         is(BGP) (rBGP := dataOut.asBits)
         is(OBP0) (rOBP0 := dataOut.asBits)
         is(OBP1) (rOBP1 := dataOut.asBits)
         is(WY) (rWY := dataOut)
         is(WX) (rWX := dataOut)
+        is(DIV) (rDIV := 0)
+        is(TIMA) (rTIMA := dataOut)
+        is(TMA) (rTMA := dataOut)
+        is(TAC) (rTAC := dataOut)
         is(JOYP) (rButtonSelect := dataOut(5 downto 4).asBits)
       } 
       memory(address.resized) := dataOut
@@ -145,16 +192,20 @@ class GameBoy16(sim: Boolean = false) extends Component {
 
   switch (cpu.io.address) {
     is(LCDC) (cpu.io.dataIn := rLCDC.asUInt)
-    is(STAT) (cpu.io.dataIn := rSTAT.asUInt)
+    is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
     is(SCY) (cpu.io.dataIn := rSCY)
     is(SCX) (cpu.io.dataIn := rSCX)
-    is(LY) (cpu.io.dataIn := rLY)
+    is(LYC) (cpu.io.dataIn := rLYC)
     is(DMA) (cpu.io.dataIn := rDMA)
     is(BGP) (cpu.io.dataIn := rBGP.asUInt)
     is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
     is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
     is(WY) (cpu.io.dataIn := rWY)
     is(WX) (cpu.io.dataIn := rWX)
+    is(DIV) (cpu.io.dataIn := rDIV)
+    is(TIMA) (cpu.io.dataIn := rTIMA)
+    is(TMA) (cpu.io.dataIn := rTMA)
+    is(TAC) (cpu.io.dataIn := rTAC)
     is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
     default ( cpu.io.dataIn := dataIn)
   }
