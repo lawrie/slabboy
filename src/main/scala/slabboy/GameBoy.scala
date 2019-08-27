@@ -72,7 +72,6 @@ class GameBoy16(sim: Boolean = false) extends Component {
 
   val address = UInt(16 bits)
   val dataIn = Reg(UInt(8 bits))
-  val memoryIn = Reg(UInt(8 bits))
   val ppuIn = Reg(UInt(8 bits))
   val dataOut = cpu.io.dataOut
   val enable = cpu.io.mreq
@@ -142,27 +141,26 @@ class GameBoy16(sim: Boolean = false) extends Component {
       } 
       memory(address.resized) := dataOut
     }
-  } /*otherwise {
-    switch (cpu.io.address) {
-      is(LCDC) (dataIn := rLCDC.asUInt)
-      is(STAT) (dataIn := rSTAT.asUInt)
-      is(SCY) (dataIn := rSCY)
-      is(SCX) (dataIn := rSCX)
-      is(LY) (dataIn := rLY)
-      is(DMA) (dataIn := rDMA)
-      is(BGP) (dataIn := rBGP.asUInt)
-      is(OBP0) (dataIn := rOBP0.asUInt)
-      is(OBP1) (dataIn := rOBP1.asUInt)
-      is(WY) (dataIn := rWY)
-      is(WX) (dataIn := rWX)
-      is(JOYP) (dataIn := rJOYP.asUInt)
-      default ( dataIn := memoryIn)
-    }
-  }*/
+  }
+
+  switch (cpu.io.address) {
+    is(LCDC) (cpu.io.dataIn := rLCDC.asUInt)
+    is(STAT) (cpu.io.dataIn := rSTAT.asUInt)
+    is(SCY) (cpu.io.dataIn := rSCY)
+    is(SCX) (cpu.io.dataIn := rSCX)
+    is(LY) (cpu.io.dataIn := rLY)
+    is(DMA) (cpu.io.dataIn := rDMA)
+    is(BGP) (cpu.io.dataIn := rBGP.asUInt)
+    is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
+    is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
+    is(WY) (cpu.io.dataIn := rWY)
+    is(WX) (cpu.io.dataIn := rWX)
+    is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
+    default ( cpu.io.dataIn := dataIn)
+  }
  
   io.leds := cpu.io.diag
 
-  cpu.io.dataIn := dataIn
   io.led := !cpu.io.halt
 }
 
