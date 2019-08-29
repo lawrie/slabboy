@@ -28,8 +28,8 @@ set_io io_leds[7] 135
 set_io io_buttonSelect[0] 3
 set_io io_buttonSelect[1] 4
 
-set_io io_button[0] 1
-set_io io_button[1] 2
-set_io io_button[2] 7
-set_io io_button[3] 8
+set_io -pullup yes io_button[0] 1
+set_io -pullup yes io_button[1] 2
+set_io -pullup yes io_button[2] 7
+set_io -pullup yes io_button[3] 8
 

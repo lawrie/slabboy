@@ -20,7 +20,7 @@ case class PPU(sim: Boolean = false) extends Component {
   }
 
   val mode = Reg(Bits(2 bits)) init 0
-  io.mode := 0
+  io.mode := mode
 
   val colors = Vec(Bits(16 bits), 4)
   colors(0) := 0x09a1
@@ -57,22 +57,24 @@ case class PPU(sim: Boolean = false) extends Component {
   val textureAddress = io.lcdControl(4) ? U(0, 13 bits) | U(0x800, 13 bits)
   val inWindow = showWindow && x >= io.windowX && y >= io.windowY
   val bgOn = io.lcdControl(0)
+  val tileX = io.startX + x
+  val tileY = io.startY + y
 
   when (bitx === 7) {
     when (bitCycle === 0) {
       // Set address of next tile
       when (inWindow) {
-        io.address := windowAddress + (U"000" @@ y(7 downto 3) @@ x(7 downto 3))
+        io.address := windowAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
       } otherwise {
-        io.address := bgScrnAddress + (U"000" @@ y(7 downto 3) @@ x(7 downto 3))
+        io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
       }
     } elsewhen (bitCycle === 1) {
       // Save the tile number and set the address of first texture byte
-      io.address := textureAddress + (U"0" @@ io.dataIn @@ y(2 downto 0) @@ U"0")
+      io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
       tile := io.dataIn
     } elsewhen (bitCycle === 2) {
       // Save the first texture value and set the address of the second
-      io.address := textureAddress + (U"0" @@ tile @@ y(2 downto 0) @@ U"1")
+      io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
       when (bgOn) {
         texture0 := io.dataIn.asBits
       } otherwise {
@@ -91,6 +93,8 @@ case class PPU(sim: Boolean = false) extends Component {
   val bit0 = texture0(7 - bitx)
   val bit1 = texture1(7 - bitx)
   val color = (bit1 ## bit0).asUInt
+
+  mode := (y > 143) ? B"01" | B"00" // No busy modes yet
 
   when (lcd.io.pixels.ready) {
     bitCycle := 0

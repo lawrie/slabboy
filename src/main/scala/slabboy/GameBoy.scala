@@ -191,7 +191,7 @@ class GameBoy16(sim: Boolean = false) extends Component {
   }
 
   switch (cpu.io.address) {
-    is(LCDC) (cpu.io.dataIn := rLCDC.asUInt)
+    is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
     is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
     is(SCY) (cpu.io.dataIn := rSCY)
     is(SCX) (cpu.io.dataIn := rSCX)
