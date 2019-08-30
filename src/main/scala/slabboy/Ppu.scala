@@ -38,7 +38,6 @@ case class PPU(sim: Boolean = false) extends Component {
   io.diag := lcd.io.diag
   io.ili9320 <> lcd.io.ili9320
 
-  val bitx = x(2 downto 0)
   val tile = Reg(UInt(8 bits))
   val texture0 = Reg(Bits(8 bits))
   val texture1 = Reg(Bits(8 bits))
@@ -59,6 +58,7 @@ case class PPU(sim: Boolean = false) extends Component {
   val bgOn = io.lcdControl(0)
   val tileX = io.startX + x
   val tileY = io.startY + y
+  val bitx = tileX(2 downto 0)
 
   when (bitx === 7) {
     when (bitCycle === 0) {

@@ -195,6 +195,7 @@ class GameBoy16(sim: Boolean = false) extends Component {
     is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
     is(SCY) (cpu.io.dataIn := rSCY)
     is(SCX) (cpu.io.dataIn := rSCX)
+    is(LY) (cpu.io.dataIn := rLY)
     is(LYC) (cpu.io.dataIn := rLYC)
     is(DMA) (cpu.io.dataIn := rDMA)
     is(BGP) (cpu.io.dataIn := rBGP.asUInt)

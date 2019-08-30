@@ -211,7 +211,9 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
       whenIsActive {
         mreq := False
         write := False
-        prefix := decoder.io.nextPrefix
+        when (decoder.io.nextMCycle === 0) {
+          prefix := decoder.io.nextPrefix
+        }
 
         def doAddrOp(reg: UInt) {
           switch(decoder.io.addrOp) {
@@ -369,7 +371,8 @@ object CpuDecoder {
       (base.map(_ + 4), Seq(fetchCycle(aluOp, Some(Reg8.H), Some(Reg8.H)))),
       (base.map(_ + 5), Seq(fetchCycle(aluOp, Some(Reg8.L), Some(Reg8.H)))),
       (base.map(_ + 6), Seq(fetchCycle(AluOp.Nop, None, None),
-               memReadCycle(aluOp, None, addrSrc=AddrSrc.HL))),
+               memReadCycle(aluOp, Some(Reg8.Z), addrSrc=AddrSrc.HL),
+               memWriteCycle(AluOp.Nop, Some(Reg8.Z), None, addrSrc=AddrSrc.HL))),
       (base.map(_ + 7), Seq(fetchCycle(aluOp, Some(Reg8.A), Some(Reg8.A))))
     )
   }
@@ -455,8 +458,7 @@ object CpuDecoder {
     // inc (HL)
     (0x34, Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(AluOp.Inc, Some(Reg8.Z), addrSrc=AddrSrc.HL),
-               memWriteCycle(AluOp.Nop, Some(Reg8.Z), None,
-                             addrSrc=AddrSrc.HL))),
+               memWriteCycle(AluOp.Nop, Some(Reg8.Z), None, addrSrc=AddrSrc.HL))),
     // inc A
     (0x3C, Seq(fetchCycle(AluOp.Inc, Some(Reg8.A), Some(Reg8.A)))),
     // dec B
@@ -978,9 +980,24 @@ class CpuDecoder extends Component {
   // decode microcode instructions
   when (io.prefix) {
     for(icode <- prefixMicrocode) {
-      when (testOpCode(icode._1)) {
-        decodeCycle(icode._2(0))
-      }
+      if (icode._2.length == 1) {
+        when (testOpCode(icode._1)) {
+          decodeCycle(icode._2(0))
+        }
+      } else {
+        when(testOpCode(icode._1)) {
+          for((cycle, i) <- icode._2.zipWithIndex) {
+            when(io.mCycle === i) {
+              if(i == icode._2.length - 1) {
+                decodeCycle(cycle)
+              } else {
+                decodeCycle(cycle, Some(icode._2(i + 1)))
+                io.nextMCycle := io.mCycle + 1
+              }
+            }
+          }
+        }
+      }             
     }
   } otherwise {
     // track assigned op-codes to prevent repeats
