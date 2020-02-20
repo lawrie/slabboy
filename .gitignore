@@ -1,4 +1,5 @@
 target
-*.v
 simWorkspace
 coredump.bin
+bin/
+

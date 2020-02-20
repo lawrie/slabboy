@@ -1,73 +1,113 @@
-SECTION "ROM0", ROM0
-nop                ; opcode 0x00
-ld bc, data1       ; opcode 0x01
-ld [bc], a         ; opcode 0x02
-inc bc             ; opcode 0x03
-inc b              ; opcode 0x04
-dec b              ; opcode 0x05
-ld b, $42          ; opcode 0x06
-ld a, $42
-rlca               ; opcode 0x07
-ld [$0099], sp     ; opcode 0x08
-add hl, bc         ; opcode 0x09
-ld a, [bc]         ; opcode 0x0a
-dec bc             ; opcode 0x0b
-inc c              ; opcode 0x0c
-dec c              ; opcode 0x0d
-ld c, $56          ; opcode 0x0e
-ld a,$42
-rrca               ; opcode 0x0f
-stop               ; opcode 0x10
-ld de,$1234        ; opcode 0x11
-ld [de], a         ; opcode 0x12
-inc de             ; opcode 0x13
-inc d              ; opcode 0x14
-dec d              ; opcode 0x15
-ld d,$73           ; opcode 0x16
-rla                ; opcode 0x17
-jr lab1            ; opcode 0x18
-inc a
-inc a
-inc a
-lab1:
-add hl, de         ; opcode 0x19
-ld a, [de]         ; opcode 0x1a
-dec de             ; opcode 0x1b
-inc e              ; opcode 0x1c
-dec e              ; opcode 0x1d
-ld e,$99           ; opcode 0x1e
-rra                ; opcode 0x1f
-jr nz, lab2        ; opcode 0x20
-inc a
-lab2:
-ld hl, $1234       ; opcode 0x21
-ld [hl+], a        ; opcode 0x22
-inc hl             ; opcode 0x23
-inc h              ; opcode 0x24
-dec h              ; opcode 0x25
-ld h,$aa           ; opcode 0x26
-daa                ; opcode 0x27
-jr z, lab3         ; opcode 0x28
-inc a
-lab3:
-add hl, hl         ; opcode 0x29
-ld a, [hl+]        ; opcode 0x2a
-dec hl             ; opcode 0x2b
-inc l              ; opcode 0x2c
-dec l              ; opcode 0x2d
-ld l, $55          ; opcode 0x2e
-cpl                ; opcode 0x2f
-jr nc, lab4        ; opcode 0x30
-inc a
-lab4:
-ld sp, $0400       ; opcode 0x31
+; Hello World 1.0
+; February 2, 2007
+; John Harrison
+; Based mostly from GALP
 
+INCLUDE "gbhw.inc" ; standard hardware definitions from devrs.com
+INCLUDE "ibmpc1.inc" ; ASCII character set from devrs.com
 
-halt               ; opcode 0x76
+; IRQs
+SECTION	"Vblank",HOME[$0040]
+	reti
+SECTION	"LCDC",HOME[$0048]
+	reti
+SECTION	"Timer_Overflow",HOME[$0050]
+	reti
+SECTION	"Serial",HOME[$0058]
+	reti
+SECTION	"p1thru4",HOME[$0060]
+	reti
 
+; ****************************************************************************************
+; boot loader jumps to here.
+; ****************************************************************************************
+SECTION	"start",HOME[$0100]
+nop
+jp	begin
 
-data1:
-db $99
+; ****************************************************************************************
+; ROM HEADER and ASCII character set
+; ****************************************************************************************
+; ROM header
+	ROM_HEADER	ROM_NOMBC, ROM_SIZE_32KBYTE, RAM_SIZE_0KBYTE
+INCLUDE "memory.asm"
+TileData:
+	chr_IBMPC1	1,8 ; LOAD ENTIRE CHARACTER SET
 
+; ****************************************************************************************
+; Main code Initialization:
+; set the stack pointer, enable interrupts, set the palette, set the screen relative to the window
+; copy the ASCII character table, clear the screen
+; ****************************************************************************************
+begin:
+	nop
+	di
+	ld	sp, $ffff		; set the stack pointer to highest mem location + 1
+init:
+	ld	a, %11100100 	; Window palette colors, from darkest to lightest
+	ld	[rBGP], a		; CLEAR THE SCREEN
 
+	ld	a,0			; SET SCREEN TO TO UPPER RIGHT HAND CORNER
+	ld	[rSCX], a
+	ld	[rSCY], a		
+	call	StopLCD		; YOU CAN NOT LOAD $8000 WITH LCD ON
+	ld	hl, TileData
+	ld	de, _VRAM		; $8000
+	ld	bc, 8*256 		; the ASCII character set: 256 characters, each with 8 bytes of display data
+	call	mem_CopyMono	; load tile data
+	ld	a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJOFF 
+	ld	[rLCDC], a	
+	ld	a, 32		; ASCII FOR BLANK SPACE
+	ld	hl, _SCRN0
+	ld	bc, SCRN_VX_B * SCRN_VY_B
+	call	mem_SetVRAM
+; ****************************************************************************************
+; Main code:
+; Print a character string in the middle of the screen
+; ****************************************************************************************
+	ld	hl,Title
+	ld	de, _SCRN0+3+(SCRN_VY_B*7) ; 
+	ld	bc, TitleEnd-Title
+	call	mem_CopyVRAM
+	
+; ****************************************************************************************
+; Prologue
+; Wait patiently 'til somebody kills you
+; ****************************************************************************************
+wait:
+	halt
+	nop
+	jr	wait
+	
+; ****************************************************************************************
+; hard-coded data
+; ****************************************************************************************
+Title:
+	DB	"Hello World !"
+TitleEnd:
+
+; ****************************************************************************************
+; StopLCD:
+; turn off LCD if it is on
+; and wait until the LCD is off
+; ****************************************************************************************
+StopLCD:
+        ld      a,[rLCDC]
+        rlca                    ; Put the high bit of LCDC into the Carry flag
+        ret     nc              ; Screen is off already. Exit.
+
+; Loop until we are in VBlank
+
+.wait:
+        ld      a,[rLY]
+        cp      145             ; Is display on scan line 145 yet?
+        jr      nz,.wait        ; no, keep waiting
+
+; Turn off the LCD
+
+        ld      a,[rLCDC]
+        res     7,a             ; Reset bit 7 of LCDC
+        ld      [rLCDC],a
+
+        ret
 

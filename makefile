@@ -1,29 +1,29 @@
-VERILOG = GameBoy.v slabboy_pll.v
+VERILOG ?= GameBoyUlx3s.v pll.v
 
-generate :
-	sbt "runMain slabboy.GameBoy"
+prog: bin/toplevel.bit
+	ujprog $<
 
-GameBoy.v :
-	sbt "runMain slabboy.GameBoy"
+generate:
+	sbt "runMain slabboy.GameBoyUlx3s"
 
-bin/toplevel.json : ${VERILOG}
+IDCODE ?= 0x21111043 # 12f
+
+bin/toplevel.json: ${VERILOG} pll.v
 	mkdir -p bin
-	yosys -v3 -p "synth_ice40 -top GameBoy -json bin/toplevel.json" ${VERILOG}
+	yosys \
+		-p "synth_ecp5 -json $@" \
+		${VERILOG} 
 
-bin/toplevel.asc : ili9320.pcf bin/toplevel.json
-	nextpnr-ice40 --freq 25 --hx8k --package tq144:4k --json bin/toplevel.json --pcf ili9320.pcf --asc bin/toplevel.asc --opt-timing --placer heap
+bin/toplevel.config: bin/toplevel.json
+	nextpnr-ecp5 \
+		--json $< \
+		--textcfg $@ \
+		--lpf ulx3s_v20.lpf \
+		--25k \
+		--package CABGA381
 
-bin/toplevel.bin : bin/toplevel.asc
-	icepack -s bin/toplevel.asc bin/toplevel.bin
+bin/toplevel.bit: bin/toplevel.config
+	ecppack --idcode $(IDCODE) $< $@
 
-compile : bin/toplevel.bin
-
-time: bin/toplevel.bin
-	icetime -tmd hx8k bin/toplevel.asc
-
-prog : bin/toplevel.bin
-	stty -F /dev/ttyACM0 raw
-	cat bin/toplevel.bin >/dev/ttyACM0
-
-clean :
-	rm -rf bin
+clean:
+	$(RM) -rf bin
