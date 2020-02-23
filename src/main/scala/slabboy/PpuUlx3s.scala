@@ -32,8 +32,8 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   colors(2) := 0x8541
   colors(3) := 0x95c1
 
-  val x = Reg(UInt(8 bits)) init 140
-  val y = Reg(UInt(8 bits)) init 30
+  val x = Reg(UInt(8 bits)) init 0
+  val y = Reg(UInt(8 bits)) init 0
 
   io.currentY := y
 
@@ -64,13 +64,15 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val bgOn = io.lcdControl(0)
   val tileX = io.startX + x
   val tileY = io.startY + y
+  val winTileX = x - io.windowX
+  val winTileY = y - io.windowY
   val bitx = tileX(2 downto 0)
 
   when (bitx === 7) {
     when (bitCycle === 0) {
       // Set address of next tile
       when (inWindow) {
-        io.address := windowAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
+        io.address := windowAddress + (U"000" @@ winTileY(7 downto 3) @@ winTileX(7 downto 3))
       } otherwise {
         io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
       }

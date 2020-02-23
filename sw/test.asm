@@ -57,9 +57,9 @@ init:
 	call	mem_CopyMono	; load tile data
 	ld	a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJOFF|LCDCF_WINON|LCDCF_WIN9C00
 	ld	[rLCDC], a	
-	ld	a, 108
+	ld	a, 112
 	ld	[rWY], a
-	ld	a, 7
+	ld	a, 8
 	ld	[rWX], a
 	ld	a, 32		; ASCII FOR BLANK SPACE
 	ld	hl, _SCRN0
