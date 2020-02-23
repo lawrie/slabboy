@@ -3,15 +3,16 @@ package slabboy
 import spinal.core._
 import spinal.lib._
 
-class GameBoy16Ulx3s(sim: Boolean = false) extends Component {
+class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val io = new Bundle {
     val oled_csn = out Bool
     val oled_resn = out Bool
     val oled_dc = out Bool
     val oled_mosi = out Bool
     val oled_clk = out Bool 
-    val led = out UInt(8 bits)
-    val btn = in Bits(4 bits)
+    val led = out Bits(8 bits)
+    val leds = out Bits(5 bits)
+    val btn = in Bits(8 bits)
   }
 
   val JOYP = 0xff00
@@ -60,7 +61,7 @@ class GameBoy16Ulx3s(sim: Boolean = false) extends Component {
   val rIF = 0xff0f
   val rIE = 0xffff
 
-  val memSize = (6 * 1024) + 512
+  val memSize = (56 * 1024)
 
   val memory = Mem(UInt(8 bits), memSize)
   val vidMem = Mem(UInt(8 bits), 8 * 1024)
@@ -146,7 +147,7 @@ class GameBoy16Ulx3s(sim: Boolean = false) extends Component {
     }
   }
 
-  rJOYP := B"00" ## rButtonSelect ## io.btn
+  rJOYP:= !rButtonSelect(0) ? (B"0000"  ## io.btn(7 downto 4)) | (B"0000"  ## io.btn(3 downto 0))
 
   rLY := ppu.io.currentY
 
@@ -160,10 +161,8 @@ class GameBoy16Ulx3s(sim: Boolean = false) extends Component {
   // Reduce Gameboy 64kb memory down to 14.5k
   // ROM reduced to 4kb and RAM to 2kb
   // Video and high memory kept full size
-  when (cpu.io.address >= 0xfe00) {
-    address := cpu.io.address - 0xE600
-  } elsewhen (cpu.io.address >=  0xC000) {
-    address := cpu.io.address - 0xB000
+  when (cpu.io.address >= 0xa000) {
+    address := cpu.io.address - 0x2000
   } otherwise {
     address := cpu.io.address
   }
@@ -217,7 +216,8 @@ class GameBoy16Ulx3s(sim: Boolean = false) extends Component {
     default ( cpu.io.dataIn := dataIn)
   }
  
-  io.led := cpu.io.diag
+  io.led := rLCDC
+  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## B"0"
 
 }
 
@@ -229,8 +229,10 @@ class GameBoyUlx3s extends Component {
     val oled_dc = out Bool
     val oled_mosi = out Bool
     val oled_clk = out Bool
-    val led = out UInt(8 bits)
+    val led = out Bits(8 bits)
     val btn = in Bits(7 bits)
+    val leds = out Bits(5 bits)
+    val button = in Bits(3 bits)
   }.setName("")
 
   val pll = Ulx3sPll()
@@ -244,7 +246,7 @@ class GameBoyUlx3s extends Component {
 
   val coreClockingArea = new ClockingArea(coreClockDomain) {
     
-    val gameboy = new GameBoy16Ulx3s()
+    val gameboy = new GameBoy64Ulx3s()
     io.oled_csn := gameboy.io.oled_csn
     io.oled_resn := gameboy.io.oled_resn
     io.oled_dc := gameboy.io.oled_dc
@@ -252,8 +254,9 @@ class GameBoyUlx3s extends Component {
     io.oled_clk := gameboy.io.oled_clk
 
     io.led := gameboy.io.led
+    io.leds := gameboy.io.leds
   
-    gameboy.io.btn := io.btn(4 downto 1)
+    gameboy.io.btn := io.btn(3).asBits ## io.btn(4).asBits ## io.btn(6).asBits ## io.btn(5).asBits ## io.btn(2 downto 1) ## io.button(1 downto 0)
   }
 }
 
@@ -264,11 +267,11 @@ object GameBoyUlx3s {
   }
 }
 
-object GameBoy16Ulx3sSim {
+object GameBoy64Ulx3sSim {
   import spinal.core.sim._
 
   def main(args: Array[String]) {
-    SimConfig.withWave.compile(new GameBoy16Ulx3s(true)).doSim{ dut =>
+    SimConfig.withWave.compile(new GameBoy64Ulx3s(true)).doSim{ dut =>
       dut.clockDomain.forkStimulus(100)
 
       dut.clockDomain.waitSampling(100000)

@@ -3,6 +3,9 @@ VERILOG ?= GameBoyUlx3s.v pll.v
 prog: bin/toplevel.bit
 	ujprog $<
 
+flash: bin/toplevel.bit
+	ujprog -j flash $<
+
 generate:
 	sbt "runMain slabboy.GameBoyUlx3s"
 
@@ -23,7 +26,7 @@ bin/toplevel.config: bin/toplevel.json
 		--package CABGA381
 
 bin/toplevel.bit: bin/toplevel.config
-	ecppack --idcode $(IDCODE) $< $@
+	ecppack --idcode $(IDCODE) --compress $< $@
 
 clean:
 	$(RM) -rf bin
