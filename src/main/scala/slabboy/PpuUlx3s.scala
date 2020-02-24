@@ -120,3 +120,156 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   lcd.io.pixels.valid := (x < 160 && y < 144) && io.lcdControl(7)
 }
 
+case class Sprite() extends Component {
+  val io = new Bundle {
+    val index = UInt(6 bits)
+    val x = in UInt(8 bits)
+    val y = in UInt(8 bits)
+    val size16 = in Bool
+    val ds = in Bits(2 bits)
+    val data = in Bits(8 bits)
+    val pixelActive = out Bool
+    val pixelData = out Bits(2 bits)
+    val addr = out UInt(10 bits)
+
+    val oamWr = in Bool
+    val oamAddr = in UInt(2 bits)
+    val oamDi = in Bits(8 bits)
+    val oamDo = out Bits(8 bits)
+  }
+
+  val xPos = Reg(UInt(8 bits))
+  val yPos = Reg(UInt(8 bits))
+  val tile = Reg(UInt(8 bits))
+  val flags = Reg(Bits(8 bits))
+
+  val data0 = Reg(Bits(8 bits))
+  val data1 = Reg(Bits(8 bits))
+
+  val height = io.size16 ? U(16, 8 bits) | U(8, 8 bits)
+
+  when (io.ds(0)) (data0 := io.data)
+  when (io.ds(1)) (data1 := io.data)
+
+  val yVisible = (io.y + 16 >= yPos && io.y + 16 < yPos + height)
+  val xVisible = (io.x + 8 >= xPos && io.x < xPos)
+  val visible = yVisible & xVisible
+  
+  val colN = io.x - xPos
+  val col = flags(5) ? colN(2 downto 0) | ~colN(2 downto 0)
+
+  io.pixelData := data1(col).asBits ## data0(col).asBits
+  io.pixelActive := io.pixelData =/= 0 && visible
+
+  val rowN = io.y - yPos
+  val row = flags(6) ? ~rowN(3 downto 0) | rowN(3 downto 0)
+  
+  val addr8 = tile @@ row(2 downto 0)
+  val addr16 = tile(7 downto 1) @@ row
+  
+  io.addr := io.size16 ? addr16 | addr8
+
+  when (io.oamWr) {
+    switch (io.oamAddr) {
+      is(0) (xPos := io.oamDi.asUInt)
+      is(1) (yPos := io.oamDi.asUInt)
+      is(2) (tile := io.oamDi.asUInt)
+      is(2) (flags := io.oamDi)
+    }
+  }
+
+  switch (io.oamAddr) {
+    is(0) (io.oamDi := xPos.asBits)
+    is(1) (io.oamDo := yPos.asBits)
+    is(2) (io.oamDo := tile.asBits)
+    is(2) (io.oamDo := flags)
+  }
+}
+
+case class Sprites() extends Component {
+  val io = new Bundle {
+    val size16 = in Bool
+    val x = in UInt(8 bits)
+    val y = in UInt(8 bits)
+    val dValid = in Bits(2 bits)
+    val data = Bits(8 bits)
+
+    val pixelActive = out Bool
+    val pixelData = out Bits(2 bits)
+    
+    val oamWr = in Bool
+    val oamAddr = in UInt(8 bits)
+    val oamDi = in Bits(8 bits)
+    val oamDo = out Bits(8 bits)
+  }
+
+  val numSprites = 40
+
+  val sprites = new Array[Sprite](numSprites)
+  val spriteAddr = Vec(UInt(10 bits), numSprites)
+  val spritePixelActive = Bits(numSprites bits)
+  val spritePixelData = Vec(Bits(2 bits), numSprites)
+  val spriteIndexArray = Vec(UInt(6 bits), numSprites)
+  val spriteOamDo = Vec(Bits(8 bits), numSprites)
+
+  // TODO: Replace by sort
+  for(i <- 0 to numSprites - 1) {
+    spriteIndexArray(i) := U(i, 6 bits)
+  }
+
+  for(i <- 0 to numSprites - 1) {
+    sprites(i) = Sprite()
+    sprites(i).io.size16 := io.size16
+    sprites(i).io.index := U(i, 6 bits)
+    sprites(i).io.addr := spriteAddr(i)
+    sprites(i).io.x := io.x
+    sprites(i).io.y := io.y
+    sprites(i).io.ds := io.dValid
+    sprites(i).io.data := io.data
+    spritePixelActive(i) := sprites(i).io.pixelActive
+    spritePixelData(i) := sprites(i).io.pixelData
+
+    sprites(i).io.oamWr := io.oamWr & io.oamAddr(7 downto 2) === U(i, 6 bits)
+    sprites(i).io.oamAddr := io.oamAddr(1 downto 0)
+    sprites(i).io.oamDi := io.oamDi
+    spriteOamDo(i) := sprites(i).io.oamDo
+  }
+
+  val spr0 = spriteIndexArray(0)
+  val spr1 = spriteIndexArray(1)
+  val spr2 = spriteIndexArray(2)
+  val spr3 = spriteIndexArray(3)
+  val spr4 = spriteIndexArray(4)
+  val spr5 = spriteIndexArray(5)
+  val spr6 = spriteIndexArray(6)
+  val spr7 = spriteIndexArray(7)
+  val spr8 = spriteIndexArray(8)
+  val spr9 = spriteIndexArray(9)
+
+  io.pixelActive :=
+    spritePixelActive(spr0) ||
+    spritePixelActive(spr1) ||
+    spritePixelActive(spr2) ||
+    spritePixelActive(spr3) ||
+    spritePixelActive(spr4) ||
+    spritePixelActive(spr5) ||
+    spritePixelActive(spr6) ||
+    spritePixelActive(spr7) ||
+    spritePixelActive(spr8) ||
+    spritePixelActive(spr9)
+
+  io.pixelData :=
+     spritePixelActive(spr0) ? spritePixelData(spr0) |
+    (spritePixelActive(spr1) ? spritePixelData(spr1) |
+    (spritePixelActive(spr2) ? spritePixelData(spr2) |
+    (spritePixelActive(spr3) ? spritePixelData(spr3) |
+    (spritePixelActive(spr4) ? spritePixelData(spr4) |
+    (spritePixelActive(spr5) ? spritePixelData(spr5) |
+    (spritePixelActive(spr6) ? spritePixelData(spr6) |
+    (spritePixelActive(spr7) ? spritePixelData(spr7) |
+    (spritePixelActive(spr8) ? spritePixelData(spr8) |
+    (spritePixelActive(spr9) ? spritePixelData(spr9) |
+    B"00")))))))))
+
+}
+
