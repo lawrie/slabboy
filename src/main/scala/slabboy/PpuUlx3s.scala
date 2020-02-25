@@ -21,6 +21,12 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     val currentY = out UInt(8 bits)
     val dataIn = in UInt(8 bits)
     val diag = out Bits(8 bits)
+
+    val cpuSelOam = in Bool
+    val cpuAddr = in UInt(8 bits)
+    val cpuDataOut = in Bits(8 bits)
+    val cpuWr = in Bool
+    val cpuDataIn = out Bits(8 bits)
   }
 
   val mode = Reg(Bits(2 bits)) init 0
@@ -66,17 +72,37 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val winTileY = y - io.windowY
   val bitx = tileX(2 downto 0)
 
-  val spritePixelActive = Reg(Bool)
   val spriteAddr = Reg(UInt(11 bits))
+  val hExtraTiles = Reg(UInt(2 bits))
+
+  val mode3Offset = 16
+  val oamLen = 80 // 8 clock cycles for 10 sprites
+  val hExtra = (U"000" @@ hExtraTiles @@ U"000") + U(mode3Offset, 8 bits)
+  val hBlank = x < oamLen || x >= oamLen + 160 + hExtra
+  val vBlank = y >= 144
+  val spriteIndex = x(7 downto 4) - 5
+  val spriteDValid = (x(3 downto 0) === U(15, 4 bits) && ~hBlank && ~vBlank).asBits ## 
+                     (x(3 downto 0) === U(7, 4 bits) && ~hBlank && ~vBlank).asBits
+
+  val oamAddr = io.cpuAddr
 
   val sprites = Sprites()
   sprites.io.size16 := io.lcdControl(2)
+  sprites.io.index := spriteIndex
   sprites.io.x := x
   sprites.io.y := y
-  spritePixelActive := sprites.io.pixelActive
   spriteAddr := sprites.io.addr
-  sprites.io.oamDi := 0
-  sprites.io.index := 0
+
+  sprites.io.oamDi := io.cpuDataOut
+  sprites.io.oamAddr := oamAddr
+  sprites.io.oamWr := io.cpuWr && io.cpuSelOam
+  io.cpuDataIn := sprites.io.oamDo
+
+  io.diag := sprites.io.diag
+
+  val spritePixelActive = sprites.io.pixelActive
+  val spritePixelData = sprites.io.pixelData
+  val spritePixelPrio = sprites.io.pixelPrio
 
   when (bitx === 7) {
     when (bitCycle === 0) {
@@ -146,12 +172,16 @@ case class Sprite() extends Component {
     val oamAddr = in UInt(2 bits)
     val oamDi = in Bits(8 bits)
     val oamDo = out Bits(8 bits)
+
+    val diag = out Bits(8 bits)
   }
 
   val xPos = Reg(UInt(8 bits))
   val yPos = Reg(UInt(8 bits))
   val tile = Reg(UInt(8 bits))
   val flags = Reg(Bits(8 bits))
+
+  io.diag := tile.asBits
 
   val data0 = Reg(Bits(8 bits))
   val data1 = Reg(Bits(8 bits))
@@ -206,6 +236,7 @@ case class Sprites() extends Component {
 
     val pixelActive = out Bool
     val pixelData = out Bits(2 bits)
+    val pixelPrio = out Bool
 
     val addr = out UInt(11 bits)
 
@@ -215,6 +246,8 @@ case class Sprites() extends Component {
     val oamAddr = in UInt(8 bits)
     val oamDi = in Bits(8 bits)
     val oamDo = out Bits(8 bits)
+
+    val diag = out Bits(8 bits)
   }
 
   val numSprites = 40
@@ -222,6 +255,7 @@ case class Sprites() extends Component {
   val sprites = new Array[Sprite](numSprites)
   val spriteAddr = Vec(UInt(11 bits), numSprites)
   val spritePixelActive = Bits(numSprites bits)
+  val spritePixelPrio = Bits(numSprites bits)
   val spritePixelData = Vec(Bits(2 bits), numSprites)
   val spriteIndexArray = Vec(UInt(6 bits), numSprites)
   val spriteOamDo = Vec(Bits(8 bits), numSprites)
@@ -253,6 +287,8 @@ case class Sprites() extends Component {
     spriteOamDo(i) := sprites(i).io.oamDo
   }
 
+  io.diag := sprites(0).io.diag
+
   val spr0 = spriteIndexArray(0)
   val spr1 = spriteIndexArray(1)
   val spr2 = spriteIndexArray(2)
@@ -263,6 +299,8 @@ case class Sprites() extends Component {
   val spr7 = spriteIndexArray(7)
   val spr8 = spriteIndexArray(8)
   val spr9 = spriteIndexArray(9)
+
+  io.oamDo := spriteOamDo(io.oamAddr(7 downto 2))
 
   io.pixelActive :=
     spritePixelActive(spr0) ||
@@ -288,5 +326,18 @@ case class Sprites() extends Component {
     (spritePixelActive(spr8) ? spritePixelData(spr8) |
     (spritePixelActive(spr9) ? spritePixelData(spr9) |
     B"00")))))))))
+
+  io.pixelPrio :=
+     spritePixelActive(spr0) ? spritePixelPrio(spr0) |
+    (spritePixelActive(spr1) ? spritePixelPrio(spr1) |
+    (spritePixelActive(spr2) ? spritePixelPrio(spr2) |
+    (spritePixelActive(spr3) ? spritePixelPrio(spr3) |
+    (spritePixelActive(spr4) ? spritePixelPrio(spr4) |
+    (spritePixelActive(spr5) ? spritePixelPrio(spr5) |
+    (spritePixelActive(spr6) ? spritePixelPrio(spr6) |
+    (spritePixelActive(spr7) ? spritePixelPrio(spr7) |
+    (spritePixelActive(spr8) ? spritePixelPrio(spr8) |
+    (spritePixelActive(spr9) ? spritePixelPrio(spr9) |
+    False)))))))))
 }
 

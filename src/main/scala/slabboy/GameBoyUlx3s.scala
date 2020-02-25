@@ -151,7 +151,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     }
   }
 
-  rJOYP:= !rButtonSelect(0) ? (B"0000"  ## io.btn(7 downto 4)) | (B"0000"  ## io.btn(3 downto 0))
+  rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
 
   rLY := ppu.io.currentY
 
@@ -161,6 +161,11 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   ppu.io.windowX := rWX
   ppu.io.windowY := rWY
   ppu.io.bgPalette := rBGP
+
+  ppu.io.cpuSelOam := cpu.io.address(15 downto 8) === 0xFE
+  ppu.io.cpuAddr := cpu.io.address(7 downto 0)
+  ppu.io.cpuWr := write
+  ppu.io.cpuDataOut := dataOut.asBits
 
   // The 8kb video memory is separate
   // The other 48kb includes ROM and RAM
@@ -222,7 +227,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     default ( cpu.io.dataIn := dataIn)
   }
  
-  io.led := rLCDC
+  io.led := ppu.io.diag
   io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## B"0"
 
 }

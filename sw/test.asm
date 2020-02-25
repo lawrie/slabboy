@@ -94,13 +94,25 @@ loop:
 	call	mem_CopyVRAM
 	pop	de
 	ld	a, [rP1]	; Check for key
-	;bit	0, a		; Is right pressed
-	;jr	z, right
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	cpl
+	bit	0, a		; Is right pressed
+	jr	z, right
 	bit	1, a		; Is left pressed
 	jr	z, left
 	jr	loop
 left:
 	ld	a, [rP1]	; Wait until released
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	cpl
 	bit     1, a
 	jr	z, left
 	push	de
@@ -112,6 +124,12 @@ left:
         jr      loop
 right:
 	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	ld	a, [rP1]	; Check for key
+	cpl
 	bit     0, a
 	jr	z, right
 	push	de
