@@ -42,20 +42,19 @@ TileData:
 begin:
 	nop
 	di
-	ld	sp, $ffff		; set the stack pointer to highest mem location + 1
+	ld	sp, $ffff	; set the stack pointer to highest mem location + 1
 init:
 	ld	a, %11100100 	; Window palette colors, from darkest to lightest
-	ld	[rBGP], a		; CLEAR THE SCREEN
-
-	ld	a,0			; SET SCREEN TO TO UPPER RIGHT HAND CORNER
+	ld	[rBGP], a	; CLEAR THE SCREEN
+	ld	a,0		; SET SCREEN TO TO UPPER RIGHT HAND CORNER
 	ld	[rSCX], a
 	ld	[rSCY], a		
 	call	StopLCD		; YOU CAN NOT LOAD $8000 WITH LCD ON
 	ld	hl, TileData
-	ld	de, _VRAM		; $8000
-	ld	bc, 8*256 		; the ASCII character set: 256 characters, each with 8 bytes of display data
+	ld	de, _VRAM	; $8000
+	ld	bc, 8*256 	; the ASCII character set: 256 characters, each with 8 bytes of display data
 	call	mem_CopyMono	; load tile data
-	ld	a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJOFF|LCDCF_WINON|LCDCF_WIN9C00
+	ld	a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ8|LCDCF_OBJON|LCDCF_WINON|LCDCF_WIN9C00
 	ld	[rLCDC], a	
 	ld	a, 112
 	ld	[rWY], a
@@ -73,11 +72,21 @@ init:
 ; Main code:
 ; Print a character string in the middle of the screen
 ; ****************************************************************************************
+	ld	hl, $FE00
+	ld	a, 16		; x and y = 16
+	ld	[hl], a
+	inc	hl
+	ld	[hl], a
+	inc 	hl
+	ld	a, 1		; Tile 1
+	ld	[hl], a
 	ld	de, _SCRN1
 	ld	hl,WinTitle
 	ld	bc, WinTitleEnd-WinTitle
 	call	mem_CopyVRAM
 	ld	de, _SCRN0+3+(SCRN_VY_B*10) 
+	ld	a, P1F_5
+	ld	[rP1], A
 loop:
 	ld	hl,Title
 	ld	bc, TitleEnd-Title

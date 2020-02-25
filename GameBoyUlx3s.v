@@ -1,7 +1,34 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 24/02/2020, 13:13:49
+// Date      : 24/02/2020, 19:35:16
 // Component : GameBoyUlx3s
 
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
+
+`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
+`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -37,33 +64,6 @@
 `define AluOp_binary_sequancial_Sla_1 6'b011110
 `define AluOp_binary_sequancial_Sra_1 6'b011111
 `define AluOp_binary_sequancial_Srl_1 6'b100000
-
-`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
-`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 module CpuDecoder (
       input  [2:0] io_mCycle,
@@ -4116,11 +4116,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_7 = (! byteToggle);
-  assign _zz_8 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_9 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_10 = (! resetCnt[22]);
+  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_7 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_8 = (! resetCnt[22]);
+  assign _zz_9 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_10 = (! byteToggle);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4140,12 +4140,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_10) begin
-      if(! _zz_8) begin
-        if(_zz_9)begin
-          if(_zz_6)begin
+    if(! _zz_8) begin
+      if(! _zz_9) begin
+        if(_zz_6)begin
+          if(_zz_7)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_10)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4171,15 +4171,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_10)begin
+      if(_zz_8)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_8)begin
+        if(_zz_9)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_9)begin
+          if(_zz_6)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_6)begin
+            if(_zz_7)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -4219,7 +4219,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_7)begin
+                if(_zz_10)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4247,12 +4247,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_10) begin
-      if(! _zz_8) begin
-        if(_zz_9)begin
-          if(_zz_6)begin
+    if(! _zz_8) begin
+      if(! _zz_9) begin
+        if(_zz_6)begin
+          if(_zz_7)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_10)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -4978,9 +4978,9 @@ module PPUUlx3s (
   wire  bit1;
   wire [1:0] color;
   assign _zz_14 = (bitCycle == (2'b10));
-  assign _zz_15 = (bitx == (3'b111));
-  assign _zz_16 = (bitCycle == (2'b01));
-  assign _zz_17 = (bitCycle == (2'b00));
+  assign _zz_15 = (bitCycle == (2'b01));
+  assign _zz_16 = (bitCycle == (2'b00));
+  assign _zz_17 = (bitx == (3'b111));
   assign _zz_18 = ((3'b111) - bitx);
   assign _zz_19 = ((3'b111) - bitx);
   assign _zz_20 = (color * (2'b10));
@@ -5030,15 +5030,15 @@ module PPUUlx3s (
   assign io_oled_clk = _zz_10;
   always @ (*) begin
     io_address = (13'b0000000000000);
-    if(_zz_15)begin
-      if(_zz_17)begin
+    if(_zz_17)begin
+      if(_zz_16)begin
         if(inWindow)begin
           io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
         end else begin
           io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
         end
       end else begin
-        if(_zz_16)begin
+        if(_zz_15)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end else begin
           if(_zz_14)begin
@@ -5088,9 +5088,9 @@ module PPUUlx3s (
 
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (2'b01));
-    if(_zz_15)begin
-      if(! _zz_17) begin
-        if(_zz_16)begin
+    if(_zz_17)begin
+      if(! _zz_16) begin
+        if(_zz_15)begin
           tile <= io_dataIn;
         end else begin
           if(_zz_14)begin
@@ -5176,6 +5176,7 @@ module GameBoy64Ulx3s (
   reg [7:0] rTIMA;
   reg [7:0] rTMA;
   reg [7:0] rTAC;
+  reg  IRQ;
   reg [11:0] timer;
   wire [15:0] _zz_3;
   reg [7:0] memory [0:57343];
@@ -5327,6 +5328,7 @@ module GameBoy64Ulx3s (
     if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
       rDIV <= (rDIV + (8'b00000001));
     end
+    IRQ <= 1'b0;
     if(rTAC[2])begin
       case(_zz_24)
         2'b00 : begin
@@ -5351,6 +5353,7 @@ module GameBoy64Ulx3s (
         end
       endcase
       if((rTIMA == (8'b11111111)))begin
+        IRQ <= 1'b1;
         rTIMA <= rTMA;
       end
     end

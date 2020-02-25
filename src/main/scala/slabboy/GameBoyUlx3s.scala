@@ -109,6 +109,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rTIMA = Reg(UInt(8 bits)) 
   val rTMA = Reg(UInt(8 bits)) 
   val rTAC = Reg(UInt(8 bits)) 
+  val IRQ = Reg(Bool)
 
   val timer = Reg(UInt(12 bits))
 
@@ -117,6 +118,8 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   when ((timer & 0x3FF) === 0) {
     rDIV := rDIV + 1
   }
+
+  IRQ := False
 
   when (rTAC(2)) {
     switch (rTAC(1 downto 0)) {
@@ -143,6 +146,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     }
 
     when (rTIMA === 0xFF) {
+      IRQ := True
       rTIMA := rTMA
     }
   }
@@ -158,9 +162,9 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   ppu.io.windowY := rWY
   ppu.io.bgPalette := rBGP
 
-  // Reduce Gameboy 64kb memory down to 14.5k
-  // ROM reduced to 4kb and RAM to 2kb
-  // Video and high memory kept full size
+  // The 8kb video memory is separate
+  // The other 48kb includes ROM and RAM
+  // Bank switching is not supported
   when (cpu.io.address >= 0xa000) {
     address := cpu.io.address - 0x2000
   } otherwise {
@@ -169,6 +173,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
 
   dataIn := memory(address.resized)
 
+  // Writes to memory
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
       vidMem((cpu.io.address - 0x8000).resized) := dataOut
@@ -195,6 +200,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     }
   }
 
+  // Reads from memory
   switch (cpu.io.address) {
     is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
     is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
@@ -278,4 +284,3 @@ object GameBoy64Ulx3sSim {
     }
   }
 }
-

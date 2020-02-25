@@ -171,16 +171,16 @@ case class Sprite() extends Component {
 
   when (io.oamWr) {
     switch (io.oamAddr) {
-      is(0) (xPos := io.oamDi.asUInt)
-      is(1) (yPos := io.oamDi.asUInt)
+      is(0) (yPos := io.oamDi.asUInt)
+      is(1) (xPos := io.oamDi.asUInt)
       is(2) (tile := io.oamDi.asUInt)
       is(2) (flags := io.oamDi)
     }
   }
 
   switch (io.oamAddr) {
-    is(0) (io.oamDi := xPos.asBits)
-    is(1) (io.oamDo := yPos.asBits)
+    is(0) (io.oamDi := yPos.asBits)
+    is(1) (io.oamDo := xPos.asBits)
     is(2) (io.oamDo := tile.asBits)
     is(2) (io.oamDo := flags)
   }
