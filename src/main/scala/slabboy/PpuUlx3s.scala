@@ -53,8 +53,6 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
 
   io.address := 0
 
-  val sprites = Reg(Vec(Bits(32 bits), 10))
-
   val bgScrnAddress = io.lcdControl(3) ? U(0x1c00) | U(0x1800)
   val windowAddress = io.lcdControl(6) ? U(0x1c00) | U(0x1800)
   val showWindow = io.lcdControl(5)
@@ -67,6 +65,18 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val winTileX = x - io.windowX
   val winTileY = y - io.windowY
   val bitx = tileX(2 downto 0)
+
+  val spritePixelActive = Reg(Bool)
+  val spriteAddr = Reg(UInt(11 bits))
+
+  val sprites = Sprites()
+  sprites.io.size16 := io.lcdControl(2)
+  sprites.io.x := x
+  sprites.io.y := y
+  spritePixelActive := sprites.io.pixelActive
+  spriteAddr := sprites.io.addr
+  sprites.io.oamDi := 0
+  sprites.io.index := 0
 
   when (bitx === 7) {
     when (bitCycle === 0) {
@@ -122,7 +132,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
 
 case class Sprite() extends Component {
   val io = new Bundle {
-    val index = UInt(6 bits)
+    val index = in UInt(6 bits)
     val x = in UInt(8 bits)
     val y = in UInt(8 bits)
     val size16 = in Bool
@@ -130,7 +140,7 @@ case class Sprite() extends Component {
     val data = in Bits(8 bits)
     val pixelActive = out Bool
     val pixelData = out Bits(2 bits)
-    val addr = out UInt(10 bits)
+    val addr = out UInt(11 bits)
 
     val oamWr = in Bool
     val oamAddr = in UInt(2 bits)
@@ -174,15 +184,15 @@ case class Sprite() extends Component {
       is(0) (yPos := io.oamDi.asUInt)
       is(1) (xPos := io.oamDi.asUInt)
       is(2) (tile := io.oamDi.asUInt)
-      is(2) (flags := io.oamDi)
+      is(3) (flags := io.oamDi)
     }
   }
 
   switch (io.oamAddr) {
-    is(0) (io.oamDi := yPos.asBits)
+    is(0) (io.oamDo := yPos.asBits)
     is(1) (io.oamDo := xPos.asBits)
     is(2) (io.oamDo := tile.asBits)
-    is(2) (io.oamDo := flags)
+    is(3) (io.oamDo := flags)
   }
 }
 
@@ -192,11 +202,15 @@ case class Sprites() extends Component {
     val x = in UInt(8 bits)
     val y = in UInt(8 bits)
     val dValid = in Bits(2 bits)
-    val data = Bits(8 bits)
+    val data = in Bits(8 bits)
 
     val pixelActive = out Bool
     val pixelData = out Bits(2 bits)
-    
+
+    val addr = out UInt(11 bits)
+
+    val index = in UInt(4 bits)
+
     val oamWr = in Bool
     val oamAddr = in UInt(8 bits)
     val oamDi = in Bits(8 bits)
@@ -206,11 +220,15 @@ case class Sprites() extends Component {
   val numSprites = 40
 
   val sprites = new Array[Sprite](numSprites)
-  val spriteAddr = Vec(UInt(10 bits), numSprites)
+  val spriteAddr = Vec(UInt(11 bits), numSprites)
   val spritePixelActive = Bits(numSprites bits)
   val spritePixelData = Vec(Bits(2 bits), numSprites)
   val spriteIndexArray = Vec(UInt(6 bits), numSprites)
   val spriteOamDo = Vec(Bits(8 bits), numSprites)
+
+  val prioIndex = spriteIndexArray(io.index.resized)
+
+  io.addr := spriteAddr(prioIndex)
 
   // TODO: Replace by sort
   for(i <- 0 to numSprites - 1) {
@@ -221,7 +239,7 @@ case class Sprites() extends Component {
     sprites(i) = Sprite()
     sprites(i).io.size16 := io.size16
     sprites(i).io.index := U(i, 6 bits)
-    sprites(i).io.addr := spriteAddr(i)
+    spriteAddr(i) := sprites(i).io.addr
     sprites(i).io.x := io.x
     sprites(i).io.y := io.y
     sprites(i).io.ds := io.dValid
@@ -270,6 +288,5 @@ case class Sprites() extends Component {
     (spritePixelActive(spr8) ? spritePixelData(spr8) |
     (spritePixelActive(spr9) ? spritePixelData(spr9) |
     B"00")))))))))
-
 }
 

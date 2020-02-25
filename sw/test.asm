@@ -72,7 +72,7 @@ init:
 ; Main code:
 ; Print a character string in the middle of the screen
 ; ****************************************************************************************
-	ld	hl, $FE00
+	ld	hl, _OAMRAM
 	ld	a, 16		; x and y = 16
 	ld	[hl], a
 	inc	hl

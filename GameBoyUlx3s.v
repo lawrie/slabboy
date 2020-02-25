@@ -1,7 +1,14 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 24/02/2020, 19:35:16
+// Date      : 25/02/2020, 12:13:03
 // Component : GameBoyUlx3s
 
+
+`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
+`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
 
 `define AddrOp_binary_sequancial_type [2:0]
 `define AddrOp_binary_sequancial_Nop 3'b000
@@ -11,24 +18,6 @@
 `define AddrOp_binary_sequancial_ToPC 3'b100
 `define AddrOp_binary_sequancial_R8 3'b101
 `define AddrOp_binary_sequancial_HLR8 3'b110
-
-`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
-`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -64,6 +53,233 @@
 `define AluOp_binary_sequancial_Sla_1 6'b011110
 `define AluOp_binary_sequancial_Sra_1 6'b011111
 `define AluOp_binary_sequancial_Srl_1 6'b100000
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
+
+module Sprite (
+      input  [5:0] io_index,
+      input  [7:0] io_x,
+      input  [7:0] io_y,
+      input   io_size16,
+      input  [1:0] io_ds,
+      input  [7:0] io_data,
+      output  io_pixelActive,
+      output [1:0] io_pixelData,
+      output [10:0] io_addr,
+      input   io_oamWr,
+      input  [1:0] io_oamAddr,
+      input  [7:0] io_oamDi,
+      output reg [7:0] io_oamDo,
+      input   clkout0,
+      input   _zz_1);
+  wire [1:0] _zz_2;
+  wire [7:0] _zz_3;
+  wire [7:0] _zz_4;
+  wire [7:0] _zz_5;
+  wire [7:0] _zz_6;
+  reg [7:0] xPos;
+  reg [7:0] yPos;
+  reg [7:0] tile;
+  reg [7:0] flags;
+  reg [7:0] data0;
+  reg [7:0] data1;
+  wire [7:0] height;
+  wire  yVisible;
+  wire  xVisible;
+  wire  visible;
+  wire [7:0] colN;
+  wire [2:0] col;
+  wire [7:0] rowN;
+  wire [3:0] row;
+  wire [10:0] addr8;
+  wire [10:0] addr16;
+  assign io_pixelData = _zz_2;
+  assign _zz_3 = (io_y + (8'b00010000));
+  assign _zz_4 = (io_y + (8'b00010000));
+  assign _zz_5 = (yPos + height);
+  assign _zz_6 = (io_x + (8'b00001000));
+  assign height = (io_size16 ? (8'b00010000) : (8'b00001000));
+  assign yVisible = ((yPos <= _zz_3) && (_zz_4 < _zz_5));
+  assign xVisible = ((xPos <= _zz_6) && (io_x < xPos));
+  assign visible = (yVisible && xVisible);
+  assign colN = (io_x - xPos);
+  assign col = (flags[5] ? colN[2 : 0] : (~ colN[2 : 0]));
+  assign _zz_2 = {data1[col],data0[col]};
+  assign io_pixelActive = ((_zz_2 != (2'b00)) && visible);
+  assign rowN = (io_y - yPos);
+  assign row = (flags[6] ? (~ rowN[3 : 0]) : rowN[3 : 0]);
+  assign addr8 = {tile,row[2 : 0]};
+  assign addr16 = {tile[7 : 1],row};
+  assign io_addr = (io_size16 ? addr16 : addr8);
+  always @ (*) begin
+    case(io_oamAddr)
+      2'b00 : begin
+        io_oamDo = yPos;
+      end
+      2'b01 : begin
+        io_oamDo = xPos;
+      end
+      2'b10 : begin
+        io_oamDo = tile;
+      end
+      default : begin
+        io_oamDo = flags;
+      end
+    endcase
+  end
+
+  always @ (posedge clkout0) begin
+    if(io_ds[0])begin
+      data0 <= io_data;
+    end
+    if(io_ds[1])begin
+      data1 <= io_data;
+    end
+    if(io_oamWr)begin
+      case(io_oamAddr)
+        2'b00 : begin
+          yPos <= io_oamDi;
+        end
+        2'b01 : begin
+          xPos <= io_oamDi;
+        end
+        2'b10 : begin
+          tile <= io_oamDi;
+        end
+        default : begin
+          flags <= io_oamDi;
+        end
+      endcase
+    end
+  end
+
+endmodule
+
+
+//Sprite_1 remplaced by Sprite
+
+
+//Sprite_2 remplaced by Sprite
+
+
+//Sprite_3 remplaced by Sprite
+
+
+//Sprite_4 remplaced by Sprite
+
+
+//Sprite_5 remplaced by Sprite
+
+
+//Sprite_6 remplaced by Sprite
+
+
+//Sprite_7 remplaced by Sprite
+
+
+//Sprite_8 remplaced by Sprite
+
+
+//Sprite_9 remplaced by Sprite
+
+
+//Sprite_10 remplaced by Sprite
+
+
+//Sprite_11 remplaced by Sprite
+
+
+//Sprite_12 remplaced by Sprite
+
+
+//Sprite_13 remplaced by Sprite
+
+
+//Sprite_14 remplaced by Sprite
+
+
+//Sprite_15 remplaced by Sprite
+
+
+//Sprite_16 remplaced by Sprite
+
+
+//Sprite_17 remplaced by Sprite
+
+
+//Sprite_18 remplaced by Sprite
+
+
+//Sprite_19 remplaced by Sprite
+
+
+//Sprite_20 remplaced by Sprite
+
+
+//Sprite_21 remplaced by Sprite
+
+
+//Sprite_22 remplaced by Sprite
+
+
+//Sprite_23 remplaced by Sprite
+
+
+//Sprite_24 remplaced by Sprite
+
+
+//Sprite_25 remplaced by Sprite
+
+
+//Sprite_26 remplaced by Sprite
+
+
+//Sprite_27 remplaced by Sprite
+
+
+//Sprite_28 remplaced by Sprite
+
+
+//Sprite_29 remplaced by Sprite
+
+
+//Sprite_30 remplaced by Sprite
+
+
+//Sprite_31 remplaced by Sprite
+
+
+//Sprite_32 remplaced by Sprite
+
+
+//Sprite_33 remplaced by Sprite
+
+
+//Sprite_34 remplaced by Sprite
+
+
+//Sprite_35 remplaced by Sprite
+
+
+//Sprite_36 remplaced by Sprite
+
+
+//Sprite_37 remplaced by Sprite
+
+
+//Sprite_38 remplaced by Sprite
+
+
+//Sprite_39 remplaced by Sprite
 
 module CpuDecoder (
       input  [2:0] io_mCycle,
@@ -4117,10 +4333,10 @@ module ST7789 (
   assign io_x = _zz_4;
   assign io_y = _zz_5;
   assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_7 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_8 = (! resetCnt[22]);
-  assign _zz_9 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_10 = (! byteToggle);
+  assign _zz_7 = (! byteToggle);
+  assign _zz_8 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_9 = (! resetCnt[22]);
+  assign _zz_10 = ((25'b0000000000000000000000000) < delayCnt);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4140,12 +4356,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_8) begin
-      if(! _zz_9) begin
+    if(! _zz_9) begin
+      if(! _zz_10) begin
         if(_zz_6)begin
-          if(_zz_7)begin
+          if(_zz_8)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_7)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4171,15 +4387,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_8)begin
+      if(_zz_9)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_9)begin
+        if(_zz_10)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
           if(_zz_6)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_7)begin
+            if(_zz_8)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -4219,7 +4435,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_10)begin
+                if(_zz_7)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4247,12 +4463,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_8) begin
-      if(! _zz_9) begin
+    if(! _zz_9) begin
+      if(! _zz_10) begin
         if(_zz_6)begin
-          if(_zz_7)begin
+          if(_zz_8)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_7)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -4264,6 +4480,2987 @@ module ST7789 (
     end
   end
 
+endmodule
+
+module Sprites (
+      input   io_size16,
+      input  [7:0] io_x,
+      input  [7:0] io_y,
+      input  [1:0] io_dValid,
+      input  [7:0] io_data,
+      output  io_pixelActive,
+      output [1:0] io_pixelData,
+      output [10:0] io_addr,
+      input  [3:0] io_index,
+      input   io_oamWr,
+      input  [7:0] io_oamAddr,
+      input  [7:0] io_oamDi,
+      output [7:0] io_oamDo,
+      input   clkout0,
+      input   _zz_1);
+  wire [5:0] _zz_2;
+  wire  _zz_3;
+  wire [1:0] _zz_4;
+  wire [5:0] _zz_5;
+  wire  _zz_6;
+  wire [1:0] _zz_7;
+  wire [5:0] _zz_8;
+  wire  _zz_9;
+  wire [1:0] _zz_10;
+  wire [5:0] _zz_11;
+  wire  _zz_12;
+  wire [1:0] _zz_13;
+  wire [5:0] _zz_14;
+  wire  _zz_15;
+  wire [1:0] _zz_16;
+  wire [5:0] _zz_17;
+  wire  _zz_18;
+  wire [1:0] _zz_19;
+  wire [5:0] _zz_20;
+  wire  _zz_21;
+  wire [1:0] _zz_22;
+  wire [5:0] _zz_23;
+  wire  _zz_24;
+  wire [1:0] _zz_25;
+  wire [5:0] _zz_26;
+  wire  _zz_27;
+  wire [1:0] _zz_28;
+  wire [5:0] _zz_29;
+  wire  _zz_30;
+  wire [1:0] _zz_31;
+  wire [5:0] _zz_32;
+  wire  _zz_33;
+  wire [1:0] _zz_34;
+  wire [5:0] _zz_35;
+  wire  _zz_36;
+  wire [1:0] _zz_37;
+  wire [5:0] _zz_38;
+  wire  _zz_39;
+  wire [1:0] _zz_40;
+  wire [5:0] _zz_41;
+  wire  _zz_42;
+  wire [1:0] _zz_43;
+  wire [5:0] _zz_44;
+  wire  _zz_45;
+  wire [1:0] _zz_46;
+  wire [5:0] _zz_47;
+  wire  _zz_48;
+  wire [1:0] _zz_49;
+  wire [5:0] _zz_50;
+  wire  _zz_51;
+  wire [1:0] _zz_52;
+  wire [5:0] _zz_53;
+  wire  _zz_54;
+  wire [1:0] _zz_55;
+  wire [5:0] _zz_56;
+  wire  _zz_57;
+  wire [1:0] _zz_58;
+  wire [5:0] _zz_59;
+  wire  _zz_60;
+  wire [1:0] _zz_61;
+  wire [5:0] _zz_62;
+  wire  _zz_63;
+  wire [1:0] _zz_64;
+  wire [5:0] _zz_65;
+  wire  _zz_66;
+  wire [1:0] _zz_67;
+  wire [5:0] _zz_68;
+  wire  _zz_69;
+  wire [1:0] _zz_70;
+  wire [5:0] _zz_71;
+  wire  _zz_72;
+  wire [1:0] _zz_73;
+  wire [5:0] _zz_74;
+  wire  _zz_75;
+  wire [1:0] _zz_76;
+  wire [5:0] _zz_77;
+  wire  _zz_78;
+  wire [1:0] _zz_79;
+  wire [5:0] _zz_80;
+  wire  _zz_81;
+  wire [1:0] _zz_82;
+  wire [5:0] _zz_83;
+  wire  _zz_84;
+  wire [1:0] _zz_85;
+  wire [5:0] _zz_86;
+  wire  _zz_87;
+  wire [1:0] _zz_88;
+  wire [5:0] _zz_89;
+  wire  _zz_90;
+  wire [1:0] _zz_91;
+  wire [5:0] _zz_92;
+  wire  _zz_93;
+  wire [1:0] _zz_94;
+  wire [5:0] _zz_95;
+  wire  _zz_96;
+  wire [1:0] _zz_97;
+  wire [5:0] _zz_98;
+  wire  _zz_99;
+  wire [1:0] _zz_100;
+  wire [5:0] _zz_101;
+  wire  _zz_102;
+  wire [1:0] _zz_103;
+  wire [5:0] _zz_104;
+  wire  _zz_105;
+  wire [1:0] _zz_106;
+  wire [5:0] _zz_107;
+  wire  _zz_108;
+  wire [1:0] _zz_109;
+  wire [5:0] _zz_110;
+  wire  _zz_111;
+  wire [1:0] _zz_112;
+  wire [5:0] _zz_113;
+  wire  _zz_114;
+  wire [1:0] _zz_115;
+  wire [5:0] _zz_116;
+  wire  _zz_117;
+  wire [1:0] _zz_118;
+  wire [5:0] _zz_119;
+  wire  _zz_120;
+  wire [1:0] _zz_121;
+  reg [5:0] _zz_122;
+  reg [10:0] _zz_123;
+  reg [1:0] _zz_124;
+  reg [1:0] _zz_125;
+  reg [1:0] _zz_126;
+  reg [1:0] _zz_127;
+  reg [1:0] _zz_128;
+  reg [1:0] _zz_129;
+  reg [1:0] _zz_130;
+  reg [1:0] _zz_131;
+  reg [1:0] _zz_132;
+  reg [1:0] _zz_133;
+  wire  _zz_134;
+  wire [1:0] _zz_135;
+  wire [10:0] _zz_136;
+  wire [7:0] _zz_137;
+  wire  _zz_138;
+  wire [1:0] _zz_139;
+  wire [10:0] _zz_140;
+  wire [7:0] _zz_141;
+  wire  _zz_142;
+  wire [1:0] _zz_143;
+  wire [10:0] _zz_144;
+  wire [7:0] _zz_145;
+  wire  _zz_146;
+  wire [1:0] _zz_147;
+  wire [10:0] _zz_148;
+  wire [7:0] _zz_149;
+  wire  _zz_150;
+  wire [1:0] _zz_151;
+  wire [10:0] _zz_152;
+  wire [7:0] _zz_153;
+  wire  _zz_154;
+  wire [1:0] _zz_155;
+  wire [10:0] _zz_156;
+  wire [7:0] _zz_157;
+  wire  _zz_158;
+  wire [1:0] _zz_159;
+  wire [10:0] _zz_160;
+  wire [7:0] _zz_161;
+  wire  _zz_162;
+  wire [1:0] _zz_163;
+  wire [10:0] _zz_164;
+  wire [7:0] _zz_165;
+  wire  _zz_166;
+  wire [1:0] _zz_167;
+  wire [10:0] _zz_168;
+  wire [7:0] _zz_169;
+  wire  _zz_170;
+  wire [1:0] _zz_171;
+  wire [10:0] _zz_172;
+  wire [7:0] _zz_173;
+  wire  _zz_174;
+  wire [1:0] _zz_175;
+  wire [10:0] _zz_176;
+  wire [7:0] _zz_177;
+  wire  _zz_178;
+  wire [1:0] _zz_179;
+  wire [10:0] _zz_180;
+  wire [7:0] _zz_181;
+  wire  _zz_182;
+  wire [1:0] _zz_183;
+  wire [10:0] _zz_184;
+  wire [7:0] _zz_185;
+  wire  _zz_186;
+  wire [1:0] _zz_187;
+  wire [10:0] _zz_188;
+  wire [7:0] _zz_189;
+  wire  _zz_190;
+  wire [1:0] _zz_191;
+  wire [10:0] _zz_192;
+  wire [7:0] _zz_193;
+  wire  _zz_194;
+  wire [1:0] _zz_195;
+  wire [10:0] _zz_196;
+  wire [7:0] _zz_197;
+  wire  _zz_198;
+  wire [1:0] _zz_199;
+  wire [10:0] _zz_200;
+  wire [7:0] _zz_201;
+  wire  _zz_202;
+  wire [1:0] _zz_203;
+  wire [10:0] _zz_204;
+  wire [7:0] _zz_205;
+  wire  _zz_206;
+  wire [1:0] _zz_207;
+  wire [10:0] _zz_208;
+  wire [7:0] _zz_209;
+  wire  _zz_210;
+  wire [1:0] _zz_211;
+  wire [10:0] _zz_212;
+  wire [7:0] _zz_213;
+  wire  _zz_214;
+  wire [1:0] _zz_215;
+  wire [10:0] _zz_216;
+  wire [7:0] _zz_217;
+  wire  _zz_218;
+  wire [1:0] _zz_219;
+  wire [10:0] _zz_220;
+  wire [7:0] _zz_221;
+  wire  _zz_222;
+  wire [1:0] _zz_223;
+  wire [10:0] _zz_224;
+  wire [7:0] _zz_225;
+  wire  _zz_226;
+  wire [1:0] _zz_227;
+  wire [10:0] _zz_228;
+  wire [7:0] _zz_229;
+  wire  _zz_230;
+  wire [1:0] _zz_231;
+  wire [10:0] _zz_232;
+  wire [7:0] _zz_233;
+  wire  _zz_234;
+  wire [1:0] _zz_235;
+  wire [10:0] _zz_236;
+  wire [7:0] _zz_237;
+  wire  _zz_238;
+  wire [1:0] _zz_239;
+  wire [10:0] _zz_240;
+  wire [7:0] _zz_241;
+  wire  _zz_242;
+  wire [1:0] _zz_243;
+  wire [10:0] _zz_244;
+  wire [7:0] _zz_245;
+  wire  _zz_246;
+  wire [1:0] _zz_247;
+  wire [10:0] _zz_248;
+  wire [7:0] _zz_249;
+  wire  _zz_250;
+  wire [1:0] _zz_251;
+  wire [10:0] _zz_252;
+  wire [7:0] _zz_253;
+  wire  _zz_254;
+  wire [1:0] _zz_255;
+  wire [10:0] _zz_256;
+  wire [7:0] _zz_257;
+  wire  _zz_258;
+  wire [1:0] _zz_259;
+  wire [10:0] _zz_260;
+  wire [7:0] _zz_261;
+  wire  _zz_262;
+  wire [1:0] _zz_263;
+  wire [10:0] _zz_264;
+  wire [7:0] _zz_265;
+  wire  _zz_266;
+  wire [1:0] _zz_267;
+  wire [10:0] _zz_268;
+  wire [7:0] _zz_269;
+  wire  _zz_270;
+  wire [1:0] _zz_271;
+  wire [10:0] _zz_272;
+  wire [7:0] _zz_273;
+  wire  _zz_274;
+  wire [1:0] _zz_275;
+  wire [10:0] _zz_276;
+  wire [7:0] _zz_277;
+  wire  _zz_278;
+  wire [1:0] _zz_279;
+  wire [10:0] _zz_280;
+  wire [7:0] _zz_281;
+  wire  _zz_282;
+  wire [1:0] _zz_283;
+  wire [10:0] _zz_284;
+  wire [7:0] _zz_285;
+  wire  _zz_286;
+  wire [1:0] _zz_287;
+  wire [10:0] _zz_288;
+  wire [7:0] _zz_289;
+  wire  _zz_290;
+  wire [1:0] _zz_291;
+  wire [10:0] _zz_292;
+  wire [7:0] _zz_293;
+  wire [5:0] _zz_294;
+  wire [10:0] spriteAddr_0;
+  wire [10:0] spriteAddr_1;
+  wire [10:0] spriteAddr_2;
+  wire [10:0] spriteAddr_3;
+  wire [10:0] spriteAddr_4;
+  wire [10:0] spriteAddr_5;
+  wire [10:0] spriteAddr_6;
+  wire [10:0] spriteAddr_7;
+  wire [10:0] spriteAddr_8;
+  wire [10:0] spriteAddr_9;
+  wire [10:0] spriteAddr_10;
+  wire [10:0] spriteAddr_11;
+  wire [10:0] spriteAddr_12;
+  wire [10:0] spriteAddr_13;
+  wire [10:0] spriteAddr_14;
+  wire [10:0] spriteAddr_15;
+  wire [10:0] spriteAddr_16;
+  wire [10:0] spriteAddr_17;
+  wire [10:0] spriteAddr_18;
+  wire [10:0] spriteAddr_19;
+  wire [10:0] spriteAddr_20;
+  wire [10:0] spriteAddr_21;
+  wire [10:0] spriteAddr_22;
+  wire [10:0] spriteAddr_23;
+  wire [10:0] spriteAddr_24;
+  wire [10:0] spriteAddr_25;
+  wire [10:0] spriteAddr_26;
+  wire [10:0] spriteAddr_27;
+  wire [10:0] spriteAddr_28;
+  wire [10:0] spriteAddr_29;
+  wire [10:0] spriteAddr_30;
+  wire [10:0] spriteAddr_31;
+  wire [10:0] spriteAddr_32;
+  wire [10:0] spriteAddr_33;
+  wire [10:0] spriteAddr_34;
+  wire [10:0] spriteAddr_35;
+  wire [10:0] spriteAddr_36;
+  wire [10:0] spriteAddr_37;
+  wire [10:0] spriteAddr_38;
+  wire [10:0] spriteAddr_39;
+  reg [39:0] spritePixelActive;
+  wire [1:0] spritePixelData_0;
+  wire [1:0] spritePixelData_1;
+  wire [1:0] spritePixelData_2;
+  wire [1:0] spritePixelData_3;
+  wire [1:0] spritePixelData_4;
+  wire [1:0] spritePixelData_5;
+  wire [1:0] spritePixelData_6;
+  wire [1:0] spritePixelData_7;
+  wire [1:0] spritePixelData_8;
+  wire [1:0] spritePixelData_9;
+  wire [1:0] spritePixelData_10;
+  wire [1:0] spritePixelData_11;
+  wire [1:0] spritePixelData_12;
+  wire [1:0] spritePixelData_13;
+  wire [1:0] spritePixelData_14;
+  wire [1:0] spritePixelData_15;
+  wire [1:0] spritePixelData_16;
+  wire [1:0] spritePixelData_17;
+  wire [1:0] spritePixelData_18;
+  wire [1:0] spritePixelData_19;
+  wire [1:0] spritePixelData_20;
+  wire [1:0] spritePixelData_21;
+  wire [1:0] spritePixelData_22;
+  wire [1:0] spritePixelData_23;
+  wire [1:0] spritePixelData_24;
+  wire [1:0] spritePixelData_25;
+  wire [1:0] spritePixelData_26;
+  wire [1:0] spritePixelData_27;
+  wire [1:0] spritePixelData_28;
+  wire [1:0] spritePixelData_29;
+  wire [1:0] spritePixelData_30;
+  wire [1:0] spritePixelData_31;
+  wire [1:0] spritePixelData_32;
+  wire [1:0] spritePixelData_33;
+  wire [1:0] spritePixelData_34;
+  wire [1:0] spritePixelData_35;
+  wire [1:0] spritePixelData_36;
+  wire [1:0] spritePixelData_37;
+  wire [1:0] spritePixelData_38;
+  wire [1:0] spritePixelData_39;
+  wire [5:0] spr0;
+  wire [5:0] spr1;
+  wire [5:0] spr2;
+  wire [5:0] spr3;
+  wire [5:0] spr4;
+  wire [5:0] spr5;
+  wire [5:0] spr6;
+  wire [5:0] spr7;
+  wire [5:0] spr8;
+  wire [5:0] spr9;
+  wire [5:0] spriteIndexArray_10;
+  wire [5:0] spriteIndexArray_11;
+  wire [5:0] spriteIndexArray_12;
+  wire [5:0] spriteIndexArray_13;
+  wire [5:0] spriteIndexArray_14;
+  wire [5:0] spriteIndexArray_15;
+  wire [5:0] spriteIndexArray_16;
+  wire [5:0] spriteIndexArray_17;
+  wire [5:0] spriteIndexArray_18;
+  wire [5:0] spriteIndexArray_19;
+  wire [5:0] spriteIndexArray_20;
+  wire [5:0] spriteIndexArray_21;
+  wire [5:0] spriteIndexArray_22;
+  wire [5:0] spriteIndexArray_23;
+  wire [5:0] spriteIndexArray_24;
+  wire [5:0] spriteIndexArray_25;
+  wire [5:0] spriteIndexArray_26;
+  wire [5:0] spriteIndexArray_27;
+  wire [5:0] spriteIndexArray_28;
+  wire [5:0] spriteIndexArray_29;
+  wire [5:0] spriteIndexArray_30;
+  wire [5:0] spriteIndexArray_31;
+  wire [5:0] spriteIndexArray_32;
+  wire [5:0] spriteIndexArray_33;
+  wire [5:0] spriteIndexArray_34;
+  wire [5:0] spriteIndexArray_35;
+  wire [5:0] spriteIndexArray_36;
+  wire [5:0] spriteIndexArray_37;
+  wire [5:0] spriteIndexArray_38;
+  wire [5:0] spriteIndexArray_39;
+  wire [7:0] spriteOamDo_0;
+  wire [7:0] spriteOamDo_1;
+  wire [7:0] spriteOamDo_2;
+  wire [7:0] spriteOamDo_3;
+  wire [7:0] spriteOamDo_4;
+  wire [7:0] spriteOamDo_5;
+  wire [7:0] spriteOamDo_6;
+  wire [7:0] spriteOamDo_7;
+  wire [7:0] spriteOamDo_8;
+  wire [7:0] spriteOamDo_9;
+  wire [7:0] spriteOamDo_10;
+  wire [7:0] spriteOamDo_11;
+  wire [7:0] spriteOamDo_12;
+  wire [7:0] spriteOamDo_13;
+  wire [7:0] spriteOamDo_14;
+  wire [7:0] spriteOamDo_15;
+  wire [7:0] spriteOamDo_16;
+  wire [7:0] spriteOamDo_17;
+  wire [7:0] spriteOamDo_18;
+  wire [7:0] spriteOamDo_19;
+  wire [7:0] spriteOamDo_20;
+  wire [7:0] spriteOamDo_21;
+  wire [7:0] spriteOamDo_22;
+  wire [7:0] spriteOamDo_23;
+  wire [7:0] spriteOamDo_24;
+  wire [7:0] spriteOamDo_25;
+  wire [7:0] spriteOamDo_26;
+  wire [7:0] spriteOamDo_27;
+  wire [7:0] spriteOamDo_28;
+  wire [7:0] spriteOamDo_29;
+  wire [7:0] spriteOamDo_30;
+  wire [7:0] spriteOamDo_31;
+  wire [7:0] spriteOamDo_32;
+  wire [7:0] spriteOamDo_33;
+  wire [7:0] spriteOamDo_34;
+  wire [7:0] spriteOamDo_35;
+  wire [7:0] spriteOamDo_36;
+  wire [7:0] spriteOamDo_37;
+  wire [7:0] spriteOamDo_38;
+  wire [7:0] spriteOamDo_39;
+  wire [5:0] prioIndex;
+  assign _zz_294 = {2'd0, io_index};
+  Sprite sprites_0 ( 
+    .io_index(_zz_2),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_134),
+    .io_pixelData(_zz_135),
+    .io_addr(_zz_136),
+    .io_oamWr(_zz_3),
+    .io_oamAddr(_zz_4),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_137),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_1 ( 
+    .io_index(_zz_5),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_138),
+    .io_pixelData(_zz_139),
+    .io_addr(_zz_140),
+    .io_oamWr(_zz_6),
+    .io_oamAddr(_zz_7),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_141),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_2 ( 
+    .io_index(_zz_8),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_142),
+    .io_pixelData(_zz_143),
+    .io_addr(_zz_144),
+    .io_oamWr(_zz_9),
+    .io_oamAddr(_zz_10),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_145),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_3 ( 
+    .io_index(_zz_11),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_146),
+    .io_pixelData(_zz_147),
+    .io_addr(_zz_148),
+    .io_oamWr(_zz_12),
+    .io_oamAddr(_zz_13),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_149),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_4 ( 
+    .io_index(_zz_14),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_150),
+    .io_pixelData(_zz_151),
+    .io_addr(_zz_152),
+    .io_oamWr(_zz_15),
+    .io_oamAddr(_zz_16),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_153),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_5 ( 
+    .io_index(_zz_17),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_154),
+    .io_pixelData(_zz_155),
+    .io_addr(_zz_156),
+    .io_oamWr(_zz_18),
+    .io_oamAddr(_zz_19),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_157),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_6 ( 
+    .io_index(_zz_20),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_158),
+    .io_pixelData(_zz_159),
+    .io_addr(_zz_160),
+    .io_oamWr(_zz_21),
+    .io_oamAddr(_zz_22),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_161),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_7 ( 
+    .io_index(_zz_23),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_162),
+    .io_pixelData(_zz_163),
+    .io_addr(_zz_164),
+    .io_oamWr(_zz_24),
+    .io_oamAddr(_zz_25),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_165),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_8 ( 
+    .io_index(_zz_26),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_166),
+    .io_pixelData(_zz_167),
+    .io_addr(_zz_168),
+    .io_oamWr(_zz_27),
+    .io_oamAddr(_zz_28),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_169),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_9 ( 
+    .io_index(_zz_29),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_170),
+    .io_pixelData(_zz_171),
+    .io_addr(_zz_172),
+    .io_oamWr(_zz_30),
+    .io_oamAddr(_zz_31),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_173),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_10 ( 
+    .io_index(_zz_32),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_174),
+    .io_pixelData(_zz_175),
+    .io_addr(_zz_176),
+    .io_oamWr(_zz_33),
+    .io_oamAddr(_zz_34),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_177),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_11 ( 
+    .io_index(_zz_35),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_178),
+    .io_pixelData(_zz_179),
+    .io_addr(_zz_180),
+    .io_oamWr(_zz_36),
+    .io_oamAddr(_zz_37),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_181),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_12 ( 
+    .io_index(_zz_38),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_182),
+    .io_pixelData(_zz_183),
+    .io_addr(_zz_184),
+    .io_oamWr(_zz_39),
+    .io_oamAddr(_zz_40),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_185),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_13 ( 
+    .io_index(_zz_41),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_186),
+    .io_pixelData(_zz_187),
+    .io_addr(_zz_188),
+    .io_oamWr(_zz_42),
+    .io_oamAddr(_zz_43),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_189),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_14 ( 
+    .io_index(_zz_44),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_190),
+    .io_pixelData(_zz_191),
+    .io_addr(_zz_192),
+    .io_oamWr(_zz_45),
+    .io_oamAddr(_zz_46),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_193),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_15 ( 
+    .io_index(_zz_47),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_194),
+    .io_pixelData(_zz_195),
+    .io_addr(_zz_196),
+    .io_oamWr(_zz_48),
+    .io_oamAddr(_zz_49),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_197),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_16 ( 
+    .io_index(_zz_50),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_198),
+    .io_pixelData(_zz_199),
+    .io_addr(_zz_200),
+    .io_oamWr(_zz_51),
+    .io_oamAddr(_zz_52),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_201),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_17 ( 
+    .io_index(_zz_53),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_202),
+    .io_pixelData(_zz_203),
+    .io_addr(_zz_204),
+    .io_oamWr(_zz_54),
+    .io_oamAddr(_zz_55),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_205),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_18 ( 
+    .io_index(_zz_56),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_206),
+    .io_pixelData(_zz_207),
+    .io_addr(_zz_208),
+    .io_oamWr(_zz_57),
+    .io_oamAddr(_zz_58),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_209),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_19 ( 
+    .io_index(_zz_59),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_210),
+    .io_pixelData(_zz_211),
+    .io_addr(_zz_212),
+    .io_oamWr(_zz_60),
+    .io_oamAddr(_zz_61),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_213),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_20 ( 
+    .io_index(_zz_62),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_214),
+    .io_pixelData(_zz_215),
+    .io_addr(_zz_216),
+    .io_oamWr(_zz_63),
+    .io_oamAddr(_zz_64),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_217),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_21 ( 
+    .io_index(_zz_65),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_218),
+    .io_pixelData(_zz_219),
+    .io_addr(_zz_220),
+    .io_oamWr(_zz_66),
+    .io_oamAddr(_zz_67),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_221),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_22 ( 
+    .io_index(_zz_68),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_222),
+    .io_pixelData(_zz_223),
+    .io_addr(_zz_224),
+    .io_oamWr(_zz_69),
+    .io_oamAddr(_zz_70),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_225),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_23 ( 
+    .io_index(_zz_71),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_226),
+    .io_pixelData(_zz_227),
+    .io_addr(_zz_228),
+    .io_oamWr(_zz_72),
+    .io_oamAddr(_zz_73),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_229),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_24 ( 
+    .io_index(_zz_74),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_230),
+    .io_pixelData(_zz_231),
+    .io_addr(_zz_232),
+    .io_oamWr(_zz_75),
+    .io_oamAddr(_zz_76),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_233),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_25 ( 
+    .io_index(_zz_77),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_234),
+    .io_pixelData(_zz_235),
+    .io_addr(_zz_236),
+    .io_oamWr(_zz_78),
+    .io_oamAddr(_zz_79),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_237),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_26 ( 
+    .io_index(_zz_80),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_238),
+    .io_pixelData(_zz_239),
+    .io_addr(_zz_240),
+    .io_oamWr(_zz_81),
+    .io_oamAddr(_zz_82),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_241),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_27 ( 
+    .io_index(_zz_83),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_242),
+    .io_pixelData(_zz_243),
+    .io_addr(_zz_244),
+    .io_oamWr(_zz_84),
+    .io_oamAddr(_zz_85),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_245),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_28 ( 
+    .io_index(_zz_86),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_246),
+    .io_pixelData(_zz_247),
+    .io_addr(_zz_248),
+    .io_oamWr(_zz_87),
+    .io_oamAddr(_zz_88),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_249),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_29 ( 
+    .io_index(_zz_89),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_250),
+    .io_pixelData(_zz_251),
+    .io_addr(_zz_252),
+    .io_oamWr(_zz_90),
+    .io_oamAddr(_zz_91),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_253),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_30 ( 
+    .io_index(_zz_92),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_254),
+    .io_pixelData(_zz_255),
+    .io_addr(_zz_256),
+    .io_oamWr(_zz_93),
+    .io_oamAddr(_zz_94),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_257),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_31 ( 
+    .io_index(_zz_95),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_258),
+    .io_pixelData(_zz_259),
+    .io_addr(_zz_260),
+    .io_oamWr(_zz_96),
+    .io_oamAddr(_zz_97),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_261),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_32 ( 
+    .io_index(_zz_98),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_262),
+    .io_pixelData(_zz_263),
+    .io_addr(_zz_264),
+    .io_oamWr(_zz_99),
+    .io_oamAddr(_zz_100),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_265),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_33 ( 
+    .io_index(_zz_101),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_266),
+    .io_pixelData(_zz_267),
+    .io_addr(_zz_268),
+    .io_oamWr(_zz_102),
+    .io_oamAddr(_zz_103),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_269),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_34 ( 
+    .io_index(_zz_104),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_270),
+    .io_pixelData(_zz_271),
+    .io_addr(_zz_272),
+    .io_oamWr(_zz_105),
+    .io_oamAddr(_zz_106),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_273),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_35 ( 
+    .io_index(_zz_107),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_274),
+    .io_pixelData(_zz_275),
+    .io_addr(_zz_276),
+    .io_oamWr(_zz_108),
+    .io_oamAddr(_zz_109),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_277),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_36 ( 
+    .io_index(_zz_110),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_278),
+    .io_pixelData(_zz_279),
+    .io_addr(_zz_280),
+    .io_oamWr(_zz_111),
+    .io_oamAddr(_zz_112),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_281),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_37 ( 
+    .io_index(_zz_113),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_282),
+    .io_pixelData(_zz_283),
+    .io_addr(_zz_284),
+    .io_oamWr(_zz_114),
+    .io_oamAddr(_zz_115),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_285),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_38 ( 
+    .io_index(_zz_116),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_286),
+    .io_pixelData(_zz_287),
+    .io_addr(_zz_288),
+    .io_oamWr(_zz_117),
+    .io_oamAddr(_zz_118),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_289),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  Sprite sprites_39 ( 
+    .io_index(_zz_119),
+    .io_x(io_x),
+    .io_y(io_y),
+    .io_size16(io_size16),
+    .io_ds(io_dValid),
+    .io_data(io_data),
+    .io_pixelActive(_zz_290),
+    .io_pixelData(_zz_291),
+    .io_addr(_zz_292),
+    .io_oamWr(_zz_120),
+    .io_oamAddr(_zz_121),
+    .io_oamDi(io_oamDi),
+    .io_oamDo(_zz_293),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
+  always @(*) begin
+    case(_zz_294)
+      6'b000000 : begin
+        _zz_122 = spr0;
+      end
+      6'b000001 : begin
+        _zz_122 = spr1;
+      end
+      6'b000010 : begin
+        _zz_122 = spr2;
+      end
+      6'b000011 : begin
+        _zz_122 = spr3;
+      end
+      6'b000100 : begin
+        _zz_122 = spr4;
+      end
+      6'b000101 : begin
+        _zz_122 = spr5;
+      end
+      6'b000110 : begin
+        _zz_122 = spr6;
+      end
+      6'b000111 : begin
+        _zz_122 = spr7;
+      end
+      6'b001000 : begin
+        _zz_122 = spr8;
+      end
+      6'b001001 : begin
+        _zz_122 = spr9;
+      end
+      6'b001010 : begin
+        _zz_122 = spriteIndexArray_10;
+      end
+      6'b001011 : begin
+        _zz_122 = spriteIndexArray_11;
+      end
+      6'b001100 : begin
+        _zz_122 = spriteIndexArray_12;
+      end
+      6'b001101 : begin
+        _zz_122 = spriteIndexArray_13;
+      end
+      6'b001110 : begin
+        _zz_122 = spriteIndexArray_14;
+      end
+      6'b001111 : begin
+        _zz_122 = spriteIndexArray_15;
+      end
+      6'b010000 : begin
+        _zz_122 = spriteIndexArray_16;
+      end
+      6'b010001 : begin
+        _zz_122 = spriteIndexArray_17;
+      end
+      6'b010010 : begin
+        _zz_122 = spriteIndexArray_18;
+      end
+      6'b010011 : begin
+        _zz_122 = spriteIndexArray_19;
+      end
+      6'b010100 : begin
+        _zz_122 = spriteIndexArray_20;
+      end
+      6'b010101 : begin
+        _zz_122 = spriteIndexArray_21;
+      end
+      6'b010110 : begin
+        _zz_122 = spriteIndexArray_22;
+      end
+      6'b010111 : begin
+        _zz_122 = spriteIndexArray_23;
+      end
+      6'b011000 : begin
+        _zz_122 = spriteIndexArray_24;
+      end
+      6'b011001 : begin
+        _zz_122 = spriteIndexArray_25;
+      end
+      6'b011010 : begin
+        _zz_122 = spriteIndexArray_26;
+      end
+      6'b011011 : begin
+        _zz_122 = spriteIndexArray_27;
+      end
+      6'b011100 : begin
+        _zz_122 = spriteIndexArray_28;
+      end
+      6'b011101 : begin
+        _zz_122 = spriteIndexArray_29;
+      end
+      6'b011110 : begin
+        _zz_122 = spriteIndexArray_30;
+      end
+      6'b011111 : begin
+        _zz_122 = spriteIndexArray_31;
+      end
+      6'b100000 : begin
+        _zz_122 = spriteIndexArray_32;
+      end
+      6'b100001 : begin
+        _zz_122 = spriteIndexArray_33;
+      end
+      6'b100010 : begin
+        _zz_122 = spriteIndexArray_34;
+      end
+      6'b100011 : begin
+        _zz_122 = spriteIndexArray_35;
+      end
+      6'b100100 : begin
+        _zz_122 = spriteIndexArray_36;
+      end
+      6'b100101 : begin
+        _zz_122 = spriteIndexArray_37;
+      end
+      6'b100110 : begin
+        _zz_122 = spriteIndexArray_38;
+      end
+      default : begin
+        _zz_122 = spriteIndexArray_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(prioIndex)
+      6'b000000 : begin
+        _zz_123 = spriteAddr_0;
+      end
+      6'b000001 : begin
+        _zz_123 = spriteAddr_1;
+      end
+      6'b000010 : begin
+        _zz_123 = spriteAddr_2;
+      end
+      6'b000011 : begin
+        _zz_123 = spriteAddr_3;
+      end
+      6'b000100 : begin
+        _zz_123 = spriteAddr_4;
+      end
+      6'b000101 : begin
+        _zz_123 = spriteAddr_5;
+      end
+      6'b000110 : begin
+        _zz_123 = spriteAddr_6;
+      end
+      6'b000111 : begin
+        _zz_123 = spriteAddr_7;
+      end
+      6'b001000 : begin
+        _zz_123 = spriteAddr_8;
+      end
+      6'b001001 : begin
+        _zz_123 = spriteAddr_9;
+      end
+      6'b001010 : begin
+        _zz_123 = spriteAddr_10;
+      end
+      6'b001011 : begin
+        _zz_123 = spriteAddr_11;
+      end
+      6'b001100 : begin
+        _zz_123 = spriteAddr_12;
+      end
+      6'b001101 : begin
+        _zz_123 = spriteAddr_13;
+      end
+      6'b001110 : begin
+        _zz_123 = spriteAddr_14;
+      end
+      6'b001111 : begin
+        _zz_123 = spriteAddr_15;
+      end
+      6'b010000 : begin
+        _zz_123 = spriteAddr_16;
+      end
+      6'b010001 : begin
+        _zz_123 = spriteAddr_17;
+      end
+      6'b010010 : begin
+        _zz_123 = spriteAddr_18;
+      end
+      6'b010011 : begin
+        _zz_123 = spriteAddr_19;
+      end
+      6'b010100 : begin
+        _zz_123 = spriteAddr_20;
+      end
+      6'b010101 : begin
+        _zz_123 = spriteAddr_21;
+      end
+      6'b010110 : begin
+        _zz_123 = spriteAddr_22;
+      end
+      6'b010111 : begin
+        _zz_123 = spriteAddr_23;
+      end
+      6'b011000 : begin
+        _zz_123 = spriteAddr_24;
+      end
+      6'b011001 : begin
+        _zz_123 = spriteAddr_25;
+      end
+      6'b011010 : begin
+        _zz_123 = spriteAddr_26;
+      end
+      6'b011011 : begin
+        _zz_123 = spriteAddr_27;
+      end
+      6'b011100 : begin
+        _zz_123 = spriteAddr_28;
+      end
+      6'b011101 : begin
+        _zz_123 = spriteAddr_29;
+      end
+      6'b011110 : begin
+        _zz_123 = spriteAddr_30;
+      end
+      6'b011111 : begin
+        _zz_123 = spriteAddr_31;
+      end
+      6'b100000 : begin
+        _zz_123 = spriteAddr_32;
+      end
+      6'b100001 : begin
+        _zz_123 = spriteAddr_33;
+      end
+      6'b100010 : begin
+        _zz_123 = spriteAddr_34;
+      end
+      6'b100011 : begin
+        _zz_123 = spriteAddr_35;
+      end
+      6'b100100 : begin
+        _zz_123 = spriteAddr_36;
+      end
+      6'b100101 : begin
+        _zz_123 = spriteAddr_37;
+      end
+      6'b100110 : begin
+        _zz_123 = spriteAddr_38;
+      end
+      default : begin
+        _zz_123 = spriteAddr_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr0)
+      6'b000000 : begin
+        _zz_124 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_124 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_124 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_124 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_124 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_124 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_124 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_124 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_124 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_124 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_124 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_124 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_124 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_124 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_124 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_124 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_124 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_124 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_124 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_124 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_124 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_124 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_124 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_124 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_124 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_124 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_124 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_124 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_124 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_124 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_124 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_124 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_124 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_124 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_124 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_124 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_124 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_124 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_124 = spritePixelData_38;
+      end
+      default : begin
+        _zz_124 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr1)
+      6'b000000 : begin
+        _zz_125 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_125 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_125 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_125 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_125 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_125 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_125 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_125 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_125 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_125 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_125 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_125 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_125 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_125 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_125 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_125 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_125 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_125 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_125 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_125 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_125 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_125 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_125 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_125 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_125 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_125 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_125 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_125 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_125 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_125 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_125 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_125 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_125 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_125 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_125 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_125 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_125 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_125 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_125 = spritePixelData_38;
+      end
+      default : begin
+        _zz_125 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr2)
+      6'b000000 : begin
+        _zz_126 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_126 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_126 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_126 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_126 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_126 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_126 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_126 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_126 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_126 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_126 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_126 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_126 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_126 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_126 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_126 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_126 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_126 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_126 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_126 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_126 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_126 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_126 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_126 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_126 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_126 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_126 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_126 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_126 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_126 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_126 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_126 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_126 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_126 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_126 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_126 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_126 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_126 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_126 = spritePixelData_38;
+      end
+      default : begin
+        _zz_126 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr3)
+      6'b000000 : begin
+        _zz_127 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_127 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_127 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_127 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_127 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_127 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_127 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_127 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_127 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_127 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_127 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_127 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_127 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_127 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_127 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_127 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_127 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_127 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_127 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_127 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_127 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_127 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_127 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_127 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_127 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_127 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_127 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_127 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_127 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_127 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_127 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_127 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_127 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_127 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_127 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_127 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_127 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_127 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_127 = spritePixelData_38;
+      end
+      default : begin
+        _zz_127 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr4)
+      6'b000000 : begin
+        _zz_128 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_128 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_128 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_128 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_128 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_128 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_128 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_128 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_128 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_128 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_128 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_128 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_128 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_128 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_128 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_128 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_128 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_128 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_128 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_128 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_128 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_128 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_128 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_128 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_128 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_128 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_128 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_128 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_128 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_128 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_128 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_128 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_128 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_128 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_128 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_128 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_128 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_128 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_128 = spritePixelData_38;
+      end
+      default : begin
+        _zz_128 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr5)
+      6'b000000 : begin
+        _zz_129 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_129 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_129 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_129 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_129 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_129 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_129 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_129 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_129 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_129 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_129 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_129 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_129 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_129 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_129 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_129 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_129 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_129 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_129 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_129 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_129 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_129 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_129 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_129 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_129 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_129 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_129 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_129 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_129 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_129 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_129 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_129 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_129 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_129 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_129 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_129 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_129 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_129 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_129 = spritePixelData_38;
+      end
+      default : begin
+        _zz_129 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr6)
+      6'b000000 : begin
+        _zz_130 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_130 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_130 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_130 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_130 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_130 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_130 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_130 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_130 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_130 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_130 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_130 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_130 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_130 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_130 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_130 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_130 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_130 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_130 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_130 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_130 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_130 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_130 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_130 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_130 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_130 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_130 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_130 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_130 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_130 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_130 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_130 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_130 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_130 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_130 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_130 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_130 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_130 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_130 = spritePixelData_38;
+      end
+      default : begin
+        _zz_130 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr7)
+      6'b000000 : begin
+        _zz_131 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_131 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_131 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_131 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_131 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_131 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_131 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_131 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_131 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_131 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_131 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_131 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_131 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_131 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_131 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_131 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_131 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_131 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_131 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_131 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_131 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_131 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_131 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_131 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_131 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_131 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_131 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_131 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_131 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_131 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_131 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_131 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_131 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_131 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_131 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_131 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_131 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_131 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_131 = spritePixelData_38;
+      end
+      default : begin
+        _zz_131 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr8)
+      6'b000000 : begin
+        _zz_132 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_132 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_132 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_132 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_132 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_132 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_132 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_132 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_132 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_132 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_132 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_132 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_132 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_132 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_132 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_132 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_132 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_132 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_132 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_132 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_132 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_132 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_132 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_132 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_132 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_132 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_132 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_132 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_132 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_132 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_132 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_132 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_132 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_132 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_132 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_132 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_132 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_132 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_132 = spritePixelData_38;
+      end
+      default : begin
+        _zz_132 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  always @(*) begin
+    case(spr9)
+      6'b000000 : begin
+        _zz_133 = spritePixelData_0;
+      end
+      6'b000001 : begin
+        _zz_133 = spritePixelData_1;
+      end
+      6'b000010 : begin
+        _zz_133 = spritePixelData_2;
+      end
+      6'b000011 : begin
+        _zz_133 = spritePixelData_3;
+      end
+      6'b000100 : begin
+        _zz_133 = spritePixelData_4;
+      end
+      6'b000101 : begin
+        _zz_133 = spritePixelData_5;
+      end
+      6'b000110 : begin
+        _zz_133 = spritePixelData_6;
+      end
+      6'b000111 : begin
+        _zz_133 = spritePixelData_7;
+      end
+      6'b001000 : begin
+        _zz_133 = spritePixelData_8;
+      end
+      6'b001001 : begin
+        _zz_133 = spritePixelData_9;
+      end
+      6'b001010 : begin
+        _zz_133 = spritePixelData_10;
+      end
+      6'b001011 : begin
+        _zz_133 = spritePixelData_11;
+      end
+      6'b001100 : begin
+        _zz_133 = spritePixelData_12;
+      end
+      6'b001101 : begin
+        _zz_133 = spritePixelData_13;
+      end
+      6'b001110 : begin
+        _zz_133 = spritePixelData_14;
+      end
+      6'b001111 : begin
+        _zz_133 = spritePixelData_15;
+      end
+      6'b010000 : begin
+        _zz_133 = spritePixelData_16;
+      end
+      6'b010001 : begin
+        _zz_133 = spritePixelData_17;
+      end
+      6'b010010 : begin
+        _zz_133 = spritePixelData_18;
+      end
+      6'b010011 : begin
+        _zz_133 = spritePixelData_19;
+      end
+      6'b010100 : begin
+        _zz_133 = spritePixelData_20;
+      end
+      6'b010101 : begin
+        _zz_133 = spritePixelData_21;
+      end
+      6'b010110 : begin
+        _zz_133 = spritePixelData_22;
+      end
+      6'b010111 : begin
+        _zz_133 = spritePixelData_23;
+      end
+      6'b011000 : begin
+        _zz_133 = spritePixelData_24;
+      end
+      6'b011001 : begin
+        _zz_133 = spritePixelData_25;
+      end
+      6'b011010 : begin
+        _zz_133 = spritePixelData_26;
+      end
+      6'b011011 : begin
+        _zz_133 = spritePixelData_27;
+      end
+      6'b011100 : begin
+        _zz_133 = spritePixelData_28;
+      end
+      6'b011101 : begin
+        _zz_133 = spritePixelData_29;
+      end
+      6'b011110 : begin
+        _zz_133 = spritePixelData_30;
+      end
+      6'b011111 : begin
+        _zz_133 = spritePixelData_31;
+      end
+      6'b100000 : begin
+        _zz_133 = spritePixelData_32;
+      end
+      6'b100001 : begin
+        _zz_133 = spritePixelData_33;
+      end
+      6'b100010 : begin
+        _zz_133 = spritePixelData_34;
+      end
+      6'b100011 : begin
+        _zz_133 = spritePixelData_35;
+      end
+      6'b100100 : begin
+        _zz_133 = spritePixelData_36;
+      end
+      6'b100101 : begin
+        _zz_133 = spritePixelData_37;
+      end
+      6'b100110 : begin
+        _zz_133 = spritePixelData_38;
+      end
+      default : begin
+        _zz_133 = spritePixelData_39;
+      end
+    endcase
+  end
+
+  assign prioIndex = _zz_122;
+  assign io_addr = _zz_123;
+  assign spr0 = (6'b000000);
+  assign spr1 = (6'b000001);
+  assign spr2 = (6'b000010);
+  assign spr3 = (6'b000011);
+  assign spr4 = (6'b000100);
+  assign spr5 = (6'b000101);
+  assign spr6 = (6'b000110);
+  assign spr7 = (6'b000111);
+  assign spr8 = (6'b001000);
+  assign spr9 = (6'b001001);
+  assign spriteIndexArray_10 = (6'b001010);
+  assign spriteIndexArray_11 = (6'b001011);
+  assign spriteIndexArray_12 = (6'b001100);
+  assign spriteIndexArray_13 = (6'b001101);
+  assign spriteIndexArray_14 = (6'b001110);
+  assign spriteIndexArray_15 = (6'b001111);
+  assign spriteIndexArray_16 = (6'b010000);
+  assign spriteIndexArray_17 = (6'b010001);
+  assign spriteIndexArray_18 = (6'b010010);
+  assign spriteIndexArray_19 = (6'b010011);
+  assign spriteIndexArray_20 = (6'b010100);
+  assign spriteIndexArray_21 = (6'b010101);
+  assign spriteIndexArray_22 = (6'b010110);
+  assign spriteIndexArray_23 = (6'b010111);
+  assign spriteIndexArray_24 = (6'b011000);
+  assign spriteIndexArray_25 = (6'b011001);
+  assign spriteIndexArray_26 = (6'b011010);
+  assign spriteIndexArray_27 = (6'b011011);
+  assign spriteIndexArray_28 = (6'b011100);
+  assign spriteIndexArray_29 = (6'b011101);
+  assign spriteIndexArray_30 = (6'b011110);
+  assign spriteIndexArray_31 = (6'b011111);
+  assign spriteIndexArray_32 = (6'b100000);
+  assign spriteIndexArray_33 = (6'b100001);
+  assign spriteIndexArray_34 = (6'b100010);
+  assign spriteIndexArray_35 = (6'b100011);
+  assign spriteIndexArray_36 = (6'b100100);
+  assign spriteIndexArray_37 = (6'b100101);
+  assign spriteIndexArray_38 = (6'b100110);
+  assign spriteIndexArray_39 = (6'b100111);
+  assign _zz_2 = (6'b000000);
+  assign spriteAddr_0 = _zz_136;
+  always @ (*) begin
+    spritePixelActive[0] = _zz_134;
+    spritePixelActive[1] = _zz_138;
+    spritePixelActive[2] = _zz_142;
+    spritePixelActive[3] = _zz_146;
+    spritePixelActive[4] = _zz_150;
+    spritePixelActive[5] = _zz_154;
+    spritePixelActive[6] = _zz_158;
+    spritePixelActive[7] = _zz_162;
+    spritePixelActive[8] = _zz_166;
+    spritePixelActive[9] = _zz_170;
+    spritePixelActive[10] = _zz_174;
+    spritePixelActive[11] = _zz_178;
+    spritePixelActive[12] = _zz_182;
+    spritePixelActive[13] = _zz_186;
+    spritePixelActive[14] = _zz_190;
+    spritePixelActive[15] = _zz_194;
+    spritePixelActive[16] = _zz_198;
+    spritePixelActive[17] = _zz_202;
+    spritePixelActive[18] = _zz_206;
+    spritePixelActive[19] = _zz_210;
+    spritePixelActive[20] = _zz_214;
+    spritePixelActive[21] = _zz_218;
+    spritePixelActive[22] = _zz_222;
+    spritePixelActive[23] = _zz_226;
+    spritePixelActive[24] = _zz_230;
+    spritePixelActive[25] = _zz_234;
+    spritePixelActive[26] = _zz_238;
+    spritePixelActive[27] = _zz_242;
+    spritePixelActive[28] = _zz_246;
+    spritePixelActive[29] = _zz_250;
+    spritePixelActive[30] = _zz_254;
+    spritePixelActive[31] = _zz_258;
+    spritePixelActive[32] = _zz_262;
+    spritePixelActive[33] = _zz_266;
+    spritePixelActive[34] = _zz_270;
+    spritePixelActive[35] = _zz_274;
+    spritePixelActive[36] = _zz_278;
+    spritePixelActive[37] = _zz_282;
+    spritePixelActive[38] = _zz_286;
+    spritePixelActive[39] = _zz_290;
+  end
+
+  assign spritePixelData_0 = _zz_135;
+  assign _zz_3 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000000)));
+  assign _zz_4 = io_oamAddr[1 : 0];
+  assign spriteOamDo_0 = _zz_137;
+  assign _zz_5 = (6'b000001);
+  assign spriteAddr_1 = _zz_140;
+  assign spritePixelData_1 = _zz_139;
+  assign _zz_6 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000001)));
+  assign _zz_7 = io_oamAddr[1 : 0];
+  assign spriteOamDo_1 = _zz_141;
+  assign _zz_8 = (6'b000010);
+  assign spriteAddr_2 = _zz_144;
+  assign spritePixelData_2 = _zz_143;
+  assign _zz_9 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000010)));
+  assign _zz_10 = io_oamAddr[1 : 0];
+  assign spriteOamDo_2 = _zz_145;
+  assign _zz_11 = (6'b000011);
+  assign spriteAddr_3 = _zz_148;
+  assign spritePixelData_3 = _zz_147;
+  assign _zz_12 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000011)));
+  assign _zz_13 = io_oamAddr[1 : 0];
+  assign spriteOamDo_3 = _zz_149;
+  assign _zz_14 = (6'b000100);
+  assign spriteAddr_4 = _zz_152;
+  assign spritePixelData_4 = _zz_151;
+  assign _zz_15 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000100)));
+  assign _zz_16 = io_oamAddr[1 : 0];
+  assign spriteOamDo_4 = _zz_153;
+  assign _zz_17 = (6'b000101);
+  assign spriteAddr_5 = _zz_156;
+  assign spritePixelData_5 = _zz_155;
+  assign _zz_18 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000101)));
+  assign _zz_19 = io_oamAddr[1 : 0];
+  assign spriteOamDo_5 = _zz_157;
+  assign _zz_20 = (6'b000110);
+  assign spriteAddr_6 = _zz_160;
+  assign spritePixelData_6 = _zz_159;
+  assign _zz_21 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000110)));
+  assign _zz_22 = io_oamAddr[1 : 0];
+  assign spriteOamDo_6 = _zz_161;
+  assign _zz_23 = (6'b000111);
+  assign spriteAddr_7 = _zz_164;
+  assign spritePixelData_7 = _zz_163;
+  assign _zz_24 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b000111)));
+  assign _zz_25 = io_oamAddr[1 : 0];
+  assign spriteOamDo_7 = _zz_165;
+  assign _zz_26 = (6'b001000);
+  assign spriteAddr_8 = _zz_168;
+  assign spritePixelData_8 = _zz_167;
+  assign _zz_27 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001000)));
+  assign _zz_28 = io_oamAddr[1 : 0];
+  assign spriteOamDo_8 = _zz_169;
+  assign _zz_29 = (6'b001001);
+  assign spriteAddr_9 = _zz_172;
+  assign spritePixelData_9 = _zz_171;
+  assign _zz_30 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001001)));
+  assign _zz_31 = io_oamAddr[1 : 0];
+  assign spriteOamDo_9 = _zz_173;
+  assign _zz_32 = (6'b001010);
+  assign spriteAddr_10 = _zz_176;
+  assign spritePixelData_10 = _zz_175;
+  assign _zz_33 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001010)));
+  assign _zz_34 = io_oamAddr[1 : 0];
+  assign spriteOamDo_10 = _zz_177;
+  assign _zz_35 = (6'b001011);
+  assign spriteAddr_11 = _zz_180;
+  assign spritePixelData_11 = _zz_179;
+  assign _zz_36 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001011)));
+  assign _zz_37 = io_oamAddr[1 : 0];
+  assign spriteOamDo_11 = _zz_181;
+  assign _zz_38 = (6'b001100);
+  assign spriteAddr_12 = _zz_184;
+  assign spritePixelData_12 = _zz_183;
+  assign _zz_39 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001100)));
+  assign _zz_40 = io_oamAddr[1 : 0];
+  assign spriteOamDo_12 = _zz_185;
+  assign _zz_41 = (6'b001101);
+  assign spriteAddr_13 = _zz_188;
+  assign spritePixelData_13 = _zz_187;
+  assign _zz_42 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001101)));
+  assign _zz_43 = io_oamAddr[1 : 0];
+  assign spriteOamDo_13 = _zz_189;
+  assign _zz_44 = (6'b001110);
+  assign spriteAddr_14 = _zz_192;
+  assign spritePixelData_14 = _zz_191;
+  assign _zz_45 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001110)));
+  assign _zz_46 = io_oamAddr[1 : 0];
+  assign spriteOamDo_14 = _zz_193;
+  assign _zz_47 = (6'b001111);
+  assign spriteAddr_15 = _zz_196;
+  assign spritePixelData_15 = _zz_195;
+  assign _zz_48 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b001111)));
+  assign _zz_49 = io_oamAddr[1 : 0];
+  assign spriteOamDo_15 = _zz_197;
+  assign _zz_50 = (6'b010000);
+  assign spriteAddr_16 = _zz_200;
+  assign spritePixelData_16 = _zz_199;
+  assign _zz_51 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010000)));
+  assign _zz_52 = io_oamAddr[1 : 0];
+  assign spriteOamDo_16 = _zz_201;
+  assign _zz_53 = (6'b010001);
+  assign spriteAddr_17 = _zz_204;
+  assign spritePixelData_17 = _zz_203;
+  assign _zz_54 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010001)));
+  assign _zz_55 = io_oamAddr[1 : 0];
+  assign spriteOamDo_17 = _zz_205;
+  assign _zz_56 = (6'b010010);
+  assign spriteAddr_18 = _zz_208;
+  assign spritePixelData_18 = _zz_207;
+  assign _zz_57 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010010)));
+  assign _zz_58 = io_oamAddr[1 : 0];
+  assign spriteOamDo_18 = _zz_209;
+  assign _zz_59 = (6'b010011);
+  assign spriteAddr_19 = _zz_212;
+  assign spritePixelData_19 = _zz_211;
+  assign _zz_60 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010011)));
+  assign _zz_61 = io_oamAddr[1 : 0];
+  assign spriteOamDo_19 = _zz_213;
+  assign _zz_62 = (6'b010100);
+  assign spriteAddr_20 = _zz_216;
+  assign spritePixelData_20 = _zz_215;
+  assign _zz_63 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010100)));
+  assign _zz_64 = io_oamAddr[1 : 0];
+  assign spriteOamDo_20 = _zz_217;
+  assign _zz_65 = (6'b010101);
+  assign spriteAddr_21 = _zz_220;
+  assign spritePixelData_21 = _zz_219;
+  assign _zz_66 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010101)));
+  assign _zz_67 = io_oamAddr[1 : 0];
+  assign spriteOamDo_21 = _zz_221;
+  assign _zz_68 = (6'b010110);
+  assign spriteAddr_22 = _zz_224;
+  assign spritePixelData_22 = _zz_223;
+  assign _zz_69 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010110)));
+  assign _zz_70 = io_oamAddr[1 : 0];
+  assign spriteOamDo_22 = _zz_225;
+  assign _zz_71 = (6'b010111);
+  assign spriteAddr_23 = _zz_228;
+  assign spritePixelData_23 = _zz_227;
+  assign _zz_72 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b010111)));
+  assign _zz_73 = io_oamAddr[1 : 0];
+  assign spriteOamDo_23 = _zz_229;
+  assign _zz_74 = (6'b011000);
+  assign spriteAddr_24 = _zz_232;
+  assign spritePixelData_24 = _zz_231;
+  assign _zz_75 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011000)));
+  assign _zz_76 = io_oamAddr[1 : 0];
+  assign spriteOamDo_24 = _zz_233;
+  assign _zz_77 = (6'b011001);
+  assign spriteAddr_25 = _zz_236;
+  assign spritePixelData_25 = _zz_235;
+  assign _zz_78 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011001)));
+  assign _zz_79 = io_oamAddr[1 : 0];
+  assign spriteOamDo_25 = _zz_237;
+  assign _zz_80 = (6'b011010);
+  assign spriteAddr_26 = _zz_240;
+  assign spritePixelData_26 = _zz_239;
+  assign _zz_81 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011010)));
+  assign _zz_82 = io_oamAddr[1 : 0];
+  assign spriteOamDo_26 = _zz_241;
+  assign _zz_83 = (6'b011011);
+  assign spriteAddr_27 = _zz_244;
+  assign spritePixelData_27 = _zz_243;
+  assign _zz_84 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011011)));
+  assign _zz_85 = io_oamAddr[1 : 0];
+  assign spriteOamDo_27 = _zz_245;
+  assign _zz_86 = (6'b011100);
+  assign spriteAddr_28 = _zz_248;
+  assign spritePixelData_28 = _zz_247;
+  assign _zz_87 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011100)));
+  assign _zz_88 = io_oamAddr[1 : 0];
+  assign spriteOamDo_28 = _zz_249;
+  assign _zz_89 = (6'b011101);
+  assign spriteAddr_29 = _zz_252;
+  assign spritePixelData_29 = _zz_251;
+  assign _zz_90 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011101)));
+  assign _zz_91 = io_oamAddr[1 : 0];
+  assign spriteOamDo_29 = _zz_253;
+  assign _zz_92 = (6'b011110);
+  assign spriteAddr_30 = _zz_256;
+  assign spritePixelData_30 = _zz_255;
+  assign _zz_93 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011110)));
+  assign _zz_94 = io_oamAddr[1 : 0];
+  assign spriteOamDo_30 = _zz_257;
+  assign _zz_95 = (6'b011111);
+  assign spriteAddr_31 = _zz_260;
+  assign spritePixelData_31 = _zz_259;
+  assign _zz_96 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b011111)));
+  assign _zz_97 = io_oamAddr[1 : 0];
+  assign spriteOamDo_31 = _zz_261;
+  assign _zz_98 = (6'b100000);
+  assign spriteAddr_32 = _zz_264;
+  assign spritePixelData_32 = _zz_263;
+  assign _zz_99 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100000)));
+  assign _zz_100 = io_oamAddr[1 : 0];
+  assign spriteOamDo_32 = _zz_265;
+  assign _zz_101 = (6'b100001);
+  assign spriteAddr_33 = _zz_268;
+  assign spritePixelData_33 = _zz_267;
+  assign _zz_102 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100001)));
+  assign _zz_103 = io_oamAddr[1 : 0];
+  assign spriteOamDo_33 = _zz_269;
+  assign _zz_104 = (6'b100010);
+  assign spriteAddr_34 = _zz_272;
+  assign spritePixelData_34 = _zz_271;
+  assign _zz_105 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100010)));
+  assign _zz_106 = io_oamAddr[1 : 0];
+  assign spriteOamDo_34 = _zz_273;
+  assign _zz_107 = (6'b100011);
+  assign spriteAddr_35 = _zz_276;
+  assign spritePixelData_35 = _zz_275;
+  assign _zz_108 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100011)));
+  assign _zz_109 = io_oamAddr[1 : 0];
+  assign spriteOamDo_35 = _zz_277;
+  assign _zz_110 = (6'b100100);
+  assign spriteAddr_36 = _zz_280;
+  assign spritePixelData_36 = _zz_279;
+  assign _zz_111 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100100)));
+  assign _zz_112 = io_oamAddr[1 : 0];
+  assign spriteOamDo_36 = _zz_281;
+  assign _zz_113 = (6'b100101);
+  assign spriteAddr_37 = _zz_284;
+  assign spritePixelData_37 = _zz_283;
+  assign _zz_114 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100101)));
+  assign _zz_115 = io_oamAddr[1 : 0];
+  assign spriteOamDo_37 = _zz_285;
+  assign _zz_116 = (6'b100110);
+  assign spriteAddr_38 = _zz_288;
+  assign spritePixelData_38 = _zz_287;
+  assign _zz_117 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100110)));
+  assign _zz_118 = io_oamAddr[1 : 0];
+  assign spriteOamDo_38 = _zz_289;
+  assign _zz_119 = (6'b100111);
+  assign spriteAddr_39 = _zz_292;
+  assign spritePixelData_39 = _zz_291;
+  assign _zz_120 = (io_oamWr && (io_oamAddr[7 : 2] == (6'b100111)));
+  assign _zz_121 = io_oamAddr[1 : 0];
+  assign spriteOamDo_39 = _zz_293;
+  assign io_pixelActive = (((((((((spritePixelActive[spr0] || spritePixelActive[spr1]) || spritePixelActive[spr2]) || spritePixelActive[spr3]) || spritePixelActive[spr4]) || spritePixelActive[spr5]) || spritePixelActive[spr6]) || spritePixelActive[spr7]) || spritePixelActive[spr8]) || spritePixelActive[spr9]);
+  assign io_pixelData = (spritePixelActive[spr0] ? _zz_124 : (spritePixelActive[spr1] ? _zz_125 : (spritePixelActive[spr2] ? _zz_126 : (spritePixelActive[spr3] ? _zz_127 : (spritePixelActive[spr4] ? _zz_128 : (spritePixelActive[spr5] ? _zz_129 : (spritePixelActive[spr6] ? _zz_130 : (spritePixelActive[spr7] ? _zz_131 : (spritePixelActive[spr8] ? _zz_132 : (spritePixelActive[spr9] ? _zz_133 : (2'b00)))))))))));
 endmodule
 
 module Cpu (
@@ -4923,24 +8120,35 @@ module PPUUlx3s (
       input   _zz_1);
   wire  _zz_2;
   wire [15:0] _zz_3;
-  reg [15:0] _zz_4;
-  wire  _zz_5;
+  wire  _zz_4;
+  wire [1:0] _zz_5;
   wire [7:0] _zz_6;
-  wire [7:0] _zz_7;
+  wire [3:0] _zz_7;
   wire  _zz_8;
-  wire  _zz_9;
-  wire  _zz_10;
-  wire  _zz_11;
+  wire [7:0] _zz_9;
+  wire [7:0] _zz_10;
+  reg [15:0] _zz_11;
   wire  _zz_12;
-  wire  _zz_13;
-  wire  _zz_14;
+  wire [7:0] _zz_13;
+  wire [7:0] _zz_14;
   wire  _zz_15;
   wire  _zz_16;
   wire  _zz_17;
-  wire [2:0] _zz_18;
-  wire [2:0] _zz_19;
-  wire [3:0] _zz_20;
-  wire [1:0] _zz_21;
+  wire  _zz_18;
+  wire  _zz_19;
+  wire  _zz_20;
+  wire  _zz_21;
+  wire [1:0] _zz_22;
+  wire [10:0] _zz_23;
+  wire [7:0] _zz_24;
+  wire  _zz_25;
+  wire  _zz_26;
+  wire  _zz_27;
+  wire  _zz_28;
+  wire [2:0] _zz_29;
+  wire [2:0] _zz_30;
+  wire [3:0] _zz_31;
+  wire [1:0] _zz_32;
   reg [1:0] mode;
   wire [15:0] colors_0;
   wire [15:0] colors_1;
@@ -4952,16 +8160,6 @@ module PPUUlx3s (
   reg [7:0] texture0;
   reg [7:0] texture1;
   reg [1:0] bitCycle;
-  reg [31:0] sprites_0;
-  reg [31:0] sprites_1;
-  reg [31:0] sprites_2;
-  reg [31:0] sprites_3;
-  reg [31:0] sprites_4;
-  reg [31:0] sprites_5;
-  reg [31:0] sprites_6;
-  reg [31:0] sprites_7;
-  reg [31:0] sprites_8;
-  reg [31:0] sprites_9;
   wire [12:0] bgScrnAddress;
   wire [12:0] windowAddress;
   wire  showWindow;
@@ -4974,45 +8172,64 @@ module PPUUlx3s (
   wire [7:0] winTileX;
   wire [7:0] winTileY;
   wire [2:0] bitx;
+  reg  spritePixelActive;
+  reg [10:0] spriteAddr;
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_14 = (bitCycle == (2'b10));
-  assign _zz_15 = (bitCycle == (2'b01));
-  assign _zz_16 = (bitCycle == (2'b00));
-  assign _zz_17 = (bitx == (3'b111));
-  assign _zz_18 = ((3'b111) - bitx);
-  assign _zz_19 = ((3'b111) - bitx);
-  assign _zz_20 = (color * (2'b10));
-  assign _zz_21 = io_bgPalette[_zz_20 +: 2];
+  assign _zz_25 = (bitCycle == (2'b01));
+  assign _zz_26 = (bitx == (3'b111));
+  assign _zz_27 = (bitCycle == (2'b00));
+  assign _zz_28 = (bitCycle == (2'b10));
+  assign _zz_29 = ((3'b111) - bitx);
+  assign _zz_30 = ((3'b111) - bitx);
+  assign _zz_31 = (color * (2'b10));
+  assign _zz_32 = io_bgPalette[_zz_31 +: 2];
   ST7789 lcd ( 
     .io_pixels_valid(_zz_2),
-    .io_pixels_ready(_zz_5),
+    .io_pixels_ready(_zz_12),
     .io_pixels_payload(_zz_3),
-    .io_x(_zz_6),
-    .io_y(_zz_7),
-    .io_next_pixel(_zz_8),
-    .io_oled_csn(_zz_9),
-    .io_oled_clk(_zz_10),
-    .io_oled_mosi(_zz_11),
-    .io_oled_dc(_zz_12),
-    .io_oled_resn(_zz_13),
+    .io_x(_zz_13),
+    .io_y(_zz_14),
+    .io_next_pixel(_zz_15),
+    .io_oled_csn(_zz_16),
+    .io_oled_clk(_zz_17),
+    .io_oled_mosi(_zz_18),
+    .io_oled_dc(_zz_19),
+    .io_oled_resn(_zz_20),
     .clkout0(clkout0),
     ._zz_2(_zz_1) 
   );
+  Sprites sprites_1 ( 
+    .io_size16(_zz_4),
+    .io_x(x),
+    .io_y(y),
+    .io_dValid(_zz_5),
+    .io_data(_zz_6),
+    .io_pixelActive(_zz_21),
+    .io_pixelData(_zz_22),
+    .io_addr(_zz_23),
+    .io_index(_zz_7),
+    .io_oamWr(_zz_8),
+    .io_oamAddr(_zz_9),
+    .io_oamDi(_zz_10),
+    .io_oamDo(_zz_24),
+    .clkout0(clkout0),
+    ._zz_1(_zz_1) 
+  );
   always @(*) begin
-    case(_zz_21)
+    case(_zz_32)
       2'b00 : begin
-        _zz_4 = colors_0;
+        _zz_11 = colors_0;
       end
       2'b01 : begin
-        _zz_4 = colors_1;
+        _zz_11 = colors_1;
       end
       2'b10 : begin
-        _zz_4 = colors_2;
+        _zz_11 = colors_2;
       end
       default : begin
-        _zz_4 = colors_3;
+        _zz_11 = colors_3;
       end
     endcase
   end
@@ -5023,25 +8240,25 @@ module PPUUlx3s (
   assign colors_2 = (16'b1000010101000001);
   assign colors_3 = (16'b1001010111000001);
   assign io_currentY = y;
-  assign io_oled_csn = _zz_9;
-  assign io_oled_resn = _zz_13;
-  assign io_oled_dc = _zz_12;
-  assign io_oled_mosi = _zz_11;
-  assign io_oled_clk = _zz_10;
+  assign io_oled_csn = _zz_16;
+  assign io_oled_resn = _zz_20;
+  assign io_oled_dc = _zz_19;
+  assign io_oled_mosi = _zz_18;
+  assign io_oled_clk = _zz_17;
   always @ (*) begin
     io_address = (13'b0000000000000);
-    if(_zz_17)begin
-      if(_zz_16)begin
+    if(_zz_26)begin
+      if(_zz_27)begin
         if(inWindow)begin
           io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
         end else begin
           io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
         end
       end else begin
-        if(_zz_15)begin
+        if(_zz_25)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end else begin
-          if(_zz_14)begin
+          if(_zz_28)begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end
@@ -5061,10 +8278,13 @@ module PPUUlx3s (
   assign winTileX = (x - io_windowX);
   assign winTileY = (y - io_windowY);
   assign bitx = tileX[2 : 0];
-  assign bit0 = texture0[_zz_18];
-  assign bit1 = texture1[_zz_19];
+  assign _zz_4 = io_lcdControl[2];
+  assign _zz_10 = (8'b00000000);
+  assign _zz_7 = (4'b0000);
+  assign bit0 = texture0[_zz_29];
+  assign bit1 = texture1[_zz_30];
   assign color = {bit1,bit0};
-  assign _zz_3 = _zz_4;
+  assign _zz_3 = _zz_11;
   assign _zz_2 = (((x < (8'b10100000)) && (y < (8'b10010000))) && io_lcdControl[7]);
   always @ (posedge clkout0 or negedge _zz_1) begin
     if (!_zz_1) begin
@@ -5073,7 +8293,7 @@ module PPUUlx3s (
       y <= (8'b00000000);
     end else begin
       mode <= (((8'b10001111) < y) ? (2'b01) : (2'b00));
-      if(_zz_5)begin
+      if(_zz_12)begin
         x <= (x + (8'b00000001));
         if((x == (8'b10011111)))begin
           x <= (8'b00000000);
@@ -5088,12 +8308,14 @@ module PPUUlx3s (
 
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (2'b01));
-    if(_zz_17)begin
-      if(! _zz_16) begin
-        if(_zz_15)begin
+    spritePixelActive <= _zz_21;
+    spriteAddr <= _zz_23;
+    if(_zz_26)begin
+      if(! _zz_27) begin
+        if(_zz_25)begin
           tile <= io_dataIn;
         end else begin
-          if(_zz_14)begin
+          if(_zz_28)begin
             if(bgOn)begin
               texture0 <= io_dataIn;
             end else begin
@@ -5111,7 +8333,7 @@ module PPUUlx3s (
         end
       end
     end
-    if(_zz_5)begin
+    if(_zz_12)begin
       bitCycle <= (2'b00);
     end
   end
