@@ -1,14 +1,53 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 26/02/2020, 10:10:25
+// Date      : 26/02/2020, 18:08:57
 // Component : GameBoyUlx3s
 
 
-`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
-`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
-`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
+`define AluOp_binary_sequancial_type [5:0]
+`define AluOp_binary_sequancial_Nop 6'b000000
+`define AluOp_binary_sequancial_Add 6'b000001
+`define AluOp_binary_sequancial_Adc 6'b000010
+`define AluOp_binary_sequancial_Sub 6'b000011
+`define AluOp_binary_sequancial_Sbc 6'b000100
+`define AluOp_binary_sequancial_And_1 6'b000101
+`define AluOp_binary_sequancial_Xor_1 6'b000110
+`define AluOp_binary_sequancial_Or_1 6'b000111
+`define AluOp_binary_sequancial_Cp 6'b001000
+`define AluOp_binary_sequancial_Sub1 6'b001001
+`define AluOp_binary_sequancial_Sbc1 6'b001010
+`define AluOp_binary_sequancial_Inc 6'b001011
+`define AluOp_binary_sequancial_Dec 6'b001100
+`define AluOp_binary_sequancial_Cpl 6'b001101
+`define AluOp_binary_sequancial_Ccf 6'b001110
+`define AluOp_binary_sequancial_Scf 6'b001111
+`define AluOp_binary_sequancial_Incc 6'b010000
+`define AluOp_binary_sequancial_Decc 6'b010001
+`define AluOp_binary_sequancial_Swap 6'b010010
+`define AluOp_binary_sequancial_Add1 6'b010011
+`define AluOp_binary_sequancial_Adc1 6'b010100
+`define AluOp_binary_sequancial_Rlca 6'b010101
+`define AluOp_binary_sequancial_Rrca 6'b010110
+`define AluOp_binary_sequancial_Rla 6'b010111
+`define AluOp_binary_sequancial_Rra 6'b011000
+`define AluOp_binary_sequancial_Bit_1 6'b011001
+`define AluOp_binary_sequancial_Set 6'b011010
+`define AluOp_binary_sequancial_Reset 6'b011011
+`define AluOp_binary_sequancial_Rlc 6'b011100
+`define AluOp_binary_sequancial_Rrc 6'b011101
+`define AluOp_binary_sequancial_Rl 6'b011110
+`define AluOp_binary_sequancial_Rr 6'b011111
+`define AluOp_binary_sequancial_Sla_1 6'b100000
+`define AluOp_binary_sequancial_Sra_1 6'b100001
+`define AluOp_binary_sequancial_Srl_1 6'b100010
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define AddrSrc_binary_sequancial_type [3:0]
 `define AddrSrc_binary_sequancial_PC 4'b0000
@@ -21,49 +60,12 @@
 `define AddrSrc_binary_sequancial_SP 4'b0111
 `define AddrSrc_binary_sequancial_SP1 4'b1000
 
-`define AluOp_binary_sequancial_type [5:0]
-`define AluOp_binary_sequancial_Nop 6'b000000
-`define AluOp_binary_sequancial_Add 6'b000001
-`define AluOp_binary_sequancial_Adc 6'b000010
-`define AluOp_binary_sequancial_Sub 6'b000011
-`define AluOp_binary_sequancial_Sbc 6'b000100
-`define AluOp_binary_sequancial_And_1 6'b000101
-`define AluOp_binary_sequancial_Xor_1 6'b000110
-`define AluOp_binary_sequancial_Or_1 6'b000111
-`define AluOp_binary_sequancial_Cp 6'b001000
-`define AluOp_binary_sequancial_Inc 6'b001001
-`define AluOp_binary_sequancial_Dec 6'b001010
-`define AluOp_binary_sequancial_Cpl 6'b001011
-`define AluOp_binary_sequancial_Ccf 6'b001100
-`define AluOp_binary_sequancial_Scf 6'b001101
-`define AluOp_binary_sequancial_Incc 6'b001110
-`define AluOp_binary_sequancial_Decc 6'b001111
-`define AluOp_binary_sequancial_Swap 6'b010000
-`define AluOp_binary_sequancial_Add1 6'b010001
-`define AluOp_binary_sequancial_Adc1 6'b010010
-`define AluOp_binary_sequancial_Rlca 6'b010011
-`define AluOp_binary_sequancial_Rrca 6'b010100
-`define AluOp_binary_sequancial_Rla 6'b010101
-`define AluOp_binary_sequancial_Rra 6'b010110
-`define AluOp_binary_sequancial_Bit_1 6'b010111
-`define AluOp_binary_sequancial_Set 6'b011000
-`define AluOp_binary_sequancial_Reset 6'b011001
-`define AluOp_binary_sequancial_Rlc 6'b011010
-`define AluOp_binary_sequancial_Rrc 6'b011011
-`define AluOp_binary_sequancial_Rl 6'b011100
-`define AluOp_binary_sequancial_Rr 6'b011101
-`define AluOp_binary_sequancial_Sla_1 6'b011110
-`define AluOp_binary_sequancial_Sra_1 6'b011111
-`define AluOp_binary_sequancial_Srl_1 6'b100000
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
+`define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
+`define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State 3'b001
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State 3'b010
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State 3'b011
+`define tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State 3'b100
 
 module Sprite (
       input  [5:0] io_index,
@@ -888,43 +890,31 @@ module CpuDecoder (
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b0100);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000001)) || ((io_ir == (8'b01001001)) || ((io_ir == (8'b01010001)) || ((io_ir == (8'b01011001)) || ((io_ir == (8'b01100001)) || ((io_ir == (8'b01101001)) || ((io_ir == (8'b01110001)) || (io_ir == (8'b01111001))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b0101);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000010)) || ((io_ir == (8'b01001010)) || ((io_ir == (8'b01010010)) || ((io_ir == (8'b01011010)) || ((io_ir == (8'b01100010)) || ((io_ir == (8'b01101010)) || ((io_ir == (8'b01110010)) || (io_ir == (8'b01111010))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b0110);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000011)) || ((io_ir == (8'b01001011)) || ((io_ir == (8'b01010011)) || ((io_ir == (8'b01011011)) || ((io_ir == (8'b01100011)) || ((io_ir == (8'b01101011)) || ((io_ir == (8'b01110011)) || (io_ir == (8'b01111011))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b0111);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000100)) || ((io_ir == (8'b01001100)) || ((io_ir == (8'b01010100)) || ((io_ir == (8'b01011100)) || ((io_ir == (8'b01100100)) || ((io_ir == (8'b01101100)) || ((io_ir == (8'b01110100)) || (io_ir == (8'b01111100))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b1000);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000101)) || ((io_ir == (8'b01001101)) || ((io_ir == (8'b01010101)) || ((io_ir == (8'b01011101)) || ((io_ir == (8'b01100101)) || ((io_ir == (8'b01101101)) || ((io_ir == (8'b01110101)) || (io_ir == (8'b01111101))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b1001);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b01000110)) || ((io_ir == (8'b01001110)) || ((io_ir == (8'b01010110)) || ((io_ir == (8'b01011110)) || ((io_ir == (8'b01100110)) || ((io_ir == (8'b01101110)) || ((io_ir == (8'b01110110)) || (io_ir == (8'b01111110))))))))))begin
         if((io_mCycle == (3'b000)))begin
@@ -952,8 +942,6 @@ module CpuDecoder (
         io_aluOp = `AluOp_binary_sequancial_Bit_1;
         io_opBSelect = (4'b0000);
         io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
       end
       if(((io_ir == (8'b10000000)) || ((io_ir == (8'b10001000)) || ((io_ir == (8'b10010000)) || ((io_ir == (8'b10011000)) || ((io_ir == (8'b10100000)) || ((io_ir == (8'b10101000)) || ((io_ir == (8'b10110000)) || (io_ir == (8'b10111000))))))))))begin
         io_aluOp = `AluOp_binary_sequancial_Reset;
@@ -2142,7 +2130,7 @@ module CpuDecoder (
       end
       if((io_ir == (8'b00001011)))begin
         if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_aluOp = `AluOp_binary_sequancial_Sub1;
           io_opBSelect = (4'b0101);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0101);
@@ -2151,7 +2139,7 @@ module CpuDecoder (
           io_nextMCycle = (io_mCycle + (3'b001));
         end
         if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Decc;
+          io_aluOp = `AluOp_binary_sequancial_Sbc1;
           io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0100);
@@ -2176,7 +2164,7 @@ module CpuDecoder (
       end
       if((io_ir == (8'b00011011)))begin
         if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_aluOp = `AluOp_binary_sequancial_Sub1;
           io_opBSelect = (4'b0111);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0111);
@@ -2185,7 +2173,7 @@ module CpuDecoder (
           io_nextMCycle = (io_mCycle + (3'b001));
         end
         if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Decc;
+          io_aluOp = `AluOp_binary_sequancial_Sbc1;
           io_opBSelect = (4'b0110);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0110);
@@ -2210,7 +2198,7 @@ module CpuDecoder (
       end
       if((io_ir == (8'b00101011)))begin
         if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_aluOp = `AluOp_binary_sequancial_Sub1;
           io_opBSelect = (4'b1001);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1001);
@@ -2219,7 +2207,7 @@ module CpuDecoder (
           io_nextMCycle = (io_mCycle + (3'b001));
         end
         if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Decc;
+          io_aluOp = `AluOp_binary_sequancial_Sbc1;
           io_opBSelect = (4'b1000);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1000);
@@ -2230,7 +2218,7 @@ module CpuDecoder (
       end
       if((io_ir == (8'b00111011)))begin
         if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_aluOp = `AluOp_binary_sequancial_Sub1;
           io_opBSelect = (4'b1011);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1011);
@@ -2239,7 +2227,7 @@ module CpuDecoder (
           io_nextMCycle = (io_mCycle + (3'b001));
         end
         if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Decc;
+          io_aluOp = `AluOp_binary_sequancial_Sbc1;
           io_opBSelect = (4'b1010);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1010);
@@ -4033,8 +4021,10 @@ module CpuAlu (
   wire [8:0] _zz_14;
   wire [0:0] _zz_15;
   wire [8:0] _zz_16;
-  wire [8:0] _zz_17;
+  wire [0:0] _zz_17;
   wire [8:0] _zz_18;
+  wire [8:0] _zz_19;
+  wire [8:0] _zz_20;
   reg [8:0] wideResult;
   wire [8:0] wideOpA;
   wire [8:0] wideOpB;
@@ -4057,8 +4047,10 @@ module CpuAlu (
   assign _zz_14 = {8'd0, _zz_13};
   assign _zz_15 = io_flagsIn[4];
   assign _zz_16 = {8'd0, _zz_15};
-  assign _zz_17 = ((9'b000000001) <<< io_ir[5 : 3]);
-  assign _zz_18 = ((9'b000000001) <<< io_ir[5 : 3]);
+  assign _zz_17 = io_flagsIn[4];
+  assign _zz_18 = {8'd0, _zz_17};
+  assign _zz_19 = ((9'b000000001) <<< io_ir[5 : 3]);
+  assign _zz_20 = ((9'b000000001) <<< io_ir[5 : 3]);
   assign io_result = wideResult[7 : 0];
   assign wideOpA = {1'd0, io_operandA};
   assign wideOpB = {1'd0, io_operandB};
@@ -4113,6 +4105,20 @@ module CpuAlu (
         io_flagsOut[6] = 1'b1;
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
+      `AluOp_binary_sequancial_Sub1 : begin
+        wideResult = (wideOpB - (9'b000000001));
+        io_flagsOut[4] = carry;
+        io_flagsOut[5] = halfBorrow;
+        io_flagsOut[6] = 1'b1;
+        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
+      end
+      `AluOp_binary_sequancial_Sbc1 : begin
+        wideResult = (wideOpB - _zz_14);
+        io_flagsOut[4] = carry;
+        io_flagsOut[5] = halfBorrow;
+        io_flagsOut[6] = 1'b1;
+        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
+      end
       `AluOp_binary_sequancial_And_1 : begin
         wideResult = (wideOpA & wideOpB);
         io_flagsOut[4] = 1'b0;
@@ -4136,8 +4142,8 @@ module CpuAlu (
       end
       `AluOp_binary_sequancial_Cp : begin
         wideResult = (wideOpA - wideOpB);
-        io_flagsOut[4] = (! carry);
-        io_flagsOut[5] = (! halfCarry);
+        io_flagsOut[4] = carry;
+        io_flagsOut[5] = halfCarry;
         io_flagsOut[6] = 1'b1;
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
@@ -4149,7 +4155,7 @@ module CpuAlu (
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Incc : begin
-        wideResult = (wideOpB + _zz_14);
+        wideResult = (wideOpB + _zz_16);
         io_flagsOut[4] = io_flagsIn[4];
         io_flagsOut[5] = halfCarry;
         io_flagsOut[6] = 1'b0;
@@ -4163,7 +4169,7 @@ module CpuAlu (
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Decc : begin
-        wideResult = (wideOpB - _zz_16);
+        wideResult = (wideOpB - _zz_18);
         io_flagsOut[4] = io_flagsIn[4];
         io_flagsOut[5] = halfBorrow;
         io_flagsOut[6] = 1'b1;
@@ -4278,11 +4284,11 @@ module CpuAlu (
         io_flagsOut[7] = (! io_operandB[io_ir[5 : 3]]);
       end
       `AluOp_binary_sequancial_Set : begin
-        wideResult = (wideOpB | _zz_17);
+        wideResult = (wideOpB | _zz_19);
         io_flagsOut = io_flagsIn;
       end
       default : begin
-        wideResult = (wideOpB & (~ _zz_18));
+        wideResult = (wideOpB & (~ _zz_20));
         io_flagsOut = io_flagsIn;
       end
     endcase
@@ -4334,11 +4340,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_7 = (initCnt[10 : 4] != (7'b0100100));
   assign _zz_8 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_9 = (! resetCnt[22]);
-  assign _zz_10 = (! byteToggle);
+  assign _zz_9 = (! byteToggle);
+  assign _zz_10 = (! resetCnt[22]);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4358,12 +4364,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_9) begin
-      if(! _zz_7) begin
-        if(_zz_6)begin
+    if(! _zz_10) begin
+      if(! _zz_6) begin
+        if(_zz_7)begin
           if(_zz_8)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_9)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4389,13 +4395,13 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_9)begin
+      if(_zz_10)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_7)begin
+        if(_zz_6)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_6)begin
+          if(_zz_7)begin
             initCnt <= (initCnt + (11'b00000000001));
             if(_zz_8)begin
               if(init)begin
@@ -4437,7 +4443,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_10)begin
+                if(_zz_9)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4465,12 +4471,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_9) begin
-      if(! _zz_7) begin
-        if(_zz_6)begin
+    if(! _zz_10) begin
+      if(! _zz_6) begin
+        if(_zz_7)begin
           if(_zz_8)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_9)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -8404,8 +8410,8 @@ module PPUUlx3s (
   wire  bit1;
   wire [1:0] color;
   assign _zz_24 = (bitCycle == (5'b00010));
-  assign _zz_25 = (bitCycle == (5'b00001));
-  assign _zz_26 = (bitCycle == (5'b00000));
+  assign _zz_25 = (bitCycle == (5'b00000));
+  assign _zz_26 = (bitCycle == (5'b00001));
   assign _zz_27 = (bitx == (3'b111));
   assign _zz_28 = ((8'b11110000) + hExtra);
   assign _zz_29 = ((3'b111) - bitx);
@@ -8477,14 +8483,14 @@ module PPUUlx3s (
   always @ (*) begin
     io_address = (13'b0000000000000);
     if(_zz_27)begin
-      if(_zz_26)begin
+      if(_zz_25)begin
         if(inWindow)begin
           io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
         end else begin
           io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
         end
       end else begin
-        if(_zz_25)begin
+        if(_zz_26)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end else begin
           if(_zz_24)begin
@@ -8545,8 +8551,8 @@ module PPUUlx3s (
     bitCycle <= (bitCycle + (5'b00001));
     spriteAddr <= _zz_21;
     if(_zz_27)begin
-      if(! _zz_26) begin
-        if(_zz_25)begin
+      if(! _zz_25) begin
+        if(_zz_26)begin
           tile <= io_dataIn;
         end else begin
           if(_zz_24)begin

@@ -95,6 +95,11 @@ init:
 ; ****************************************************************************************
 	ld	de, _SCRN0+3+(SCRN_VY_B*10) ; x = 3, y = 10
 loop:
+	ld	a, d
+	cp	$98
+	jr	NC, ok
+	ld	de, _SCRN0
+ok:
 	ld	hl,Title
 	ld	bc, TitleEnd-Title
 	push	de			; Save DE
@@ -102,7 +107,7 @@ loop:
 	call	READ_INPUT	
 	pop	de			; restore DE
 	ld	a, [joypad_down]
-	and	a, $F0			; Test if any direction key pressed
+	and	a, $FB			; Test if any relevant button  pressed
 	jr	z, loop
 	push	de
 	ld	hl, Blank		; Blank previous text
@@ -112,15 +117,18 @@ loop:
 	ld	a, [joypad_down]
 	bit	DPAD_RIGHT, A
 	jr	NZ, right
-	ld	a, [joypad_down]	; Bug in BIT?
 	bit	DPAD_LEFT, A
 	jr	NZ, left
-	ld	a, [joypad_down]
 	bit	DPAD_DOWN, A
 	jr	NZ, down
-	ld	a, [joypad_down]
 	bit	DPAD_UP, A
 	jr	NZ, up
+	bit	A_BUTTON, A
+	jr	NZ, alignl
+	bit	B_BUTTON, A
+	jr	NZ, alignr
+	bit	START_BUTTON, A
+	jr	NZ, home1
 	jr	loop
 left:
 	dec	de 			; Move back up char pos
@@ -142,6 +150,36 @@ up1:
 	dec	b
 	jr	nz, up1
 	jr	loop
+alignl:
+	srl	e
+	srl	e
+	srl	e
+	srl	e
+	srl	e
+	sla	e
+	sla	e
+	sla	e
+	sla	e
+	sla	e
+	jp	loop
+alignr:
+	srl	e
+	srl	e
+	srl	e
+	srl	e
+	srl	e
+	sla	e
+	sla	e
+	sla	e
+	sla	e
+	sla	e
+	ld	a, 6
+	add	a, e
+	ld 	e, a
+	jp	loop
+home1:
+	ld	de, _SCRN0
+	jp	loop
 ; ****************************************************************************************
 ; Wait patiently 'til somebody kills you
 ; ****************************************************************************************

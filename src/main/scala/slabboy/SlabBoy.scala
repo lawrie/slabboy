@@ -59,7 +59,7 @@ object Cpu {
   }
 
   object AluOp extends SpinalEnum {
-    val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp,
+    val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp, Sub1, Sbc1,
       Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap, Add1, Adc1,
       Rlca, Rrca, Rla, Rra, Bit, Set, Reset,
       Rlc, Rrc, Rl, Rr, Sla, Sra, Srl = newElement()
@@ -363,17 +363,18 @@ object CpuDecoder {
   def bit8Bit(base: Seq[Int],
                      aluOp: SpinalEnumElement[AluOp.type]
                     ) : Seq[(Seq[Int], Seq[MCycle])] = {
+    val noStore = (aluOp == AluOp.Bit)
     Seq(
-      (base.map(_ + 0), Seq(fetchCycle(aluOp, Some(Reg8.B), Some(Reg8.B)))),
-      (base.map(_ + 1), Seq(fetchCycle(aluOp, Some(Reg8.C), Some(Reg8.C)))),
-      (base.map(_ + 2), Seq(fetchCycle(aluOp, Some(Reg8.D), Some(Reg8.D)))),
-      (base.map(_ + 3), Seq(fetchCycle(aluOp, Some(Reg8.E), Some(Reg8.E)))),
-      (base.map(_ + 4), Seq(fetchCycle(aluOp, Some(Reg8.H), Some(Reg8.H)))),
-      (base.map(_ + 5), Seq(fetchCycle(aluOp, Some(Reg8.L), Some(Reg8.H)))),
+      (base.map(_ + 0), Seq(fetchCycle(aluOp, Some(Reg8.B), if (noStore)  None else Some(Reg8.B)))),
+      (base.map(_ + 1), Seq(fetchCycle(aluOp, Some(Reg8.C), if (noStore)  None else Some(Reg8.C)))),
+      (base.map(_ + 2), Seq(fetchCycle(aluOp, Some(Reg8.D), if (noStore)  None else Some(Reg8.D)))),
+      (base.map(_ + 3), Seq(fetchCycle(aluOp, Some(Reg8.E), if (noStore)  None else Some(Reg8.E)))),
+      (base.map(_ + 4), Seq(fetchCycle(aluOp, Some(Reg8.H), if (noStore)  None else Some(Reg8.H)))),
+      (base.map(_ + 5), Seq(fetchCycle(aluOp, Some(Reg8.L), if (noStore)  None else Some(Reg8.H)))),
       (base.map(_ + 6), Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(aluOp, Some(Reg8.Z), addrSrc=AddrSrc.HL),
                memWriteCycle(AluOp.Nop, Some(Reg8.Z), None, addrSrc=AddrSrc.HL))),
-      (base.map(_ + 7), Seq(fetchCycle(aluOp, Some(Reg8.A), Some(Reg8.A))))
+      (base.map(_ + 7), Seq(fetchCycle(aluOp, Some(Reg8.A), if (noStore)  None else Some(Reg8.A))))
     )
   }
 
@@ -466,25 +467,25 @@ object CpuDecoder {
     // dec C
     (0x0D, Seq(fetchCycle(AluOp.Dec, Some(Reg8.C), Some(Reg8.C)))),
     // dec BC
-    (0x0B, Seq(fetchCycle(AluOp.Dec, Some(Reg8.C), Some(Reg8.C)),
-               dummyCycle(AluOp.Decc, Reg8.A, Some(Reg8.B), Some(Reg8.B)))),
+    (0x0B, Seq(fetchCycle(AluOp.Sub1, Some(Reg8.C), Some(Reg8.C)),
+               dummyCycle(AluOp.Sbc1, Reg8.A, Some(Reg8.B), Some(Reg8.B)))),
     // dec D
     (0x15, Seq(fetchCycle(AluOp.Dec, Some(Reg8.D), Some(Reg8.D)))),
     // dec E
     (0x1D, Seq(fetchCycle(AluOp.Dec, Some(Reg8.E), Some(Reg8.E)))),
     // dec DE
-    (0x1B, Seq(fetchCycle(AluOp.Dec, Some(Reg8.E), Some(Reg8.E)),
-               dummyCycle(AluOp.Decc, Reg8.A, Some(Reg8.D), Some(Reg8.D)))),
+    (0x1B, Seq(fetchCycle(AluOp.Sub1, Some(Reg8.E), Some(Reg8.E)),
+               dummyCycle(AluOp.Sbc1, Reg8.A, Some(Reg8.D), Some(Reg8.D)))),
     // dec H
     (0x25, Seq(fetchCycle(AluOp.Dec, Some(Reg8.H), Some(Reg8.H)))),
     // dec L
     (0x2D, Seq(fetchCycle(AluOp.Dec, Some(Reg8.L), Some(Reg8.L)))),
     // dec HL
-    (0x2B, Seq(fetchCycle(AluOp.Dec, Some(Reg8.L), Some(Reg8.L)),
-               dummyCycle(AluOp.Decc, Reg8.A, Some(Reg8.H), Some(Reg8.H)))),
+    (0x2B, Seq(fetchCycle(AluOp.Sub1, Some(Reg8.L), Some(Reg8.L)),
+               dummyCycle(AluOp.Sbc1, Reg8.A, Some(Reg8.H), Some(Reg8.H)))),
     // dec SP
-    (0x3B, Seq(fetchCycle(AluOp.Dec, Some(Reg8.SPL), Some(Reg8.SPL)),
-               dummyCycle(AluOp.Decc, Reg8.A, Some(Reg8.SPH), Some(Reg8.SPH)))),
+    (0x3B, Seq(fetchCycle(AluOp.Sub1, Some(Reg8.SPL), Some(Reg8.SPL)),
+               dummyCycle(AluOp.Sbc1, Reg8.A, Some(Reg8.SPH), Some(Reg8.SPH)))),
     // dec (HL)
     (0x35, Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(AluOp.Dec, Some(Reg8.Z), addrSrc=AddrSrc.HL),
@@ -1137,6 +1138,14 @@ class CpuAlu extends Component {
       wideResult := wideOpA - wideOpB - io.flagsIn(Cpu.Flags.C).asUInt
       setFlags(carry, halfBorrow, True)
     }
+    is(AluOp.Sub1) {
+      wideResult := wideOpB - 1
+      setFlags(carry, halfBorrow, True)
+    }
+    is(AluOp.Sbc1) {
+      wideResult := wideOpB - io.flagsIn(Cpu.Flags.C).asUInt
+      setFlags(carry, halfBorrow, True)
+    }
     is(AluOp.And) {
       wideResult := wideOpA & wideOpB
       setFlags(False, True, False)
@@ -1151,7 +1160,7 @@ class CpuAlu extends Component {
     }
     is(AluOp.Cp) {
       wideResult := wideOpA - wideOpB
-      setFlags(!carry, !halfCarry, True)
+      setFlags(carry, halfCarry, True)
     }
     is(AluOp.Inc) {
       wideResult := wideOpB + 1
