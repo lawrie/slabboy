@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 25/02/2020, 20:36:23
+// Date      : 26/02/2020, 10:10:25
 // Component : GameBoyUlx3s
 
 
@@ -8380,7 +8380,7 @@ module PPUUlx3s (
   reg [7:0] tile;
   reg [7:0] texture0;
   reg [7:0] texture1;
-  reg [1:0] bitCycle;
+  reg [4:0] bitCycle;
   wire [12:0] bgScrnAddress;
   wire [12:0] windowAddress;
   wire  showWindow;
@@ -8403,9 +8403,9 @@ module PPUUlx3s (
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_24 = (bitCycle == (2'b10));
-  assign _zz_25 = (bitCycle == (2'b01));
-  assign _zz_26 = (bitCycle == (2'b00));
+  assign _zz_24 = (bitCycle == (5'b00010));
+  assign _zz_25 = (bitCycle == (5'b00001));
+  assign _zz_26 = (bitCycle == (5'b00000));
   assign _zz_27 = (bitx == (3'b111));
   assign _zz_28 = ((8'b11110000) + hExtra);
   assign _zz_29 = ((3'b111) - bitx);
@@ -8542,7 +8542,7 @@ module PPUUlx3s (
   end
 
   always @ (posedge clkout0) begin
-    bitCycle <= (bitCycle + (2'b01));
+    bitCycle <= (bitCycle + (5'b00001));
     spriteAddr <= _zz_21;
     if(_zz_27)begin
       if(! _zz_26) begin
@@ -8556,7 +8556,7 @@ module PPUUlx3s (
               texture0 <= (8'b00000000);
             end
           end else begin
-            if((bitCycle == (2'b11)))begin
+            if((bitCycle == (5'b00011)))begin
               if(bgOn)begin
                 texture1 <= io_dataIn;
               end else begin
@@ -8568,7 +8568,7 @@ module PPUUlx3s (
       end
     end
     if(_zz_9)begin
-      bitCycle <= (2'b00);
+      bitCycle <= (5'b00000);
     end
   end
 

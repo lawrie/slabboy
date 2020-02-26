@@ -54,7 +54,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val texture0 = Reg(Bits(8 bits))
   val texture1 = Reg(Bits(8 bits))
 
-  val bitCycle = Reg(UInt(2 bits))
+  val bitCycle = Reg(UInt(5 bits))
   bitCycle := bitCycle + 1
 
   io.address := 0
