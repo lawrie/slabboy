@@ -60,7 +60,7 @@ object Cpu {
 
   object AluOp extends SpinalEnum {
     val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp, Sub1, Sbc1,
-      Inc, Dec, Cpl, Ccf, Scf, Incc, Decc, Swap, Add1, Adc1,
+      Inc, Dec, Cpl, Ccf, Scf, Swap, Add1, Adc1,
       Rlca, Rrca, Rla, Rra, Bit, Set, Reset,
       Rlc, Rrc, Rl, Rr, Sla, Sra, Srl = newElement()
   }
@@ -1102,6 +1102,8 @@ class CpuAlu extends Component {
   // by default, pass flags through
   io.flagsOut := io.flagsIn
 
+  val saveCarry = Reg(Bool)
+
   // helper for optionally setting or resetting flags
   def setFlags(c: Bool, h: Bool, n: Bool) = {
     io.flagsOut(Cpu.Flags.C) := c
@@ -1120,15 +1122,14 @@ class CpuAlu extends Component {
     }
     is(AluOp.Add1) {
       wideResult := wideOpB + 1
-      setFlags(carry, halfCarry, False)
+      saveCarry := carry
     }
     is(AluOp.Adc) {
       wideResult := wideOpA + wideOpB + io.flagsIn(Cpu.Flags.C).asUInt
       setFlags(carry, halfCarry, False)
     }
     is(AluOp.Adc1) {
-      wideResult := wideOpB + io.flagsIn(Cpu.Flags.C).asUInt
-      setFlags(carry, halfCarry, False)
+      wideResult := wideOpB + saveCarry.asUInt
     }
     is(AluOp.Sub) {
       wideResult := wideOpA - wideOpB
@@ -1140,11 +1141,10 @@ class CpuAlu extends Component {
     }
     is(AluOp.Sub1) {
       wideResult := wideOpB - 1
-      setFlags(carry, halfBorrow, True)
+      saveCarry := carry
     }
     is(AluOp.Sbc1) {
-      wideResult := wideOpB - io.flagsIn(Cpu.Flags.C).asUInt
-      setFlags(carry, halfBorrow, True)
+      wideResult := wideOpB - saveCarry.asUInt
     }
     is(AluOp.And) {
       wideResult := wideOpA & wideOpB
@@ -1166,16 +1166,8 @@ class CpuAlu extends Component {
       wideResult := wideOpB + 1
       setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
     }
-    is(AluOp.Incc) {
-      wideResult := wideOpB + io.flagsIn(Cpu.Flags.C).asUInt
-      setFlags(io.flagsIn(Cpu.Flags.C), halfCarry, False)
-    }
     is(AluOp.Dec) {
       wideResult := wideOpB - 1
-      setFlags(io.flagsIn(Cpu.Flags.C), halfBorrow, True)
-    }
-    is(AluOp.Decc) {
-      wideResult := wideOpB - io.flagsIn(Cpu.Flags.C).asUInt
       setFlags(io.flagsIn(Cpu.Flags.C), halfBorrow, True)
     }
     is(AluOp.Cpl) {

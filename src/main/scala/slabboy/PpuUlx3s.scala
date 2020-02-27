@@ -80,9 +80,11 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val hExtra = (U"000" @@ hExtraTiles @@ U"000") + U(mode3Offset, 8 bits)
   val hBlank = x < oamLen || x >= oamLen + 160 + hExtra
   val vBlank = y >= 144
-  val spriteIndex = x(7 downto 4) - 5
-  val spriteDValid = (x(3 downto 0) === U(15, 4 bits) && ~hBlank && ~vBlank).asBits ## 
-                     (x(3 downto 0) === U(7, 4 bits) && ~hBlank && ~vBlank).asBits
+  //val spriteIndex = x(7 downto 4) - 5
+  val spriteIndex = 0
+  //val spriteDValid = (x(3 downto 0) === U(15, 4 bits) && ~hBlank && ~vBlank).asBits ## 
+  //                   (x(3 downto 0) === U(7, 4 bits) && ~hBlank && ~vBlank).asBits
+  val spriteDValid = B"01"
 
   val oamAddr = io.cpuAddr
 
@@ -92,6 +94,8 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   sprites.io.x := x
   sprites.io.y := y
   spriteAddr := sprites.io.addr
+  sprites.io.dValid := spriteDValid
+  sprites.io.data := 0xff
 
   sprites.io.oamDi := io.cpuDataOut
   sprites.io.oamAddr := oamAddr
@@ -107,7 +111,9 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   when (bitx === 7) {
     when (bitCycle === 0) {
       // Set address of next tile
-      when (inWindow) {
+      when (spritePixelActive) {
+        io.address := U"00" @@ spriteAddr
+      } elsewhen (inWindow) {
         io.address := windowAddress + (U"000" @@ winTileY(7 downto 3) @@ winTileX(7 downto 3))
       } otherwise {
         io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))

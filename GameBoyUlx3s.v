@@ -1,7 +1,18 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 26/02/2020, 18:08:57
+// Date      : 27/02/2020, 09:48:14
 // Component : GameBoyUlx3s
 
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -20,25 +31,23 @@
 `define AluOp_binary_sequancial_Cpl 6'b001101
 `define AluOp_binary_sequancial_Ccf 6'b001110
 `define AluOp_binary_sequancial_Scf 6'b001111
-`define AluOp_binary_sequancial_Incc 6'b010000
-`define AluOp_binary_sequancial_Decc 6'b010001
-`define AluOp_binary_sequancial_Swap 6'b010010
-`define AluOp_binary_sequancial_Add1 6'b010011
-`define AluOp_binary_sequancial_Adc1 6'b010100
-`define AluOp_binary_sequancial_Rlca 6'b010101
-`define AluOp_binary_sequancial_Rrca 6'b010110
-`define AluOp_binary_sequancial_Rla 6'b010111
-`define AluOp_binary_sequancial_Rra 6'b011000
-`define AluOp_binary_sequancial_Bit_1 6'b011001
-`define AluOp_binary_sequancial_Set 6'b011010
-`define AluOp_binary_sequancial_Reset 6'b011011
-`define AluOp_binary_sequancial_Rlc 6'b011100
-`define AluOp_binary_sequancial_Rrc 6'b011101
-`define AluOp_binary_sequancial_Rl 6'b011110
-`define AluOp_binary_sequancial_Rr 6'b011111
-`define AluOp_binary_sequancial_Sla_1 6'b100000
-`define AluOp_binary_sequancial_Sra_1 6'b100001
-`define AluOp_binary_sequancial_Srl_1 6'b100010
+`define AluOp_binary_sequancial_Swap 6'b010000
+`define AluOp_binary_sequancial_Add1 6'b010001
+`define AluOp_binary_sequancial_Adc1 6'b010010
+`define AluOp_binary_sequancial_Rlca 6'b010011
+`define AluOp_binary_sequancial_Rrca 6'b010100
+`define AluOp_binary_sequancial_Rla 6'b010101
+`define AluOp_binary_sequancial_Rra 6'b010110
+`define AluOp_binary_sequancial_Bit_1 6'b010111
+`define AluOp_binary_sequancial_Set 6'b011000
+`define AluOp_binary_sequancial_Reset 6'b011001
+`define AluOp_binary_sequancial_Rlc 6'b011010
+`define AluOp_binary_sequancial_Rrc 6'b011011
+`define AluOp_binary_sequancial_Rl 6'b011100
+`define AluOp_binary_sequancial_Rr 6'b011101
+`define AluOp_binary_sequancial_Sla_1 6'b011110
+`define AluOp_binary_sequancial_Sra_1 6'b011111
+`define AluOp_binary_sequancial_Srl_1 6'b100000
 
 `define AddrOp_binary_sequancial_type [2:0]
 `define AddrOp_binary_sequancial_Nop 3'b000
@@ -48,17 +57,6 @@
 `define AddrOp_binary_sequancial_ToPC 3'b100
 `define AddrOp_binary_sequancial_R8 3'b101
 `define AddrOp_binary_sequancial_HLR8 3'b110
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -4004,59 +4002,54 @@ module CpuAlu (
       input  [7:0] io_operandA,
       input  [7:0] io_operandB,
       output [7:0] io_result,
-      input  [7:0] io_ir);
-  wire [8:0] _zz_1;
+      input  [7:0] io_ir,
+      input   clkout0,
+      input   _zz_1);
   wire [8:0] _zz_2;
   wire [8:0] _zz_3;
   wire [8:0] _zz_4;
   wire [8:0] _zz_5;
-  wire [0:0] _zz_6;
-  wire [8:0] _zz_7;
-  wire [0:0] _zz_8;
-  wire [8:0] _zz_9;
+  wire [8:0] _zz_6;
+  wire [0:0] _zz_7;
+  wire [8:0] _zz_8;
+  wire [0:0] _zz_9;
   wire [8:0] _zz_10;
-  wire [0:0] _zz_11;
-  wire [8:0] _zz_12;
-  wire [0:0] _zz_13;
-  wire [8:0] _zz_14;
-  wire [0:0] _zz_15;
+  wire [8:0] _zz_11;
+  wire [0:0] _zz_12;
+  wire [8:0] _zz_13;
+  wire [0:0] _zz_14;
+  wire [8:0] _zz_15;
   wire [8:0] _zz_16;
-  wire [0:0] _zz_17;
-  wire [8:0] _zz_18;
-  wire [8:0] _zz_19;
-  wire [8:0] _zz_20;
+  wire [8:0] _zz_17;
   reg [8:0] wideResult;
   wire [8:0] wideOpA;
   wire [8:0] wideOpB;
   wire  carry;
   wire  halfCarry;
   wire  halfBorrow;
-  assign _zz_1 = wideResult;
+  reg  saveCarry;
   assign _zz_2 = wideResult;
   assign _zz_3 = wideResult;
   assign _zz_4 = wideResult;
-  assign _zz_5 = (wideOpA + wideOpB);
-  assign _zz_6 = io_flagsIn[4];
-  assign _zz_7 = {8'd0, _zz_6};
-  assign _zz_8 = io_flagsIn[4];
-  assign _zz_9 = {8'd0, _zz_8};
-  assign _zz_10 = (wideOpA - wideOpB);
-  assign _zz_11 = io_flagsIn[4];
-  assign _zz_12 = {8'd0, _zz_11};
-  assign _zz_13 = io_flagsIn[4];
-  assign _zz_14 = {8'd0, _zz_13};
-  assign _zz_15 = io_flagsIn[4];
-  assign _zz_16 = {8'd0, _zz_15};
-  assign _zz_17 = io_flagsIn[4];
-  assign _zz_18 = {8'd0, _zz_17};
-  assign _zz_19 = ((9'b000000001) <<< io_ir[5 : 3]);
-  assign _zz_20 = ((9'b000000001) <<< io_ir[5 : 3]);
+  assign _zz_5 = wideResult;
+  assign _zz_6 = (wideOpA + wideOpB);
+  assign _zz_7 = io_flagsIn[4];
+  assign _zz_8 = {8'd0, _zz_7};
+  assign _zz_9 = saveCarry;
+  assign _zz_10 = {8'd0, _zz_9};
+  assign _zz_11 = (wideOpA - wideOpB);
+  assign _zz_12 = io_flagsIn[4];
+  assign _zz_13 = {8'd0, _zz_12};
+  assign _zz_14 = saveCarry;
+  assign _zz_15 = {8'd0, _zz_14};
+  assign _zz_16 = ((9'b000000001) <<< io_ir[5 : 3]);
+  assign _zz_17 = ((9'b000000001) <<< io_ir[5 : 3]);
   assign io_result = wideResult[7 : 0];
   assign wideOpA = {1'd0, io_operandA};
   assign wideOpB = {1'd0, io_operandB};
   assign carry = wideResult[8];
-  assign halfCarry = (_zz_1[4] && (_zz_2[3 : 0] == (4'b0000)));
-  assign halfBorrow = ((! _zz_3[4]) && (_zz_4[3 : 0] == (4'b1111)));
+  assign halfCarry = (_zz_2[4] && (_zz_3[3 : 0] == (4'b0000)));
+  assign halfBorrow = ((! _zz_4[4]) && (_zz_5[3 : 0] == (4'b1111)));
   always @ (*) begin
     io_flagsOut = io_flagsIn;
     case(io_op)
@@ -4072,24 +4065,16 @@ module CpuAlu (
       end
       `AluOp_binary_sequancial_Add1 : begin
         wideResult = (wideOpB + (9'b000000001));
-        io_flagsOut[4] = carry;
-        io_flagsOut[5] = halfCarry;
-        io_flagsOut[6] = 1'b0;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Adc : begin
-        wideResult = (_zz_5 + _zz_7);
+        wideResult = (_zz_6 + _zz_8);
         io_flagsOut[4] = carry;
         io_flagsOut[5] = halfCarry;
         io_flagsOut[6] = 1'b0;
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Adc1 : begin
-        wideResult = (wideOpB + _zz_9);
-        io_flagsOut[4] = carry;
-        io_flagsOut[5] = halfCarry;
-        io_flagsOut[6] = 1'b0;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
+        wideResult = (wideOpB + _zz_10);
       end
       `AluOp_binary_sequancial_Sub : begin
         wideResult = (wideOpA - wideOpB);
@@ -4099,7 +4084,7 @@ module CpuAlu (
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Sbc : begin
-        wideResult = (_zz_10 - _zz_12);
+        wideResult = (_zz_11 - _zz_13);
         io_flagsOut[4] = carry;
         io_flagsOut[5] = halfBorrow;
         io_flagsOut[6] = 1'b1;
@@ -4107,17 +4092,9 @@ module CpuAlu (
       end
       `AluOp_binary_sequancial_Sub1 : begin
         wideResult = (wideOpB - (9'b000000001));
-        io_flagsOut[4] = carry;
-        io_flagsOut[5] = halfBorrow;
-        io_flagsOut[6] = 1'b1;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
       `AluOp_binary_sequancial_Sbc1 : begin
-        wideResult = (wideOpB - _zz_14);
-        io_flagsOut[4] = carry;
-        io_flagsOut[5] = halfBorrow;
-        io_flagsOut[6] = 1'b1;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
+        wideResult = (wideOpB - _zz_15);
       end
       `AluOp_binary_sequancial_And_1 : begin
         wideResult = (wideOpA & wideOpB);
@@ -4154,22 +4131,8 @@ module CpuAlu (
         io_flagsOut[6] = 1'b0;
         io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
       end
-      `AluOp_binary_sequancial_Incc : begin
-        wideResult = (wideOpB + _zz_16);
-        io_flagsOut[4] = io_flagsIn[4];
-        io_flagsOut[5] = halfCarry;
-        io_flagsOut[6] = 1'b0;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
-      end
       `AluOp_binary_sequancial_Dec : begin
         wideResult = (wideOpB - (9'b000000001));
-        io_flagsOut[4] = io_flagsIn[4];
-        io_flagsOut[5] = halfBorrow;
-        io_flagsOut[6] = 1'b1;
-        io_flagsOut[7] = (wideResult[7 : 0] == (8'b00000000));
-      end
-      `AluOp_binary_sequancial_Decc : begin
-        wideResult = (wideOpB - _zz_18);
         io_flagsOut[4] = io_flagsIn[4];
         io_flagsOut[5] = halfBorrow;
         io_flagsOut[6] = 1'b1;
@@ -4284,12 +4247,85 @@ module CpuAlu (
         io_flagsOut[7] = (! io_operandB[io_ir[5 : 3]]);
       end
       `AluOp_binary_sequancial_Set : begin
-        wideResult = (wideOpB | _zz_19);
+        wideResult = (wideOpB | _zz_16);
         io_flagsOut = io_flagsIn;
       end
       default : begin
-        wideResult = (wideOpB & (~ _zz_20));
+        wideResult = (wideOpB & (~ _zz_17));
         io_flagsOut = io_flagsIn;
+      end
+    endcase
+  end
+
+  always @ (posedge clkout0) begin
+    case(io_op)
+      `AluOp_binary_sequancial_Nop : begin
+      end
+      `AluOp_binary_sequancial_Add : begin
+      end
+      `AluOp_binary_sequancial_Add1 : begin
+        saveCarry <= carry;
+      end
+      `AluOp_binary_sequancial_Adc : begin
+      end
+      `AluOp_binary_sequancial_Adc1 : begin
+      end
+      `AluOp_binary_sequancial_Sub : begin
+      end
+      `AluOp_binary_sequancial_Sbc : begin
+      end
+      `AluOp_binary_sequancial_Sub1 : begin
+        saveCarry <= carry;
+      end
+      `AluOp_binary_sequancial_Sbc1 : begin
+      end
+      `AluOp_binary_sequancial_And_1 : begin
+      end
+      `AluOp_binary_sequancial_Xor_1 : begin
+      end
+      `AluOp_binary_sequancial_Or_1 : begin
+      end
+      `AluOp_binary_sequancial_Cp : begin
+      end
+      `AluOp_binary_sequancial_Inc : begin
+      end
+      `AluOp_binary_sequancial_Dec : begin
+      end
+      `AluOp_binary_sequancial_Cpl : begin
+      end
+      `AluOp_binary_sequancial_Ccf : begin
+      end
+      `AluOp_binary_sequancial_Scf : begin
+      end
+      `AluOp_binary_sequancial_Swap : begin
+      end
+      `AluOp_binary_sequancial_Rlca : begin
+      end
+      `AluOp_binary_sequancial_Rlc : begin
+      end
+      `AluOp_binary_sequancial_Rrca : begin
+      end
+      `AluOp_binary_sequancial_Rrc : begin
+      end
+      `AluOp_binary_sequancial_Rla : begin
+      end
+      `AluOp_binary_sequancial_Rl : begin
+      end
+      `AluOp_binary_sequancial_Rra : begin
+      end
+      `AluOp_binary_sequancial_Rr : begin
+      end
+      `AluOp_binary_sequancial_Sla_1 : begin
+      end
+      `AluOp_binary_sequancial_Sra_1 : begin
+      end
+      `AluOp_binary_sequancial_Srl_1 : begin
+      end
+      `AluOp_binary_sequancial_Bit_1 : begin
+      end
+      `AluOp_binary_sequancial_Set : begin
+      end
+      default : begin
       end
     endcase
   end
@@ -4340,11 +4376,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_7 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_8 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_9 = (! byteToggle);
-  assign _zz_10 = (! resetCnt[22]);
+  assign _zz_6 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_8 = (! byteToggle);
+  assign _zz_9 = (! resetCnt[22]);
+  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4364,12 +4400,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_10) begin
-      if(! _zz_6) begin
-        if(_zz_7)begin
-          if(_zz_8)begin
+    if(! _zz_9) begin
+      if(! _zz_7) begin
+        if(_zz_10)begin
+          if(_zz_6)begin
             if(! init) begin
-              if(_zz_9)begin
+              if(_zz_8)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4395,15 +4431,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_10)begin
+      if(_zz_9)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_6)begin
+        if(_zz_7)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_7)begin
+          if(_zz_10)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_8)begin
+            if(_zz_6)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -4443,7 +4479,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_9)begin
+                if(_zz_8)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4471,12 +4507,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_10) begin
-      if(! _zz_6) begin
-        if(_zz_7)begin
-          if(_zz_8)begin
+    if(! _zz_9) begin
+      if(! _zz_7) begin
+        if(_zz_10)begin
+          if(_zz_6)begin
             if(! init) begin
-              if(_zz_9)begin
+              if(_zz_8)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -7843,7 +7879,9 @@ module Cpu (
     .io_operandA(opA),
     .io_operandB(temp),
     .io_result(_zz_19),
-    .io_ir(ir) 
+    .io_ir(ir),
+    .clkout0(clkout0),
+    ._zz_1(_zz_2) 
   );
   always @(*) begin
     case(_zz_7)
@@ -8348,8 +8386,8 @@ module PPUUlx3s (
   wire  _zz_2;
   wire [15:0] _zz_3;
   wire  _zz_4;
-  wire [1:0] _zz_5;
-  wire [7:0] _zz_6;
+  wire [7:0] _zz_5;
+  wire [3:0] _zz_6;
   wire  _zz_7;
   reg [15:0] _zz_8;
   wire  _zz_9;
@@ -8404,15 +8442,14 @@ module PPUUlx3s (
   wire [7:0] hExtra;
   wire  hBlank;
   wire  vBlank;
-  wire [3:0] spriteIndex;
   wire [1:0] spriteDValid;
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_24 = (bitCycle == (5'b00010));
-  assign _zz_25 = (bitCycle == (5'b00000));
-  assign _zz_26 = (bitCycle == (5'b00001));
-  assign _zz_27 = (bitx == (3'b111));
+  assign _zz_24 = (bitx == (3'b111));
+  assign _zz_25 = (bitCycle == (5'b00010));
+  assign _zz_26 = (bitCycle == (5'b00000));
+  assign _zz_27 = (bitCycle == (5'b00001));
   assign _zz_28 = ((8'b11110000) + hExtra);
   assign _zz_29 = ((3'b111) - bitx);
   assign _zz_30 = ((3'b111) - bitx);
@@ -8437,13 +8474,13 @@ module PPUUlx3s (
     .io_size16(_zz_4),
     .io_x(x),
     .io_y(y),
-    .io_dValid(_zz_5),
-    .io_data(_zz_6),
+    .io_dValid(spriteDValid),
+    .io_data(_zz_5),
     .io_pixelActive(_zz_18),
     .io_pixelData(_zz_19),
     .io_pixelPrio(_zz_20),
     .io_addr(_zz_21),
-    .io_index(spriteIndex),
+    .io_index(_zz_6),
     .io_oamWr(_zz_7),
     .io_oamAddr(oamAddr),
     .io_oamDi(io_cpuDataOut),
@@ -8482,18 +8519,22 @@ module PPUUlx3s (
   assign io_oled_clk = _zz_14;
   always @ (*) begin
     io_address = (13'b0000000000000);
-    if(_zz_27)begin
-      if(_zz_25)begin
-        if(inWindow)begin
-          io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
+    if(_zz_24)begin
+      if(_zz_26)begin
+        if(_zz_18)begin
+          io_address = {(2'b00),spriteAddr};
         end else begin
-          io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
+          if(inWindow)begin
+            io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
+          end else begin
+            io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
+          end
         end
       end else begin
-        if(_zz_26)begin
+        if(_zz_27)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end else begin
-          if(_zz_24)begin
+          if(_zz_25)begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end
@@ -8516,9 +8557,10 @@ module PPUUlx3s (
   assign hExtra = ({{(3'b000),hExtraTiles},(3'b000)} + (8'b00010000));
   assign hBlank = ((x < (8'b01010000)) || (_zz_28 <= x));
   assign vBlank = ((8'b10010000) <= y);
-  assign spriteIndex = (x[7 : 4] - (4'b0101));
-  assign spriteDValid = {(((x[3 : 0] == (4'b1111)) && (! hBlank)) && (! vBlank)),(((x[3 : 0] == (4'b0111)) && (! hBlank)) && (! vBlank))};
+  assign spriteDValid = (2'b01);
   assign _zz_4 = io_lcdControl[2];
+  assign _zz_6 = (4'b0000);
+  assign _zz_5 = (8'b11111111);
   assign _zz_7 = (io_cpuWr && io_cpuSelOam);
   assign io_cpuDataIn = _zz_22;
   assign io_diag = _zz_23;
@@ -8550,12 +8592,12 @@ module PPUUlx3s (
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
     spriteAddr <= _zz_21;
-    if(_zz_27)begin
-      if(! _zz_25) begin
-        if(_zz_26)begin
+    if(_zz_24)begin
+      if(! _zz_26) begin
+        if(_zz_27)begin
           tile <= io_dataIn;
         end else begin
-          if(_zz_24)begin
+          if(_zz_25)begin
             if(bgOn)begin
               texture0 <= io_dataIn;
             end else begin

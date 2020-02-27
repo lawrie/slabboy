@@ -78,7 +78,7 @@ init:
 	ld	bc, SCRN_VX_B * SCRN_VY_B
 	call	mem_SetVRAM
 	ld	hl, _OAMRAM	; Create Sprite 0
-	ld	a, 16		; x and y = 16
+	ld	a, 32		; x and y = 16
 	ld	[hl], a
 	inc	hl
 	ld	[hl], a
@@ -131,12 +131,24 @@ ok:
 	jr	NZ, home1
 	jr	loop
 left:
+	ld	hl, _OAMRAM+1
+	ld	a, [hl]
+	sub	8
+	ld	[hl], a
 	dec	de 			; Move back up char pos
         jr      loop
 right:
+	ld	hl, _OAMRAM+1		; Increment sprite xPos by 8
+	ld	a, [hl]
+	add	8
+	ld	[hl], a
 	inc	de 
         jr      loop
 down:
+	ld	hl, _OAMRAM
+	ld	a, [hl]
+	add	8
+	ld 	[hl], a
 	ld 	b ,32
 down1:
 	inc	de
@@ -144,6 +156,10 @@ down1:
 	jr	nz, down1
 	jr	loop
 up:
+	ld	hl, _OAMRAM
+	ld	a, [hl]
+	sub	8
+	ld	[hl], a
 	ld 	b ,32
 up1:
 	dec	de
