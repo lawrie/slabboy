@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 27/02/2020, 09:48:14
+// Date      : 27/02/2020, 11:57:47
 // Component : GameBoyUlx3s
 
 
@@ -87,8 +87,8 @@ module Sprite (
   wire [7:0] _zz_4;
   wire [7:0] _zz_5;
   wire [7:0] _zz_6;
-  reg [7:0] xPos;
   reg [7:0] yPos;
+  reg [7:0] xPos;
   reg [7:0] tile;
   reg [7:0] flags;
   reg [7:0] data0;
@@ -4376,11 +4376,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_8 = (! byteToggle);
-  assign _zz_9 = (! resetCnt[22]);
-  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_7 = (! byteToggle);
+  assign _zz_8 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_10 = (! resetCnt[22]);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4400,12 +4400,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_9) begin
-      if(! _zz_7) begin
-        if(_zz_10)begin
-          if(_zz_6)begin
+    if(! _zz_10) begin
+      if(! _zz_6) begin
+        if(_zz_8)begin
+          if(_zz_9)begin
             if(! init) begin
-              if(_zz_8)begin
+              if(_zz_7)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4431,15 +4431,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_9)begin
+      if(_zz_10)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_7)begin
+        if(_zz_6)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_10)begin
+          if(_zz_8)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_6)begin
+            if(_zz_9)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -4479,7 +4479,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_8)begin
+                if(_zz_7)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4507,12 +4507,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_9) begin
-      if(! _zz_7) begin
-        if(_zz_10)begin
-          if(_zz_6)begin
+    if(! _zz_10) begin
+      if(! _zz_6) begin
+        if(_zz_8)begin
+          if(_zz_9)begin
             if(! init) begin
-              if(_zz_8)begin
+              if(_zz_7)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -4527,6 +4527,7 @@ module ST7789 (
 endmodule
 
 module Sprites (
+      input  [3:0] io_index,
       input   io_size16,
       input  [7:0] io_x,
       input  [7:0] io_y,
@@ -4536,7 +4537,6 @@ module Sprites (
       output [1:0] io_pixelData,
       output  io_pixelPrio,
       output [10:0] io_addr,
-      input  [3:0] io_index,
       input   io_oamWr,
       input  [7:0] io_oamAddr,
       input  [7:0] io_oamDi,
@@ -8385,9 +8385,9 @@ module PPUUlx3s (
       input   _zz_1);
   wire  _zz_2;
   wire [15:0] _zz_3;
-  wire  _zz_4;
-  wire [7:0] _zz_5;
-  wire [3:0] _zz_6;
+  wire [3:0] _zz_4;
+  wire  _zz_5;
+  wire [7:0] _zz_6;
   wire  _zz_7;
   reg [15:0] _zz_8;
   wire  _zz_9;
@@ -8442,14 +8442,14 @@ module PPUUlx3s (
   wire [7:0] hExtra;
   wire  hBlank;
   wire  vBlank;
-  wire [1:0] spriteDValid;
+  reg [1:0] spriteDValid;
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_24 = (bitx == (3'b111));
+  assign _zz_24 = (bitCycle == (5'b00001));
   assign _zz_25 = (bitCycle == (5'b00010));
-  assign _zz_26 = (bitCycle == (5'b00000));
-  assign _zz_27 = (bitCycle == (5'b00001));
+  assign _zz_26 = (bitx == (3'b111));
+  assign _zz_27 = (bitCycle == (5'b00000));
   assign _zz_28 = ((8'b11110000) + hExtra);
   assign _zz_29 = ((3'b111) - bitx);
   assign _zz_30 = ((3'b111) - bitx);
@@ -8471,16 +8471,16 @@ module PPUUlx3s (
     ._zz_2(_zz_1) 
   );
   Sprites sprites_1 ( 
-    .io_size16(_zz_4),
+    .io_index(_zz_4),
+    .io_size16(_zz_5),
     .io_x(x),
     .io_y(y),
     .io_dValid(spriteDValid),
-    .io_data(_zz_5),
+    .io_data(_zz_6),
     .io_pixelActive(_zz_18),
     .io_pixelData(_zz_19),
     .io_pixelPrio(_zz_20),
     .io_addr(_zz_21),
-    .io_index(_zz_6),
     .io_oamWr(_zz_7),
     .io_oamAddr(oamAddr),
     .io_oamDi(io_cpuDataOut),
@@ -8519,23 +8519,30 @@ module PPUUlx3s (
   assign io_oled_clk = _zz_14;
   always @ (*) begin
     io_address = (13'b0000000000000);
-    if(_zz_24)begin
-      if(_zz_26)begin
-        if(_zz_18)begin
-          io_address = {(2'b00),spriteAddr};
+    spriteDValid = (2'b00);
+    if(_zz_26)begin
+      if(_zz_27)begin
+        if(inWindow)begin
+          io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
         end else begin
-          if(inWindow)begin
-            io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
-          end else begin
-            io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
-          end
+          io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
         end
       end else begin
-        if(_zz_27)begin
-          io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
+        if(_zz_24)begin
+          if(_zz_18)begin
+            spriteDValid = (2'b10);
+            io_address = {(2'b00),spriteAddr};
+          end else begin
+            io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
+          end
         end else begin
           if(_zz_25)begin
-            io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
+            if(_zz_18)begin
+              spriteDValid = (2'b01);
+              io_address = {(2'b00),spriteAddr};
+            end else begin
+              io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
+            end
           end
         end
       end
@@ -8557,16 +8564,15 @@ module PPUUlx3s (
   assign hExtra = ({{(3'b000),hExtraTiles},(3'b000)} + (8'b00010000));
   assign hBlank = ((x < (8'b01010000)) || (_zz_28 <= x));
   assign vBlank = ((8'b10010000) <= y);
-  assign spriteDValid = (2'b01);
-  assign _zz_4 = io_lcdControl[2];
-  assign _zz_6 = (4'b0000);
-  assign _zz_5 = (8'b11111111);
+  assign _zz_5 = io_lcdControl[2];
+  assign _zz_4 = (4'b0000);
+  assign _zz_6 = (8'b11111111);
   assign _zz_7 = (io_cpuWr && io_cpuSelOam);
   assign io_cpuDataIn = _zz_22;
   assign io_diag = _zz_23;
   assign bit0 = texture0[_zz_29];
   assign bit1 = texture1[_zz_30];
-  assign color = {bit1,bit0};
+  assign color = ((_zz_18 && (! bgOn)) ? _zz_19 : {bit1,bit0});
   assign _zz_3 = _zz_8;
   assign _zz_2 = (((x < (8'b10100000)) && (y < (8'b10010000))) && io_lcdControl[7]);
   always @ (posedge clkout0 or negedge _zz_1) begin
@@ -8592,16 +8598,20 @@ module PPUUlx3s (
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
     spriteAddr <= _zz_21;
-    if(_zz_24)begin
-      if(! _zz_26) begin
-        if(_zz_27)begin
-          tile <= io_dataIn;
+    if(_zz_26)begin
+      if(! _zz_27) begin
+        if(_zz_24)begin
+          if(! _zz_18) begin
+            tile <= io_dataIn;
+          end
         end else begin
           if(_zz_25)begin
-            if(bgOn)begin
-              texture0 <= io_dataIn;
-            end else begin
-              texture0 <= (8'b00000000);
+            if(! _zz_18) begin
+              if(bgOn)begin
+                texture0 <= io_dataIn;
+              end else begin
+                texture0 <= (8'b00000000);
+              end
             end
           end else begin
             if((bitCycle == (5'b00011)))begin

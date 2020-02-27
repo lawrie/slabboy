@@ -84,8 +84,8 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val spriteIndex = 0
   //val spriteDValid = (x(3 downto 0) === U(15, 4 bits) && ~hBlank && ~vBlank).asBits ## 
   //                   (x(3 downto 0) === U(7, 4 bits) && ~hBlank && ~vBlank).asBits
-  val spriteDValid = B"01"
-
+  val spriteDValid = Bits(2 bits)
+  
   val oamAddr = io.cpuAddr
 
   val sprites = Sprites()
@@ -108,27 +108,37 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val spritePixelData = sprites.io.pixelData
   val spritePixelPrio = sprites.io.pixelPrio
 
+  spriteDValid := B"00"
+
   when (bitx === 7) {
     when (bitCycle === 0) {
       // Set address of next tile
-      when (spritePixelActive) {
-        io.address := U"00" @@ spriteAddr
-      } elsewhen (inWindow) {
+      when (inWindow) {
         io.address := windowAddress + (U"000" @@ winTileY(7 downto 3) @@ winTileX(7 downto 3))
       } otherwise {
         io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
       }
     } elsewhen (bitCycle === 1) {
       // Save the tile number and set the address of first texture byte
-      io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
-      tile := io.dataIn
+      when (spritePixelActive) {
+        spriteDValid := B"10"
+        io.address := U"00" @@ spriteAddr
+      } otherwise {  
+        io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
+        tile := io.dataIn
+      }
     } elsewhen (bitCycle === 2) {
-      // Save the first texture value and set the address of the second
-      io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
-      when (bgOn) {
-        texture0 := io.dataIn.asBits
+      when (spritePixelActive) {
+        spriteDValid := B"01"
+        io.address := U"00" @@ spriteAddr
       } otherwise {
-        texture0 := 0
+        // Save the first texture value and set the address of the second
+        io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
+        when (bgOn) {
+          texture0 := io.dataIn.asBits
+        } otherwise {
+          texture0 := 0
+        }
       }
     } elsewhen (bitCycle === 3) {
       // Save the second texture byte
@@ -142,7 +152,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
 
   val bit0 = texture0(7 - bitx)
   val bit1 = texture1(7 - bitx)
-  val color = (bit1 ## bit0).asUInt
+  val color = (spritePixelActive & !bgOn) ? spritePixelData.asUInt | (bit1 ## bit0).asUInt
 
   mode := (y > 143) ? B"01" | B"00" // No busy modes yet
 
@@ -162,59 +172,63 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   lcd.io.pixels.valid := (x < 160 && y < 144) && io.lcdControl(7)
 }
 
+// Represents a single sprite
+// Needs two cycles to get pixel color
 case class Sprite() extends Component {
   val io = new Bundle {
-    val index = in UInt(6 bits)
-    val x = in UInt(8 bits)
-    val y = in UInt(8 bits)
-    val size16 = in Bool
-    val ds = in Bits(2 bits)
-    val data = in Bits(8 bits)
-    val pixelActive = out Bool
-    val pixelData = out Bits(2 bits)
-    val addr = out UInt(11 bits)
+    val index = in UInt(6 bits)      // The index into the sprite array
+    val x = in UInt(8 bits)          // The current x position on the screen
+    val y = in UInt(8 bits)          // The current y position on the screen
+    val size16 = in Bool             // Global sprite size flag
+    val ds = in Bits(2 bits)         // Data strobe for the two bits for each pixel
+    val data = in Bits(8 bits)       // The byte from the texture
+    val pixelActive = out Bool       // Indicates a hit, and the pixel is active
+    val pixelData = out Bits(2 bits) // The 2-bit color of the pixel
+    val addr = out UInt(11 bits)     // The address of the tile
 
-    val oamWr = in Bool
-    val oamAddr = in UInt(2 bits)
-    val oamDi = in Bits(8 bits)
-    val oamDo = out Bits(8 bits)
+    // Sprite read/write interface
+    val oamWr = in Bool              // Indicates a write to sprite data
+    val oamAddr = in UInt(2 bits)    // Selector for one of 4 fields
+    val oamDi = in Bits(8 bits)      // The input sprite data for the field
+    val oamDo = out Bits(8 bits)     // The output sprite data for the field
 
     val diag = out Bits(8 bits)
   }
 
-  val xPos = Reg(UInt(8 bits))
-  val yPos = Reg(UInt(8 bits))
-  val tile = Reg(UInt(8 bits))
-  val flags = Reg(Bits(8 bits))
+  val yPos = Reg(UInt(8 bits))       // The y position of the sprite
+  val xPos = Reg(UInt(8 bits))       // The x position of the sprite
+  val tile = Reg(UInt(8 bits))       // The tile for the sprite
+  val flags = Reg(Bits(8 bits))      // Sprite flags - only non-GBC currently used
 
   io.diag := tile.asBits
 
-  val data0 = Reg(Bits(8 bits))
-  val data1 = Reg(Bits(8 bits))
+  val data0 = Reg(Bits(8 bits))      // The first data byte of the texture
+  val data1 = Reg(Bits(8 bits))      // The second data byte of the texture
 
-  val height = io.size16 ? U(16, 8 bits) | U(8, 8 bits)
+  val height = io.size16 ? U(16, 8 bits) | U(8, 8 bits) // The height ofd the sprite (8 or 16)
 
-  when (io.ds(0)) (data0 := io.data)
-  when (io.ds(1)) (data1 := io.data)
+  when (io.ds(0)) (data0 := io.data) // Latch texture data byte,
+  when (io.ds(1)) (data1 := io.data) // corresponding to strobe bit
 
-  val yVisible = (io.y + 16 >= yPos && io.y + 16 < yPos + height)
-  val xVisible = (io.x + 8 >= xPos && io.x < xPos)
-  val visible = yVisible & xVisible
+  val yVisible = (io.y + 16 >= yPos && io.y + 16 < yPos + height)  // Indicates match on y position
+  val xVisible = (io.x + 8 >= xPos && io.x < xPos)                 // Indicates match on x position
+  val visible = yVisible & xVisible                                // Set if sprite pixel visible
   
-  val colN = io.x - xPos
-  val col = flags(5) ? colN(2 downto 0) | ~colN(2 downto 0)
+  val colN = io.x - xPos                                           // The column within texture data
+  val col = flags(5) ? colN(2 downto 0) | ~colN(2 downto 0)        // Reverse for x-flip
 
-  io.pixelData := data1(col).asBits ## data0(col).asBits
-  io.pixelActive := io.pixelData =/= 0 && visible
+  io.pixelData := data1(col).asBits ## data0(col).asBits           // The current pixel bit
+  io.pixelActive := io.pixelData =/= 0 && visible                  // Active if not transparent
 
-  val rowN = io.y - yPos
-  val row = flags(6) ? ~rowN(3 downto 0) | rowN(3 downto 0)
+  val rowN = io.y - yPos                                           // The current row of the texture data
+  val row = flags(6) ? ~rowN(3 downto 0) | rowN(3 downto 0)        // Reseverse for y-flip
   
-  val addr8 = tile @@ row(2 downto 0)
-  val addr16 = tile(7 downto 1) @@ row
+  val addr8 = tile @@ row(2 downto 0)                              // Address for 8-bit sprite
+  val addr16 = tile(7 downto 1) @@ row                             // Address for 16-bit stripe
   
-  io.addr := io.size16 ? addr16 | addr8
+  io.addr := io.size16 ? addr16 | addr8                            // Address to read texture data
 
+  // Write to sprite data fields
   when (io.oamWr) {
     switch (io.oamAddr) {
       is(0) (yPos := io.oamDi.asUInt)
@@ -224,6 +238,7 @@ case class Sprite() extends Component {
     }
   }
 
+  // Read from sprite data fields
   switch (io.oamAddr) {
     is(0) (io.oamDo := yPos.asBits)
     is(1) (io.oamDo := xPos.asBits)
@@ -232,49 +247,53 @@ case class Sprite() extends Component {
   }
 }
 
+// Represents the set 0f 40 sprites
+// Each sprite is selected by its index
 case class Sprites() extends Component {
   val io = new Bundle {
-    val size16 = in Bool
-    val x = in UInt(8 bits)
-    val y = in UInt(8 bits)
-    val dValid = in Bits(2 bits)
-    val data = in Bits(8 bits)
+    val index = in UInt(4 bits)       // Index of sprite
+    val size16 = in Bool              // Global sprite size
+    val x = in UInt(8 bits)           // Current x position on screen
+    val y = in UInt(8 bits)           // Current y position on screen
+    val dValid = in Bits(2 bits)      // Data strobe for texture color bits
+    val data = in Bits(8 bits)        // Texture data byte
 
-    val pixelActive = out Bool
-    val pixelData = out Bits(2 bits)
-    val pixelPrio = out Bool
+    val pixelActive = out Bool        // Indicate if pixel is active for selected sprite
+    val pixelData = out Bits(2 bits)  // Pixel color data for selected sprite
+    val pixelPrio = out Bool          // Pixel priority ?
 
-    val addr = out UInt(11 bits)
+    val addr = out UInt(11 bits)      // Address of texrture data byte
 
-    val index = in UInt(4 bits)
-
-    val oamWr = in Bool
-    val oamAddr = in UInt(8 bits)
-    val oamDi = in Bits(8 bits)
-    val oamDo = out Bits(8 bits)
+    // Pixel read/wrire interface
+    val oamWr = in Bool               // Indicates a write to pixel data
+    val oamAddr = in UInt(8 bits)     // Selector for sprite and field
+    val oamDi = in Bits(8 bits)       // The input sprite data for the field
+    val oamDo = out Bits(8 bits)      // The output sprite data for the field
 
     val diag = out Bits(8 bits)
   }
 
   val numSprites = 40
 
-  val sprites = new Array[Sprite](numSprites)
-  val spriteAddr = Vec(UInt(11 bits), numSprites)
-  val spritePixelActive = Bits(numSprites bits)
-  val spritePixelPrio = Bits(numSprites bits)
-  val spritePixelData = Vec(Bits(2 bits), numSprites)
-  val spriteIndexArray = Vec(UInt(6 bits), numSprites)
-  val spriteOamDo = Vec(Bits(8 bits), numSprites)
+  val sprites = new Array[Sprite](numSprites)           // Array of 40 sprites
+  val spriteAddr = Vec(UInt(11 bits), numSprites)       // Texture address for each sprite
+  val spritePixelActive = Bits(numSprites bits)         // Pixel Active for each sprite
+  val spritePixelPrio = Bits(numSprites bits)           // Pixel priority for each sprite
+  val spritePixelData = Vec(Bits(2 bits), numSprites)   // Pixel color for each sprite
+  val spriteIndexArray = Vec(UInt(6 bits), numSprites)  // Index for each sprite, by priority
+  val spriteOamDo = Vec(Bits(8 bits), numSprites)       // Output sprite field data for each sprite
 
-  val prioIndex = spriteIndexArray(io.index.resized)
+  val prioIndex = spriteIndexArray(io.index.resized)    // The index, sorted by priority
 
-  io.addr := spriteAddr(prioIndex)
+  io.addr := spriteAddr(prioIndex)                      // The texture address for selected sprite
 
   // TODO: Replace by sort
+  // For now, just use first 10 sprites
   for(i <- 0 to numSprites - 1) {
     spriteIndexArray(i) := U(i, 6 bits)
   }
 
+  // Generate each sprite
   for(i <- 0 to numSprites - 1) {
     sprites(i) = Sprite()
     sprites(i).io.size16 := io.size16
@@ -295,6 +314,7 @@ case class Sprites() extends Component {
 
   io.diag := sprites(0).io.diag
 
+  // The 10 selected sprites
   val spr0 = spriteIndexArray(0)
   val spr1 = spriteIndexArray(1)
   val spr2 = spriteIndexArray(2)
@@ -306,8 +326,10 @@ case class Sprites() extends Component {
   val spr8 = spriteIndexArray(8)
   val spr9 = spriteIndexArray(9)
 
+  // The output data for the selected sprite
   io.oamDo := spriteOamDo(io.oamAddr(7 downto 2))
 
+  // Indicates if any of the 10 sprites is active for this pixel
   io.pixelActive :=
     spritePixelActive(spr0) ||
     spritePixelActive(spr1) ||
@@ -320,6 +342,7 @@ case class Sprites() extends Component {
     spritePixelActive(spr8) ||
     spritePixelActive(spr9)
 
+  // Pixel data for the sprite with active pixel (else 0)
   io.pixelData :=
      spritePixelActive(spr0) ? spritePixelData(spr0) |
     (spritePixelActive(spr1) ? spritePixelData(spr1) |
@@ -333,6 +356,7 @@ case class Sprites() extends Component {
     (spritePixelActive(spr9) ? spritePixelData(spr9) |
     B"00")))))))))
 
+  // Pixel priority for the sprite with active pixel (else False)
   io.pixelPrio :=
      spritePixelActive(spr0) ? spritePixelPrio(spr0) |
     (spritePixelActive(spr1) ? spritePixelPrio(spr1) |
