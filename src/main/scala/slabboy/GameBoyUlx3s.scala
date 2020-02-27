@@ -158,7 +158,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   ppu.io.lcdControl := rLCDC
   ppu.io.startX := rSCX
   ppu.io.startY := rSCY
-  ppu.io.windowX := rWX
+  ppu.io.windowX := (rWX < 7) ? U(0, 8 bits) | rWX - 7
   ppu.io.windowY := rWY
   ppu.io.bgPalette := rBGP
 

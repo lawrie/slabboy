@@ -67,7 +67,7 @@ init:
 	ld	[rLCDC], a	
 	ld	a, 112		; Create a Window
 	ld	[rWY], a
-	ld	a, 8
+	ld	a, 7
 	ld	[rWX], a
 	ld	a, 32		; ASCII FOR BLANK SPACE
 	ld	hl, _SCRN0	; Clear the screen
@@ -189,7 +189,7 @@ alignr:
 	sla	e
 	sla	e
 	sla	e
-	ld	a, 6
+	ld	a, 7
 	add	a, e
 	ld 	e, a
 	jp	loop

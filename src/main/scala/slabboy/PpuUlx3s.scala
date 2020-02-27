@@ -10,16 +10,19 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     val oled_dc = out Bool
     val oled_mosi = out Bool
     val oled_clk = out Bool
-    val address = out UInt(13 bits)
+
     val lcdControl = in Bits(8 bits)
     val startX = in UInt(8 bits)
     val startY = in UInt(8 bits)
     val windowX = in UInt(8 bits)
     val windowY = in UInt(8 bits)
     val bgPalette = in Bits(8 bits)
+    val dataIn = in UInt(8 bits)
+
     val mode = out Bits(2 bits)
     val currentY = out UInt(8 bits)
-    val dataIn = in UInt(8 bits)
+    val address = out UInt(13 bits)
+
     val diag = out Bits(8 bits)
 
     val cpuSelOam = in Bool
@@ -29,9 +32,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     val cpuDataIn = out Bits(8 bits)
   }
 
-  val mode = Reg(Bits(2 bits)) init 0
-  io.mode := mode
-
+  // Gameboy monochrome colors
   val colors = Vec(Bits(16 bits), 4)
   colors(0) := 0x09a1
   colors(1) := 0x2b05
@@ -42,6 +43,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val y = Reg(UInt(8 bits)) init 0
 
   io.currentY := y
+  io.mode := (y > 143) ? B"01" | B"00" // No busy modes yet
 
   val lcd = new ST7789(16000)
   io.oled_csn := lcd.io.oled_csn
@@ -57,8 +59,6 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val bitCycle = Reg(UInt(5 bits))
   bitCycle := bitCycle + 1
 
-  io.address := 0
-
   val bgScrnAddress = io.lcdControl(3) ? U(0x1c00) | U(0x1800)
   val windowAddress = io.lcdControl(6) ? U(0x1c00) | U(0x1800)
   val showWindow = io.lcdControl(5)
@@ -72,7 +72,6 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val winTileY = y - io.windowY
   val bitx = tileX(2 downto 0)
 
-  val spriteAddr = Reg(UInt(11 bits))
   val hExtraTiles = Reg(UInt(2 bits))
 
   val mode3Offset = 16
@@ -93,68 +92,66 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   sprites.io.index := spriteIndex
   sprites.io.x := x
   sprites.io.y := y
-  spriteAddr := sprites.io.addr
   sprites.io.dValid := spriteDValid
-  sprites.io.data := 0xff
 
   sprites.io.oamDi := io.cpuDataOut
   sprites.io.oamAddr := oamAddr
   sprites.io.oamWr := io.cpuWr && io.cpuSelOam
+
   io.cpuDataIn := sprites.io.oamDo
 
   io.diag := sprites.io.diag
 
+  val spriteAddr = sprites.io.addr
   val spritePixelActive = sprites.io.pixelActive
   val spritePixelData = sprites.io.pixelData
   val spritePixelPrio = sprites.io.pixelPrio
 
   spriteDValid := B"00"
+  sprites.io.data := 0x00
+  io.address := 0
 
-  when (bitx === 7) {
-    when (bitCycle === 0) {
-      // Set address of next tile
-      when (inWindow) {
-        io.address := windowAddress + (U"000" @@ winTileY(7 downto 3) @@ winTileX(7 downto 3))
-      } otherwise {
-        io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
-      }
-    } elsewhen (bitCycle === 1) {
-      // Save the tile number and set the address of first texture byte
-      when (spritePixelActive) {
-        spriteDValid := B"10"
-        io.address := U"00" @@ spriteAddr
-      } otherwise {  
-        io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
-        tile := io.dataIn
-      }
-    } elsewhen (bitCycle === 2) {
-      when (spritePixelActive) {
-        spriteDValid := B"01"
-        io.address := U"00" @@ spriteAddr
-      } otherwise {
-        // Save the first texture value and set the address of the second
-        io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
-        when (bgOn) {
-          texture0 := io.dataIn.asBits
-        } otherwise {
-          texture0 := 0
-        }
-      }
-    } elsewhen (bitCycle === 3) {
-      // Save the second texture byte
-      when (bgOn) {
-        texture1 := io.dataIn.asBits
-      } otherwise {
-        texture1 := 0
-      }
+  // Temporary code, not Gameboy-compatible
+  when (bitCycle === 0) {
+    // Set address of next tile
+    when (inWindow) {
+      io.address := windowAddress + (U"000" @@ winTileY(7 downto 3) @@ winTileX(7 downto 3))
+    } otherwise {
+      io.address := bgScrnAddress + (U"000" @@ tileY(7 downto 3) @@ tileX(7 downto 3))
     }
+  } elsewhen (bitCycle === 1) {
+    // Save the tile number and set the address of first texture byte
+    io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
+    tile := io.dataIn
+  } elsewhen (bitCycle === 2) {
+    // Save the first texture value and set the address of the second
+    io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
+    when (bgOn) {
+      texture0 := io.dataIn.asBits
+    } otherwise {
+      texture0 := 0
+    }
+  } elsewhen (bitCycle === 3) {
+    // Read the sprite textture
+    io.address := U"0" @@ spriteAddr @@ U"0"
+    // Save the second texture byte
+    when (bgOn) {
+      texture1 := io.dataIn.asBits
+    } otherwise {
+      texture1 := 0
+    }
+  } elsewhen (bitCycle === 4) {
+    spriteDValid := B"10"
+    sprites.io.data := io.dataIn.asBits
+    io.address := U"0" @@ spriteAddr @@ U"1"
+  } elsewhen (bitCycle === 5) {
+    spriteDValid := B"01"
+    sprites.io.data := io.dataIn.asBits
   }
 
   val bit0 = texture0(7 - bitx)
   val bit1 = texture1(7 - bitx)
-  val color = (spritePixelActive & !bgOn) ? spritePixelData.asUInt | (bit1 ## bit0).asUInt
-
-  mode := (y > 143) ? B"01" | B"00" // No busy modes yet
+  val color = (spritePixelActive && !inWindow) ? spritePixelData.asUInt | (bit1 ## bit0).asUInt
 
   when (lcd.io.pixels.ready) {
     bitCycle := 0
@@ -200,10 +197,10 @@ case class Sprite() extends Component {
   val tile = Reg(UInt(8 bits))       // The tile for the sprite
   val flags = Reg(Bits(8 bits))      // Sprite flags - only non-GBC currently used
 
-  io.diag := tile.asBits
-
   val data0 = Reg(Bits(8 bits))      // The first data byte of the texture
   val data1 = Reg(Bits(8 bits))      // The second data byte of the texture
+
+  io.diag := data0.asBits
 
   val height = io.size16 ? U(16, 8 bits) | U(8, 8 bits) // The height ofd the sprite (8 or 16)
 
