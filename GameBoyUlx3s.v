@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 28/02/2020, 17:43:13
+// Date      : 28/02/2020, 19:05:50
 // Component : GameBoyUlx3s
 
 
@@ -8702,12 +8702,12 @@ module GameBoy64Ulx3s (
   reg [7:0] rWY;
   reg [7:0] rWX;
   reg [7:0] rJOYP;
-  reg [1:0] rButtonSelect;
   reg [7:0] rDIV;
   reg [7:0] rTIMA;
   reg [7:0] rTMA;
   reg [7:0] rTAC;
   reg  IRQ;
+  reg [1:0] rButtonSelect;
   reg  dmaActive;
   reg [9:0] dmaOffset;
   reg [7:0] dmaPage;

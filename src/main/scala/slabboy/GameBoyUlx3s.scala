@@ -15,52 +15,54 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     val btn = in Bits(8 bits)
   }
 
-  val JOYP = 0xff00
-  val SB = 0xff01
-  val SC = 0xff02
-  val DIV = 0xff04
-  val TIMA = 0xff05
-  val TMA = 0xff06
-  val TAC = 0xff07
+  // Gameboy register mapping
+  val JOYP       = 0xff00
+  val SB         = 0xff01
+  val SC         = 0xff02
+  val DIV        = 0xff04
+  val TIMA       = 0xff05
+  val TMA        = 0xff06
+  val TAC        = 0xff07
 
   val rAUD1SWEEP = 0xff10
-  val rAUD1LEN = 0xff11
-  val rAUD1ENV = 0xff12
-  val rAUD1LOW = 0xff13
-  val rAUD1HIGH = 0xff14
+  val rAUD1LEN   = 0xff11
+  val rAUD1ENV   = 0xff12
+  val rAUD1LOW   = 0xff13
+  val rAUD1HIGH  = 0xff14
 
-  val rAUD2LEN = 0xff16
-  val rAUD2ENV = 0xff17
-  val rAUD2LOW = 0xff18
-  val rAUD2HIGH = 0xff19
+  val rAUD2LEN   = 0xff16
+  val rAUD2ENV   = 0xff17
+  val rAUD2LOW   = 0xff18
+  val rAUD2HIGH  = 0xff19
 
-  val rAUD3ENA = 0xff1a
-  val rAUD3LEN = 0xff1b
+  val rAUD3ENA   = 0xff1a
+  val rAUD3LEN   = 0xff1b
   val rAUD3LEVEL = 0xff1c
-  val rAUD3LOW = 0xff1d
-  val rAUD3HIGH = 0xff1e
+  val rAUD3LOW   = 0xff1d
+  val rAUD3HIGH  = 0xff1e
 
-  val rAUDVOL = 0xff24
-  val rAUDTERM = 0xff25
-  val AUDENA = 0xff26
+  val rAUDVOL    = 0xff24
+  val rAUDTERM   = 0xff25
+  val AUDENA     = 0xff26
 
-  val LCDC = 0xff40
-  val STAT = 0xff41
-  val SCY = 0xff42
-  val SCX = 0xff43
-  val LY = 0xff44
-  val LYC = 0xff45
-  val DMA = 0xff46
-  val BGP = 0xff47
-  val OBP0 = 0xff48
-  val OBP1 = 0xff49
+  val LCDC       = 0xff40
+  val STAT       = 0xff41
+  val SCY        = 0xff42
+  val SCX        = 0xff43
+  val LY         = 0xff44
+  val LYC        = 0xff45
+  val DMA        = 0xff46
+  val BGP        = 0xff47
+  val OBP0       = 0xff48
+  val OBP1       = 0xff49
 
-  val WY = 0xff4a
-  val WX = 0xff4b
+  val WY         = 0xff4a
+  val WX         = 0xff4b
 
-  val rIF = 0xff0f
-  val rIE = 0xffff
+  val rIF        = 0xff0f
+  val rIE        = 0xffff
 
+  // Memory mapping
   val romSize = (32 * 1024)
   val memSize = (24 * 1024)
 
@@ -70,55 +72,63 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
 
   BinTools.initRam(rom, "sw/test.gb")
 
+  // CPU
   val cpu = new Cpu(
     bootVector = 0x0100,
     spInit = 0xFFFF
   )
 
   val address = UInt(16 bits)
-  val dataIn = Reg(Bits(8 bits))
-  val romIn = Reg(Bits(8 bits))
-  val ppuIn = Reg(UInt(8 bits))
+  
+  val dataIn  = Reg(Bits(8 bits))
+  val romIn   = Reg(Bits(8 bits))
+  val ppuIn   = Reg(UInt(8 bits))
+  
   val dataOut = cpu.io.dataOut.asBits
-  val enable = cpu.io.mreq
-  val write = cpu.io.write
+  val enable  = cpu.io.mreq
+  val write   = cpu.io.write
 
   val ppu = PPUUlx3s(sim)
-  io.oled_csn := True
+  io.oled_csn  := True
   io.oled_resn := ppu.io.oled_resn
-  io.oled_dc := ppu.io.oled_dc
+  io.oled_dc   := ppu.io.oled_dc
   io.oled_mosi := ppu.io.oled_mosi
-  io.oled_clk := ppu.io.oled_clk
+  io.oled_clk  := ppu.io.oled_clk
  
   ppu.io.dataIn := ppuIn
     
   ppuIn := vidMem(ppu.io.address)
 
+  // Gameboy registers
   val rLCDC = Reg(Bits(8 bits)) 
   val rSTAT = Reg(Bits(8 bits)) 
-  val rSCY = Reg(UInt(8 bits)) 
-  val rSCX = Reg(UInt(8 bits)) 
-  val rLY = Reg(UInt(8 bits)) 
-  val rLYC = Reg(UInt(8 bits)) 
-  val rDMA = Reg(UInt(8 bits)) 
-  val rBGP = Reg(Bits(8 bits)) 
+  val rSCY  = Reg(UInt(8 bits)) 
+  val rSCX  = Reg(UInt(8 bits)) 
+  val rLY   = Reg(UInt(8 bits)) 
+  val rLYC  = Reg(UInt(8 bits)) 
+  val rDMA  = Reg(UInt(8 bits)) 
+  val rBGP  = Reg(Bits(8 bits)) 
   val rOBP0 = Reg(Bits(8 bits)) 
   val rOBP1 = Reg(Bits(8 bits)) 
-  val rWY = Reg(UInt(8 bits)) 
-  val rWX = Reg(UInt(8 bits)) 
+  val rWY   = Reg(UInt(8 bits)) 
+  val rWX   = Reg(UInt(8 bits)) 
   val rJOYP = Reg(Bits(8 bits)) 
-  val rButtonSelect = Reg(Bits(2 bits))
-  val rDIV = Reg(UInt(8 bits)) 
+  val rDIV  = Reg(UInt(8 bits)) 
   val rTIMA = Reg(UInt(8 bits)) 
-  val rTMA = Reg(UInt(8 bits)) 
-  val rTAC = Reg(UInt(8 bits)) 
-  val IRQ = Reg(Bool)
+  val rTMA  = Reg(UInt(8 bits)) 
+  val rTAC  = Reg(UInt(8 bits)) 
 
+  val IRQ   = Reg(Bool)
+  val rButtonSelect = Reg(Bits(2 bits))
+
+  // DMA for sprites
   val dmaActive = Reg(Bool)
   val dmaOffset = Reg(UInt(10 bits))
-  val dmaPage = Reg(UInt(8 bits))
-  val dmaData = Reg(Bits(8 bits))
-  val timer = Reg(UInt(12 bits))
+  val dmaPage   = Reg(UInt(8 bits))
+  val dmaData   = Reg(Bits(8 bits))
+
+  // Timer
+  val timer     = Reg(UInt(12 bits))
 
   timer := timer + 1
 
