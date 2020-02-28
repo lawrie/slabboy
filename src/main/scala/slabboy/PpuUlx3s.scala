@@ -20,8 +20,12 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     val dataIn = in UInt(8 bits)
 
     val mode = out Bits(2 bits)
-    val currentY = out UInt(8 bits)
     val address = out UInt(13 bits)
+
+    val x = out UInt(8 bits)
+    val y = out UInt(8 bits)
+    val pixel = out Bits(16 bits)
+    val nextPixel = in Bool
 
     val diag = out Bits(8 bits)
 
@@ -42,7 +46,9 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val x = Reg(UInt(8 bits)) init 0
   val y = Reg(UInt(8 bits)) init 0
 
-  io.currentY := y
+  io.x := x
+  io.y := y
+
   io.mode := (y > 143) ? B"01" | B"00" // No busy modes yet
 
   val lcd = new ST7789(16000)
@@ -162,7 +168,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val bit1 = texture1(7 - bitX)
   val color = (spritePixelActive && !inWindow) ? spritePixelData.asUInt | (bit1 ## bit0).asUInt
 
-  when (lcd.io.pixels.ready) {
+  when (io.nextPixel) {
     bitCycle := 0
     x := x + 1
     when (x === 159) {
@@ -174,8 +180,7 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     }
   }
 
-  lcd.io.pixels.payload := colors(io.bgPalette(color*2, 2 bits).asUInt)  
-  lcd.io.pixels.valid := (x < 160 && y < 144) && io.lcdControl(7)
+  io.pixel := colors(io.bgPalette(color*2, 2 bits).asUInt)  
 }
 
 // Represents a single sprite

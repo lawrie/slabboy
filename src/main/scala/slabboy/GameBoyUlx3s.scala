@@ -89,15 +89,21 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val write   = cpu.io.write
 
   val ppu = PPUUlx3s(sim)
-  io.oled_csn  := True
-  io.oled_resn := ppu.io.oled_resn
-  io.oled_dc   := ppu.io.oled_dc
-  io.oled_mosi := ppu.io.oled_mosi
-  io.oled_clk  := ppu.io.oled_clk
- 
+  
   ppu.io.dataIn := ppuIn
-    
+  
+  val x = ppu.io.x
+  val y = ppu.io.y
+  val pixel = ppu.io.pixel
+
   ppuIn := vidMem(ppu.io.address)
+
+  val lcd = new ST7789(16000)
+  io.oled_csn  := True
+  io.oled_resn := lcd.io.oled_resn
+  io.oled_dc := lcd.io.oled_dc
+  io.oled_mosi := lcd.io.oled_mosi
+  io.oled_clk := lcd.io.oled_clk
 
   // Gameboy registers
   val rLCDC = Reg(Bits(8 bits)) 
@@ -117,6 +123,10 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rTIMA = Reg(UInt(8 bits)) 
   val rTMA  = Reg(UInt(8 bits)) 
   val rTAC  = Reg(UInt(8 bits)) 
+
+  lcd.io.pixels.payload := pixel
+  lcd.io.pixels.valid := (x < 160 && y < 144) && rLCDC(7)
+  ppu.io.nextPixel := lcd.io.pixels.ready
 
   val IRQ   = Reg(Bool)
   val rButtonSelect = Reg(Bits(2 bits))
@@ -171,7 +181,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
 
 
-  rLY := ppu.io.currentY
+  rLY := ppu.io.y
 
   ppu.io.lcdControl := rLCDC
   ppu.io.startX := rSCX
