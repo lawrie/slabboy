@@ -61,12 +61,14 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rIF = 0xff0f
   val rIE = 0xffff
 
-  val memSize = (56 * 1024)
+  val romSize = (32 * 1024)
+  val memSize = (24 * 1024)
 
-  val memory = Mem(UInt(8 bits), memSize)
+  val rom = Mem(Bits(8 bits), romSize)
+  val memory = Mem(Bits(8 bits), memSize)
   val vidMem = Mem(UInt(8 bits), 8 * 1024)
 
-  BinTools.initRam(memory, "sw/test.gb")
+  BinTools.initRam(rom, "sw/test.gb")
 
   val cpu = new Cpu(
     bootVector = 0x0100,
@@ -74,9 +76,10 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   )
 
   val address = UInt(16 bits)
-  val dataIn = Reg(UInt(8 bits))
+  val dataIn = Reg(Bits(8 bits))
+  val romIn = Reg(Bits(8 bits))
   val ppuIn = Reg(UInt(8 bits))
-  val dataOut = cpu.io.dataOut
+  val dataOut = cpu.io.dataOut.asBits
   val enable = cpu.io.mreq
   val write = cpu.io.write
 
@@ -170,7 +173,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   ppu.io.cpuSelOam := cpu.io.address(15 downto 8) === 0xFE
   ppu.io.cpuAddr := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
   ppu.io.cpuWr := write | (dmaActive && dmaOffset(1 downto 0) === 2)
-  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut.asBits
+  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut
 
   // The 8kb video memory is separate
   // The other 48kb includes ROM and RAM
@@ -178,36 +181,37 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   when (dmaActive && dmaOffset(1 downto 0) === 0)  {
     address := dmaPage @@ dmaOffset(9 downto 2)
   } elsewhen (cpu.io.address >= 0xa000) {
-    address := cpu.io.address - 0x2000
+    address := cpu.io.address - 0xA000
   } otherwise {
-    address := cpu.io.address
+    address := cpu.io.address - 0x8000
   }
 
   dataIn := memory(address.resized)
+  romIn := rom(address.resized)
 
   // Writes to memory
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
-      vidMem((cpu.io.address - 0x8000).resized) := dataOut
+      vidMem((cpu.io.address - 0x8000).resized) := dataOut.asUInt
     } otherwise {
       switch (cpu.io.address) {
-        is(LCDC) (rLCDC := dataOut.asBits)
-        is(STAT) (rSTAT := dataOut.asBits)
-        is(SCY) (rSCY := dataOut)
-        is(SCX) (rSCX := dataOut)
-        is(LYC) (rLYC := dataOut)
-        is(DMA) (rDMA := dataOut)
-        is(BGP) (rBGP := dataOut.asBits)
-        is(OBP0) (rOBP0 := dataOut.asBits)
-        is(OBP1) (rOBP1 := dataOut.asBits)
-        is(WY) (rWY := dataOut)
-        is(WX) (rWX := dataOut)
+        is(LCDC) (rLCDC := dataOut)
+        is(STAT) (rSTAT := dataOut)
+        is(SCY) (rSCY := dataOut.asUInt)
+        is(SCX) (rSCX := dataOut.asUInt)
+        is(LYC) (rLYC := dataOut.asUInt)
+        is(DMA) (rDMA := dataOut.asUInt)
+        is(BGP) (rBGP := dataOut)
+        is(OBP0) (rOBP0 := dataOut)
+        is(OBP1) (rOBP1 := dataOut)
+        is(WY) (rWY := dataOut.asUInt)
+        is(WX) (rWX := dataOut.asUInt)
         is(DIV) (rDIV := 0)
-        is(TIMA) (rTIMA := dataOut)
-        is(TMA) (rTMA := dataOut)
-        is(TAC) (rTAC := dataOut)
+        is(TIMA) (rTIMA := dataOut.asUInt)
+        is(TMA) (rTMA := dataOut.asUInt)
+        is(TAC) (rTAC := dataOut.asUInt)
         is(JOYP) (rButtonSelect := dataOut(5 downto 4).asBits)
-        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := dataOut}
+        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := dataOut.asUInt}
       } 
       memory(address.resized) := dataOut
     }
@@ -215,7 +219,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
 
   // Reads from memory
   when (dmaActive && cpu.io.address >= 0xfe00 && cpu.io.address <= 0xfe9f) {
-    dmaData := dataIn.asBits
+    dmaData := dataIn
     cpu.io.dataIn := 0
   } otherwise {
     switch (cpu.io.address) {
@@ -236,7 +240,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
       is(TMA) (cpu.io.dataIn := rTMA)
       is(TAC) (cpu.io.dataIn := rTAC)
       is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
-      default ( cpu.io.dataIn := dataIn)
+      default ( cpu.io.dataIn := (cpu.io.address < 0x8000) ? romIn.asUInt | dataIn.asUInt)
     }
   }
 
