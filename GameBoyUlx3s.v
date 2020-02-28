@@ -1,7 +1,27 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 28/02/2020, 19:37:43
+// Date      : 28/02/2020, 20:55:53
 // Component : GameBoyUlx3s
 
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -37,26 +57,6 @@
 `define AluOp_binary_sequancial_Sla_1 6'b011110
 `define AluOp_binary_sequancial_Sra_1 6'b011111
 `define AluOp_binary_sequancial_Srl_1 6'b100000
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -4332,200 +4332,6 @@ module CpuAlu (
 
 endmodule
 
-module ST7789 (
-      input   io_pixels_valid,
-      output reg  io_pixels_ready,
-      input  [15:0] io_pixels_payload,
-      output [7:0] io_x,
-      output [7:0] io_y,
-      output reg  io_next_pixel,
-      output  io_oled_csn,
-      output  io_oled_clk,
-      output  io_oled_mosi,
-      output  io_oled_dc,
-      output  io_oled_resn,
-      input   clkout0,
-      input   _zz_2);
-  wire [7:0] _zz_3;
-  reg [7:0] _zz_4;
-  reg [7:0] _zz_5;
-  wire  _zz_6;
-  wire  _zz_7;
-  wire  _zz_8;
-  wire  _zz_9;
-  wire  _zz_10;
-  wire [5:0] _zz_11;
-  wire [4:0] _zz_12;
-  wire [5:0] _zz_13;
-  wire [4:0] _zz_14;
-  wire [5:0] _zz_15;
-  wire [21:0] _zz_16;
-  reg [22:0] resetCnt;
-  reg [10:0] initCnt;
-  reg [7:0] data;
-  reg  dc;
-  reg  byteToggle;
-  reg  init;
-  reg [4:0] numArgs;
-  reg [24:0] delayCnt;
-  reg [5:0] arg;
-  reg  delaySet;
-  reg [7:0] lastCmd;
-  wire [6:0] _zz_1;
-  wire [7:0] nextByte;
-  reg [7:0] C_oled_init [0:35];
-  assign io_x = _zz_4;
-  assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_7 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_8 = (! byteToggle);
-  assign _zz_9 = (! resetCnt[22]);
-  assign _zz_10 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_11 = _zz_1[5:0];
-  assign _zz_12 = (numArgs + (5'b00001));
-  assign _zz_13 = {1'd0, _zz_12};
-  assign _zz_14 = (numArgs + (5'b00001));
-  assign _zz_15 = {1'd0, _zz_14};
-  assign _zz_16 = (nextByte * (14'b11111010000000));
-  initial begin
-    $readmemb("GameBoyUlx3s.v_toplevel_coreClockingArea_gameboy_ppu_lcd_C_oled_init.bin",C_oled_init);
-  end
-  assign _zz_3 = C_oled_init[_zz_11];
-  assign io_oled_resn = resetCnt[22];
-  assign io_oled_csn = 1'b1;
-  assign io_oled_dc = dc;
-  assign io_oled_clk = initCnt[0];
-  assign io_oled_mosi = data[7];
-  assign _zz_1 = initCnt[10 : 4];
-  assign nextByte = _zz_3;
-  always @ (*) begin
-    io_pixels_ready = 1'b0;
-    if(! _zz_9) begin
-      if(! _zz_10) begin
-        if(_zz_6)begin
-          if(_zz_7)begin
-            if(! init) begin
-              if(_zz_8)begin
-                io_pixels_ready = 1'b1;
-              end
-            end
-          end
-        end
-      end
-    end
-  end
-
-  always @ (posedge clkout0 or negedge _zz_2) begin
-    if (!_zz_2) begin
-      _zz_4 <= (8'b00000000);
-      _zz_5 <= (8'b00000000);
-      resetCnt <= (23'b00000000000000000000000);
-      initCnt <= (11'b00000000000);
-      data <= (8'b00000000);
-      dc <= 1'b0;
-      byteToggle <= 1'b0;
-      init <= 1'b1;
-      numArgs <= (5'b00000);
-      delayCnt <= (25'b0000000000000000000000000);
-      arg <= (6'b000000);
-      delaySet <= 1'b0;
-      lastCmd <= (8'b00000000);
-    end else begin
-      if(_zz_9)begin
-        resetCnt <= (resetCnt + (23'b00000000000000000000001));
-      end else begin
-        if(_zz_10)begin
-          delayCnt <= (delayCnt - (25'b0000000000000000000000001));
-        end else begin
-          if(_zz_6)begin
-            initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_7)begin
-              if(init)begin
-                dc <= 1'b0;
-                arg <= (arg + (6'b000001));
-                if((arg == (6'b000000)))begin
-                  data <= (8'b00000000);
-                  lastCmd <= nextByte;
-                end else begin
-                  if((arg == (6'b000001)))begin
-                    numArgs <= nextByte[4 : 0];
-                    delaySet <= nextByte[7];
-                    if((nextByte == (8'b00000000)))begin
-                      arg <= (6'b000000);
-                    end
-                    data <= lastCmd;
-                  end else begin
-                    if((arg <= _zz_13))begin
-                      data <= nextByte;
-                      dc <= 1'b1;
-                      if(((arg == _zz_15) && (! delaySet)))begin
-                        arg <= (6'b000000);
-                      end
-                    end else begin
-                      if(delaySet)begin
-                        if((nextByte != (8'b11111111)))begin
-                          delayCnt <= {3'd0, _zz_16};
-                        end else begin
-                          delayCnt <= (25'b0011110100001001000000000);
-                        end
-                        data <= (8'b00000000);
-                        delaySet <= 1'b0;
-                        arg <= (6'b000000);
-                      end
-                    end
-                  end
-                end
-              end else begin
-                byteToggle <= (! byteToggle);
-                dc <= 1'b1;
-                data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_8)begin
-                  if((_zz_4 == (8'b10011111)))begin
-                    _zz_4 <= (8'b00000000);
-                    if((_zz_5 == (8'b10001111)))begin
-                      _zz_5 <= (8'b00000000);
-                    end else begin
-                      _zz_5 <= (_zz_5 + (8'b00000001));
-                    end
-                  end else begin
-                    _zz_4 <= (_zz_4 + (8'b00000001));
-                  end
-                end
-              end
-            end else begin
-              if((! initCnt[0]))begin
-                data <= {data[6 : 0],(1'b0)};
-              end
-            end
-          end else begin
-            init <= 1'b0;
-            initCnt[10 : 4] <= (7'b0100011);
-          end
-        end
-      end
-    end
-  end
-
-  always @ (posedge clkout0) begin
-    if(! _zz_9) begin
-      if(! _zz_10) begin
-        if(_zz_6)begin
-          if(_zz_7)begin
-            if(! init) begin
-              if(_zz_8)begin
-                io_next_pixel <= 1'b1;
-              end
-            end
-          end else begin
-            io_next_pixel <= 1'b0;
-          end
-        end
-      end
-    end
-  end
-
-endmodule
-
 module Sprites (
       input  [3:0] io_index,
       input   io_size16,
@@ -8360,11 +8166,6 @@ module Cpu (
 endmodule
 
 module PPUUlx3s (
-      output  io_oled_csn,
-      output  io_oled_resn,
-      output  io_oled_dc,
-      output  io_oled_mosi,
-      output  io_oled_clk,
       input  [7:0] io_lcdControl,
       input  [7:0] io_startX,
       input  [7:0] io_startY,
@@ -8386,38 +8187,27 @@ module PPUUlx3s (
       output [7:0] io_cpuDataIn,
       input   clkout0,
       input   _zz_1);
-  wire  _zz_2;
-  wire [15:0] _zz_3;
-  wire [3:0] _zz_4;
+  wire [3:0] _zz_2;
+  wire  _zz_3;
+  reg [7:0] _zz_4;
   wire  _zz_5;
-  reg [7:0] _zz_6;
+  reg [15:0] _zz_6;
   wire  _zz_7;
-  reg [15:0] _zz_8;
+  wire [1:0] _zz_8;
   wire  _zz_9;
-  wire [7:0] _zz_10;
+  wire [10:0] _zz_10;
   wire [7:0] _zz_11;
-  wire  _zz_12;
+  wire [7:0] _zz_12;
   wire  _zz_13;
   wire  _zz_14;
   wire  _zz_15;
   wire  _zz_16;
-  wire  _zz_17;
-  wire  _zz_18;
-  wire [1:0] _zz_19;
-  wire  _zz_20;
-  wire [10:0] _zz_21;
-  wire [7:0] _zz_22;
-  wire [7:0] _zz_23;
-  wire  _zz_24;
-  wire  _zz_25;
-  wire  _zz_26;
-  wire  _zz_27;
-  wire [7:0] _zz_28;
-  wire [2:0] _zz_29;
-  wire [2:0] _zz_30;
-  wire [2:0] _zz_31;
-  wire [3:0] _zz_32;
-  wire [1:0] _zz_33;
+  wire [7:0] _zz_17;
+  wire [2:0] _zz_18;
+  wire [2:0] _zz_19;
+  wire [2:0] _zz_20;
+  wire [3:0] _zz_21;
+  wire [1:0] _zz_22;
   wire [15:0] colors_0;
   wire [15:0] colors_1;
   wire [15:0] colors_2;
@@ -8449,63 +8239,48 @@ module PPUUlx3s (
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_24 = (bitCycle == (5'b00010));
-  assign _zz_25 = (bitCycle == (5'b00001));
-  assign _zz_26 = (bitCycle == (5'b00000));
-  assign _zz_27 = (bitCycle == (5'b00011));
-  assign _zz_28 = ((8'b11110000) + hExtra);
-  assign _zz_29 = (bitx - io_startX[2 : 0]);
-  assign _zz_30 = ((3'b111) - bitX_1);
-  assign _zz_31 = ((3'b111) - bitX_1);
-  assign _zz_32 = (color * (2'b10));
-  assign _zz_33 = io_bgPalette[_zz_32 +: 2];
-  ST7789 lcd ( 
-    .io_pixels_valid(_zz_2),
-    .io_pixels_ready(_zz_9),
-    .io_pixels_payload(_zz_3),
-    .io_x(_zz_10),
-    .io_y(_zz_11),
-    .io_next_pixel(_zz_12),
-    .io_oled_csn(_zz_13),
-    .io_oled_clk(_zz_14),
-    .io_oled_mosi(_zz_15),
-    .io_oled_dc(_zz_16),
-    .io_oled_resn(_zz_17),
-    .clkout0(clkout0),
-    ._zz_2(_zz_1) 
-  );
+  assign _zz_13 = (bitCycle == (5'b00000));
+  assign _zz_14 = (bitCycle == (5'b00001));
+  assign _zz_15 = (bitCycle == (5'b00010));
+  assign _zz_16 = (bitCycle == (5'b00011));
+  assign _zz_17 = ((8'b11110000) + hExtra);
+  assign _zz_18 = (bitx - io_startX[2 : 0]);
+  assign _zz_19 = ((3'b111) - bitX_1);
+  assign _zz_20 = ((3'b111) - bitX_1);
+  assign _zz_21 = (color * (2'b10));
+  assign _zz_22 = io_bgPalette[_zz_21 +: 2];
   Sprites sprites_1 ( 
-    .io_index(_zz_4),
-    .io_size16(_zz_5),
+    .io_index(_zz_2),
+    .io_size16(_zz_3),
     .io_x(x),
     .io_y(y),
     .io_dValid(spriteDValid),
-    .io_data(_zz_6),
-    .io_pixelActive(_zz_18),
-    .io_pixelData(_zz_19),
-    .io_pixelPrio(_zz_20),
-    .io_addr(_zz_21),
-    .io_oamWr(_zz_7),
+    .io_data(_zz_4),
+    .io_pixelActive(_zz_7),
+    .io_pixelData(_zz_8),
+    .io_pixelPrio(_zz_9),
+    .io_addr(_zz_10),
+    .io_oamWr(_zz_5),
     .io_oamAddr(oamAddr),
     .io_oamDi(io_cpuDataOut),
-    .io_oamDo(_zz_22),
-    .io_diag(_zz_23),
+    .io_oamDo(_zz_11),
+    .io_diag(_zz_12),
     .clkout0(clkout0),
     ._zz_1(_zz_1) 
   );
   always @(*) begin
-    case(_zz_33)
+    case(_zz_22)
       2'b00 : begin
-        _zz_8 = colors_0;
+        _zz_6 = colors_0;
       end
       2'b01 : begin
-        _zz_8 = colors_1;
+        _zz_6 = colors_1;
       end
       2'b10 : begin
-        _zz_8 = colors_2;
+        _zz_6 = colors_2;
       end
       default : begin
-        _zz_8 = colors_3;
+        _zz_6 = colors_3;
       end
     endcase
   end
@@ -8517,11 +8292,6 @@ module PPUUlx3s (
   assign io_x = x;
   assign io_y = y;
   assign io_mode = (((8'b10001111) < y) ? (2'b01) : (2'b00));
-  assign io_oled_csn = _zz_13;
-  assign io_oled_resn = _zz_17;
-  assign io_oled_dc = _zz_16;
-  assign io_oled_mosi = _zz_15;
-  assign io_oled_clk = _zz_14;
   assign bgScrnAddress = (io_lcdControl[3] ? (13'b1110000000000) : (13'b1100000000000));
   assign windowAddress = (io_lcdControl[6] ? (13'b1110000000000) : (13'b1100000000000));
   assign showWindow = io_lcdControl[5];
@@ -8535,49 +8305,49 @@ module PPUUlx3s (
   assign winTileY = (y - io_windowY);
   assign bitx = tileX[2 : 0];
   assign hExtra = ({{(3'b000),hExtraTiles},(3'b000)} + (8'b00010000));
-  assign hBlank = ((x < (8'b01010000)) || (_zz_28 <= x));
+  assign hBlank = ((x < (8'b01010000)) || (_zz_17 <= x));
   assign vBlank = ((8'b10010000) <= y);
-  assign _zz_5 = io_lcdControl[2];
-  assign _zz_4 = (4'b0000);
-  assign _zz_7 = (io_cpuWr && io_cpuSelOam);
-  assign io_cpuDataIn = _zz_22;
-  assign io_diag = _zz_23;
+  assign _zz_3 = io_lcdControl[2];
+  assign _zz_2 = (4'b0000);
+  assign _zz_5 = (io_cpuWr && io_cpuSelOam);
+  assign io_cpuDataIn = _zz_11;
+  assign io_diag = _zz_12;
   always @ (*) begin
     spriteDValid = (2'b00);
-    _zz_6 = (8'b00000000);
+    _zz_4 = (8'b00000000);
     io_address = (13'b0000000000000);
-    if(_zz_26)begin
+    if(_zz_13)begin
       if(inWindow)begin
         io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
       end else begin
         io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
       end
     end else begin
-      if(_zz_25)begin
+      if(_zz_14)begin
         if(inWindow)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},winTileY[2 : 0]},(1'b0)});
         end else begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end
       end else begin
-        if(_zz_24)begin
+        if(_zz_15)begin
           if(inWindow)begin
             io_address = (textureAddress + {{{(1'b0),tile},winTileY[2 : 0]},(1'b1)});
           end else begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end else begin
-          if(_zz_27)begin
-            io_address = {{(1'b0),_zz_21},(1'b0)};
+          if(_zz_16)begin
+            io_address = {{(1'b0),_zz_10},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
               spriteDValid = (2'b10);
-              _zz_6 = io_dataIn;
-              io_address = {{(1'b0),_zz_21},(1'b1)};
+              _zz_4 = io_dataIn;
+              io_address = {{(1'b0),_zz_10},(1'b1)};
             end else begin
               if((bitCycle == (5'b00101)))begin
                 spriteDValid = (2'b01);
-                _zz_6 = io_dataIn;
+                _zz_4 = io_dataIn;
               end
             end
           end
@@ -8586,11 +8356,11 @@ module PPUUlx3s (
     end
   end
 
-  assign bitX_1 = (inWindow ? _zz_29 : bitx);
-  assign bit0 = texture0[_zz_30];
-  assign bit1 = texture1[_zz_31];
-  assign color = ((_zz_18 && (! inWindow)) ? _zz_19 : {bit1,bit0});
-  assign io_pixel = _zz_8;
+  assign bitX_1 = (inWindow ? _zz_18 : bitx);
+  assign bit0 = texture0[_zz_19];
+  assign bit1 = texture1[_zz_20];
+  assign color = ((_zz_7 && (! inWindow)) ? _zz_8 : {bit1,bit0});
+  assign io_pixel = _zz_6;
   always @ (posedge clkout0 or negedge _zz_1) begin
     if (!_zz_1) begin
       x <= (8'b00000000);
@@ -8611,18 +8381,18 @@ module PPUUlx3s (
 
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
-    if(! _zz_26) begin
-      if(_zz_25)begin
+    if(! _zz_13) begin
+      if(_zz_14)begin
         tile <= io_dataIn;
       end else begin
-        if(_zz_24)begin
+        if(_zz_15)begin
           if(bgOn)begin
             texture0 <= io_dataIn;
           end else begin
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_27)begin
+          if(_zz_16)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin
@@ -8639,7 +8409,7 @@ module PPUUlx3s (
 
 endmodule
 
-module ST7789_1 (
+module ST7789 (
       input   io_pixels_valid,
       output reg  io_pixels_ready,
       input  [15:0] io_pixels_payload,
@@ -8683,11 +8453,11 @@ module ST7789_1 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_6 = (! resetCnt[22]);
   assign _zz_7 = (! byteToggle);
-  assign _zz_8 = (! resetCnt[22]);
-  assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_10 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_8 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_9 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -8707,10 +8477,10 @@ module ST7789_1 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_8) begin
-      if(! _zz_10) begin
-        if(_zz_6)begin
-          if(_zz_9)begin
+    if(! _zz_6) begin
+      if(! _zz_9) begin
+        if(_zz_10)begin
+          if(_zz_8)begin
             if(! init) begin
               if(_zz_7)begin
                 io_pixels_ready = 1'b1;
@@ -8738,15 +8508,15 @@ module ST7789_1 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_8)begin
+      if(_zz_6)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_10)begin
+        if(_zz_9)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_6)begin
+          if(_zz_10)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_9)begin
+            if(_zz_8)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -8814,10 +8584,10 @@ module ST7789_1 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_8) begin
-      if(! _zz_10) begin
-        if(_zz_6)begin
-          if(_zz_9)begin
+    if(! _zz_6) begin
+      if(! _zz_9) begin
+        if(_zz_10)begin
+          if(_zz_8)begin
             if(! init) begin
               if(_zz_7)begin
                 io_next_pixel <= 1'b1;
@@ -8833,7 +8603,7 @@ module ST7789_1 (
 
 endmodule
 
-module GameBoy64Ulx3s (
+module GameBoySystem (
       output  io_oled_csn,
       output  io_oled_resn,
       output  io_oled_dc,
@@ -8860,44 +8630,34 @@ module GameBoy64Ulx3s (
   wire  _zz_19;
   wire  _zz_20;
   wire [7:0] _zz_21;
-  wire  _zz_22;
-  wire  _zz_23;
-  wire  _zz_24;
-  wire  _zz_25;
-  wire  _zz_26;
-  wire [1:0] _zz_27;
-  wire [12:0] _zz_28;
-  wire [7:0] _zz_29;
+  wire [1:0] _zz_22;
+  wire [12:0] _zz_23;
+  wire [7:0] _zz_24;
+  wire [7:0] _zz_25;
+  wire [15:0] _zz_26;
+  wire [7:0] _zz_27;
+  wire [7:0] _zz_28;
+  wire  _zz_29;
   wire [7:0] _zz_30;
-  wire [15:0] _zz_31;
-  wire [7:0] _zz_32;
-  wire [7:0] _zz_33;
+  wire [7:0] _zz_31;
+  wire  _zz_32;
+  wire  _zz_33;
   wire  _zz_34;
-  wire [7:0] _zz_35;
-  wire [7:0] _zz_36;
+  wire  _zz_35;
+  wire  _zz_36;
   wire  _zz_37;
   wire  _zz_38;
   wire  _zz_39;
-  wire  _zz_40;
-  wire  _zz_41;
-  wire  _zz_42;
-  wire  _zz_43;
-  wire  _zz_44;
-  wire [1:0] _zz_45;
-  wire [7:0] _zz_46;
-  wire [14:0] _zz_47;
-  wire [14:0] _zz_48;
-  wire [15:0] _zz_49;
-  wire [12:0] _zz_50;
-  wire [14:0] _zz_51;
-  wire [7:0] _zz_52;
+  wire [1:0] _zz_40;
+  wire [14:0] _zz_41;
+  wire [14:0] _zz_42;
+  wire [7:0] _zz_43;
+  wire [15:0] _zz_44;
+  wire [12:0] _zz_45;
+  wire [14:0] _zz_46;
+  wire [7:0] _zz_47;
   reg  _zz_1;
   reg  _zz_2;
-  reg [15:0] address;
-  reg [7:0] dataIn;
-  reg [7:0] romIn;
-  reg [7:0] ppuIn;
-  wire [7:0] dataOut;
   reg [7:0] rLCDC;
   reg [7:0] rSTAT;
   reg [7:0] rSCY;
@@ -8915,46 +8675,51 @@ module GameBoy64Ulx3s (
   reg [7:0] rTIMA;
   reg [7:0] rTMA;
   reg [7:0] rTAC;
-  reg  IRQ;
   reg [1:0] rButtonSelect;
+  reg  IRQ;
+  reg [15:0] address;
+  reg [7:0] dataIn;
+  reg [7:0] romIn;
+  reg [7:0] ppuIn;
+  wire [7:0] dataOut;
   reg  dmaActive;
   reg [9:0] dmaOffset;
   reg [7:0] dmaPage;
   reg [7:0] dmaData;
-  reg [11:0] timer;
   wire [15:0] _zz_3;
   wire [15:0] _zz_4;
+  reg [11:0] timer;
   reg [7:0] rom [0:32767];
-  reg [7:0] memory [0:24575];
   reg [7:0] vidMem [0:8191];
-  assign _zz_43 = (((16'b1000000000000000) <= _zz_16) && (_zz_16 < (16'b1010000000000000)));
-  assign _zz_44 = ((dmaActive && ((16'b1111111000000000) <= _zz_16)) && (_zz_16 <= (16'b1111111010011111)));
-  assign _zz_45 = rTAC[1 : 0];
-  assign _zz_46 = (rWX - (8'b00000111));
-  assign _zz_47 = _zz_3[14:0];
-  assign _zz_48 = _zz_4[14:0];
-  assign _zz_49 = (_zz_16 - (16'b1000000000000000));
-  assign _zz_50 = _zz_49[12:0];
-  assign _zz_51 = address[14:0];
-  assign _zz_52 = dataOut;
+  reg [7:0] memory [0:24575];
+  assign _zz_38 = ((dmaActive && ((16'b1111111000000000) <= _zz_16)) && (_zz_16 <= (16'b1111111010011111)));
+  assign _zz_39 = (((16'b1000000000000000) <= _zz_16) && (_zz_16 < (16'b1010000000000000)));
+  assign _zz_40 = rTAC[1 : 0];
+  assign _zz_41 = _zz_3[14:0];
+  assign _zz_42 = _zz_4[14:0];
+  assign _zz_43 = (rWX - (8'b00000111));
+  assign _zz_44 = (_zz_16 - (16'b1000000000000000));
+  assign _zz_45 = _zz_44[12:0];
+  assign _zz_46 = address[14:0];
+  assign _zz_47 = dataOut;
   initial begin
     $readmemb("GameBoyUlx3s.v_toplevel_coreClockingArea_gameboy_rom.bin",rom);
   end
-  assign _zz_13 = rom[_zz_48];
-  always @ (posedge clkout0) begin
-    if(_zz_1) begin
-      memory[_zz_51] <= dataOut;
-    end
-  end
-
-  assign _zz_14 = memory[_zz_47];
+  assign _zz_13 = rom[_zz_41];
   always @ (posedge clkout0) begin
     if(_zz_2) begin
-      vidMem[_zz_50] <= _zz_52;
+      vidMem[_zz_45] <= _zz_47;
     end
   end
 
-  assign _zz_15 = vidMem[_zz_28];
+  assign _zz_14 = vidMem[_zz_23];
+  always @ (posedge clkout0) begin
+    if(_zz_1) begin
+      memory[_zz_46] <= dataOut;
+    end
+  end
+
+  assign _zz_15 = memory[_zz_42];
   Cpu cpu_1 ( 
     .io_address(_zz_16),
     .io_dataIn(_zz_6),
@@ -8967,11 +8732,6 @@ module GameBoy64Ulx3s (
     ._zz_2(_zz_5) 
   );
   PPUUlx3s ppu ( 
-    .io_oled_csn(_zz_22),
-    .io_oled_resn(_zz_23),
-    .io_oled_dc(_zz_24),
-    .io_oled_mosi(_zz_25),
-    .io_oled_clk(_zz_26),
     .io_lcdControl(rLCDC),
     .io_startX(rSCX),
     .io_startY(rSCY),
@@ -8979,33 +8739,33 @@ module GameBoy64Ulx3s (
     .io_windowY(rWY),
     .io_bgPalette(rBGP),
     .io_dataIn(ppuIn),
-    .io_mode(_zz_27),
-    .io_address(_zz_28),
-    .io_x(_zz_29),
-    .io_y(_zz_30),
-    .io_pixel(_zz_31),
-    .io_nextPixel(_zz_34),
-    .io_diag(_zz_32),
+    .io_mode(_zz_22),
+    .io_address(_zz_23),
+    .io_x(_zz_24),
+    .io_y(_zz_25),
+    .io_pixel(_zz_26),
+    .io_nextPixel(_zz_29),
+    .io_diag(_zz_27),
     .io_cpuSelOam(_zz_8),
     .oamAddr(_zz_9),
     .io_cpuDataOut(_zz_10),
     .io_cpuWr(_zz_11),
-    .io_cpuDataIn(_zz_33),
+    .io_cpuDataIn(_zz_28),
     .clkout0(clkout0),
     ._zz_1(_zz_5) 
   );
-  ST7789_1 lcd ( 
+  ST7789 lcd ( 
     .io_pixels_valid(_zz_12),
-    .io_pixels_ready(_zz_34),
-    .io_pixels_payload(_zz_31),
-    .io_x(_zz_35),
-    .io_y(_zz_36),
-    .io_next_pixel(_zz_37),
-    .io_oled_csn(_zz_38),
-    .io_oled_clk(_zz_39),
-    .io_oled_mosi(_zz_40),
-    .io_oled_dc(_zz_41),
-    .io_oled_resn(_zz_42),
+    .io_pixels_ready(_zz_29),
+    .io_pixels_payload(_zz_26),
+    .io_x(_zz_30),
+    .io_y(_zz_31),
+    .io_next_pixel(_zz_32),
+    .io_oled_csn(_zz_33),
+    .io_oled_clk(_zz_34),
+    .io_oled_mosi(_zz_35),
+    .io_oled_dc(_zz_36),
+    .io_oled_resn(_zz_37),
     .clkout0(clkout0),
     ._zz_2(_zz_5) 
   );
@@ -9013,7 +8773,7 @@ module GameBoy64Ulx3s (
     _zz_1 = 1'b0;
     _zz_2 = 1'b0;
     if(_zz_19)begin
-      if(_zz_43)begin
+      if(_zz_39)begin
         _zz_2 = 1'b1;
       end else begin
         _zz_1 = 1'b1;
@@ -9022,19 +8782,8 @@ module GameBoy64Ulx3s (
   end
 
   assign dataOut = _zz_17;
-  assign io_oled_csn = 1'b1;
-  assign io_oled_resn = _zz_42;
-  assign io_oled_dc = _zz_41;
-  assign io_oled_mosi = _zz_40;
-  assign io_oled_clk = _zz_39;
-  assign _zz_12 = (((_zz_29 < (8'b10100000)) && (_zz_30 < (8'b10010000))) && rLCDC[7]);
-  assign _zz_7 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_46);
-  assign _zz_8 = (_zz_16[15 : 8] == (8'b11111110));
-  assign _zz_9 = (dmaActive ? dmaOffset[9 : 2] : _zz_16[7 : 0]);
-  assign _zz_11 = (_zz_19 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
-  assign _zz_10 = (dmaActive ? dmaData : dataOut);
   always @ (*) begin
-    if((dmaActive && (dmaOffset[1 : 0] == (2'b00))))begin
+    if(dmaActive)begin
       address = {dmaPage,dmaOffset[9 : 2]};
     end else begin
       if(((16'b1010000000000000) <= _zz_16))begin
@@ -9047,8 +8796,13 @@ module GameBoy64Ulx3s (
 
   assign _zz_3 = address;
   assign _zz_4 = address;
+  assign _zz_7 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_43);
+  assign _zz_8 = (_zz_16[15 : 8] == (8'b11111110));
+  assign _zz_9 = (dmaActive ? dmaOffset[9 : 2] : _zz_16[7 : 0]);
+  assign _zz_11 = (_zz_19 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
+  assign _zz_10 = (dmaActive ? dmaData : dataOut);
   always @ (*) begin
-    if(_zz_44)begin
+    if(_zz_38)begin
       _zz_6 = (8'b00000000);
     end else begin
       case(_zz_16)
@@ -9056,7 +8810,7 @@ module GameBoy64Ulx3s (
           _zz_6 = (rLCDC & (8'b01111111));
         end
         16'b1111111101000001 : begin
-          _zz_6 = {{rSTAT[7 : 3],(rLY == rLYC)},_zz_27};
+          _zz_6 = {{rSTAT[7 : 3],(rLY == rLYC)},_zz_22};
         end
         16'b1111111101000010 : begin
           _zz_6 = rSCY;
@@ -9110,49 +8864,23 @@ module GameBoy64Ulx3s (
     end
   end
 
-  assign io_led = _zz_32;
+  assign io_oled_csn = 1'b1;
+  assign io_oled_resn = _zz_37;
+  assign io_oled_dc = _zz_36;
+  assign io_oled_mosi = _zz_35;
+  assign io_oled_clk = _zz_34;
+  assign _zz_12 = (((_zz_24 < (8'b10100000)) && (_zz_25 < (8'b10010000))) && rLCDC[7]);
+  assign io_led = _zz_27;
   assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},(1'b0)};
   always @ (posedge clkout0) begin
-    ppuIn <= _zz_15;
-    timer <= (timer + (12'b000000000001));
-    if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
-      rDIV <= (rDIV + (8'b00000001));
-    end
-    IRQ <= 1'b0;
-    if(rTAC[2])begin
-      case(_zz_45)
-        2'b00 : begin
-          if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        2'b01 : begin
-          if(((timer & (12'b000000111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        2'b10 : begin
-          if(((timer & (12'b000011111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        default : begin
-          if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-      endcase
-      if((rTIMA == (8'b11111111)))begin
-        IRQ <= 1'b1;
-        rTIMA <= rTMA;
-      end
-    end
     rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
-    rLY <= _zz_30;
-    dataIn <= _zz_14;
+    IRQ <= 1'b0;
     romIn <= _zz_13;
+    ppuIn <= _zz_14;
+    dataIn <= _zz_15;
+    rLY <= _zz_25;
     if(_zz_19)begin
-      if(! _zz_43) begin
+      if(! _zz_39) begin
         case(_zz_16)
           16'b1111111101000000 : begin
             rLCDC <= dataOut;
@@ -9212,7 +8940,7 @@ module GameBoy64Ulx3s (
         endcase
       end
     end
-    if(_zz_44)begin
+    if(_zz_38)begin
       dmaData <= dataIn;
     end
     if(dmaActive)begin
@@ -9220,6 +8948,38 @@ module GameBoy64Ulx3s (
       if((dmaOffset == (10'b1001111111)))begin
         dmaActive <= 1'b0;
         dmaOffset <= (10'b0000000000);
+      end
+    end
+    timer <= (timer + (12'b000000000001));
+    if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
+      rDIV <= (rDIV + (8'b00000001));
+    end
+    if(rTAC[2])begin
+      case(_zz_40)
+        2'b00 : begin
+          if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
+            rTIMA <= (rTIMA + (8'b00000001));
+          end
+        end
+        2'b01 : begin
+          if(((timer & (12'b000000111111)) == (12'b000000000000)))begin
+            rTIMA <= (rTIMA + (8'b00000001));
+          end
+        end
+        2'b10 : begin
+          if(((timer & (12'b000011111111)) == (12'b000000000000)))begin
+            rTIMA <= (rTIMA + (8'b00000001));
+          end
+        end
+        default : begin
+          if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
+            rTIMA <= (rTIMA + (8'b00000001));
+          end
+        end
+      endcase
+      if((rTIMA == (8'b11111111)))begin
+        IRQ <= 1'b1;
+        rTIMA <= rTMA;
       end
     end
   end
@@ -9253,7 +9013,7 @@ module GameBoyUlx3s (
     .clkout0(_zz_3),
     .locked(_zz_4) 
   );
-  GameBoy64Ulx3s coreClockingArea_gameboy ( 
+  GameBoySystem coreClockingArea_gameboy ( 
     .io_oled_csn(_zz_5),
     .io_oled_resn(_zz_6),
     .io_oled_dc(_zz_7),

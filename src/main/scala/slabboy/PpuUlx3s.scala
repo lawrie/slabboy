@@ -5,12 +5,6 @@ import spinal.lib._
 
 case class PPUUlx3s(sim: Boolean = false) extends Component {
   val io = new Bundle {
-    val oled_csn = out Bool
-    val oled_resn = out Bool
-    val oled_dc = out Bool
-    val oled_mosi = out Bool
-    val oled_clk = out Bool
-
     val lcdControl = in Bits(8 bits)
     val startX = in UInt(8 bits)
     val startY = in UInt(8 bits)
@@ -50,13 +44,6 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   io.y := y
 
   io.mode := (y > 143) ? B"01" | B"00" // No busy modes yet
-
-  val lcd = new ST7789(16000)
-  io.oled_csn := lcd.io.oled_csn
-  io.oled_resn := lcd.io.oled_resn
-  io.oled_dc := lcd.io.oled_dc
-  io.oled_mosi := lcd.io.oled_mosi
-  io.oled_clk := lcd.io.oled_clk
 
   val tile = Reg(UInt(8 bits))
   val texture0 = Reg(Bits(8 bits))

@@ -3,16 +3,22 @@ package slabboy
 import spinal.core._
 import spinal.lib._
 
-class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
+// Top-level board-independent Gameboy implementation
+class GameBoySystem(sim: Boolean = false) extends Component {
   val io = new Bundle {
-    val oled_csn = out Bool
+    // SPI LCD interface
+    val oled_csn  = out Bool
     val oled_resn = out Bool
-    val oled_dc = out Bool
+    val oled_dc   = out Bool
     val oled_mosi = out Bool
-    val oled_clk = out Bool 
-    val led = out Bits(8 bits)
-    val leds = out Bits(5 bits)
-    val btn = in Bits(8 bits)
+    val oled_clk  = out Bool
+
+    // Diagnostics
+    val led       = out Bits(8 bits)
+    val leds      = out Bits(5 bits)
+
+    // Buttons
+    val btn       = in Bits(8 bits)
   }
 
   // Gameboy register mapping
@@ -62,49 +68,6 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rIF        = 0xff0f
   val rIE        = 0xffff
 
-  // Memory mapping
-  val romSize = (32 * 1024)
-  val memSize = (24 * 1024)
-
-  val rom = Mem(Bits(8 bits), romSize)
-  val memory = Mem(Bits(8 bits), memSize)
-  val vidMem = Mem(UInt(8 bits), 8 * 1024)
-
-  BinTools.initRam(rom, "sw/test.gb")
-
-  // CPU
-  val cpu = new Cpu(
-    bootVector = 0x0100,
-    spInit = 0xFFFF
-  )
-
-  val address = UInt(16 bits)
-  
-  val dataIn  = Reg(Bits(8 bits))
-  val romIn   = Reg(Bits(8 bits))
-  val ppuIn   = Reg(UInt(8 bits))
-  
-  val dataOut = cpu.io.dataOut.asBits
-  val enable  = cpu.io.mreq
-  val write   = cpu.io.write
-
-  val ppu = PPUUlx3s(sim)
-  
-  ppu.io.dataIn := ppuIn
-  
-  val x = ppu.io.x
-  val y = ppu.io.y
-  val pixel = ppu.io.pixel
-
-  ppuIn := vidMem(ppu.io.address)
-
-  val lcd = new ST7789(16000)
-  io.oled_csn  := True
-  io.oled_resn := lcd.io.oled_resn
-  io.oled_dc := lcd.io.oled_dc
-  io.oled_mosi := lcd.io.oled_mosi
-  io.oled_clk := lcd.io.oled_clk
-
   // Gameboy registers
   val rLCDC = Reg(Bits(8 bits)) 
   val rSTAT = Reg(Bits(8 bits)) 
@@ -124,12 +87,42 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rTMA  = Reg(UInt(8 bits)) 
   val rTAC  = Reg(UInt(8 bits)) 
 
-  lcd.io.pixels.payload := pixel
-  lcd.io.pixels.valid := (x < 160 && y < 144) && rLCDC(7)
-  ppu.io.nextPixel := lcd.io.pixels.ready
-
-  val IRQ   = Reg(Bool)
+  // Buttons
   val rButtonSelect = Reg(Bits(2 bits))
+  rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
+
+  // CPU
+  val cpu = new Cpu(
+    bootVector = 0x0100,
+    spInit = 0xFFFF
+  )
+
+  // IRQ: TODO
+  val IRQ = Reg(Bool)
+  IRQ := False
+
+  // Memory mapping
+  val romSize  = 32 * 1024
+  val memSize  = 24 * 1024
+  val vramSize = 8 * 1024
+
+  val rom      = Mem(Bits(8 bits), romSize)
+  val vidMem   = Mem(UInt(8 bits), vramSize)
+  val memory   = Mem(Bits(8 bits), memSize)
+
+  // Load the rom
+  BinTools.initRam(rom, "sw/test.gb")
+
+  // Address and data buses
+  val address = UInt(16 bits)
+  
+  val dataIn  = Reg(Bits(8 bits))
+  val romIn   = Reg(Bits(8 bits))
+  val ppuIn   = Reg(UInt(8 bits))
+  
+  val dataOut = cpu.io.dataOut.asBits
+  val enable  = cpu.io.mreq
+  val write   = cpu.io.write
 
   // DMA for sprites
   val dmaActive = Reg(Bool)
@@ -137,77 +130,40 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val dmaPage   = Reg(UInt(8 bits))
   val dmaData   = Reg(Bits(8 bits))
 
-  // Timer
-  val timer     = Reg(UInt(12 bits))
-
-  timer := timer + 1
-
-  when ((timer & 0x3FF) === 0) {
-    rDIV := rDIV + 1
-  }
-
-  IRQ := False
-
-  when (rTAC(2)) {
-    switch (rTAC(1 downto 0)) {
-      is(0) {
-        when((timer & 0xFFF) === 0) {
-          rTIMA := rTIMA + 1
-        }
-      }
-      is(1) {
-        when((timer & 0x3F) === 0) {
-          rTIMA := rTIMA + 1
-        }
-      }
-      is(2) {
-        when((timer & 0xFF) === 0) {
-          rTIMA := rTIMA + 1
-        }
-      }
-      is(3) {
-        when((timer & 0x3FF) === 0) {
-          rTIMA := rTIMA + 1
-        }
-      }
-    }
-
-    when (rTIMA === 0xFF) {
-      IRQ := True
-      rTIMA := rTMA
-    }
-  }
-
-  rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
-
-
-  rLY := ppu.io.y
-
-  ppu.io.lcdControl := rLCDC
-  ppu.io.startX := rSCX
-  ppu.io.startY := rSCY
-  ppu.io.windowX := (rWX < 7) ? U(0, 8 bits) | rWX - 7
-  ppu.io.windowY := rWY
-  ppu.io.bgPalette := rBGP
-
-  ppu.io.cpuSelOam := cpu.io.address(15 downto 8) === 0xFE
-  ppu.io.cpuAddr := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
-  ppu.io.cpuWr := write | (dmaActive && dmaOffset(1 downto 0) === 2)
-  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut
-
-  // The 8kb video memory is separate
-  // The other 48kb includes ROM and RAM
-  // Bank switching is not supported
-  when (dmaActive && dmaOffset(1 downto 0) === 0)  {
+  // Addressing decoding
+  when (dmaActive)  {
     address := dmaPage @@ dmaOffset(9 downto 2)
   } elsewhen (cpu.io.address >= 0xa000) {
-    address := cpu.io.address - 0xA000
+    address := cpu.io.address - 0xa000
   } otherwise {
     address := cpu.io.address - 0x8000
   }
 
+  // Pixel Processing Unit
+  val ppu = PPUUlx3s(sim)
+  
+  // Input from memory
+  romIn  := rom(address.resized)
+  ppuIn  := vidMem(ppu.io.address)
   dataIn := memory(address.resized)
-  romIn := rom(address.resized)
+
+  val x = ppu.io.x
+  val y = ppu.io.y
+  val pixel = ppu.io.pixel
+  
+  ppu.io.dataIn     := ppuIn
+  ppu.io.lcdControl := rLCDC
+  ppu.io.startX     := rSCX
+  ppu.io.startY     := rSCY
+  ppu.io.windowX    := (rWX < 7) ? U(0, 8 bits) | rWX - 7
+  ppu.io.windowY    := rWY
+  ppu.io.bgPalette  := rBGP
+  ppu.io.cpuSelOam  := cpu.io.address(15 downto 8) === 0xFE
+  ppu.io.cpuAddr    := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
+  ppu.io.cpuWr      := write | (dmaActive && dmaOffset(1 downto 0) === 2)
+  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut
+
+  rLY := ppu.io.y
 
   // Writes to memory
   when (write) {
@@ -264,6 +220,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     }
   }
 
+  // DMA for sprites
   when (dmaActive) {
     dmaOffset := dmaOffset + 1
     when (dmaOffset === 160 * 4 - 1) {
@@ -272,11 +229,63 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
     }
   }
 
+  // LCD 
+  val lcd = new ST7789(16000)
+  io.oled_csn  := True
+  io.oled_resn := lcd.io.oled_resn
+  io.oled_dc := lcd.io.oled_dc
+  io.oled_mosi := lcd.io.oled_mosi
+  io.oled_clk := lcd.io.oled_clk
+
+  lcd.io.pixels.payload := pixel
+  lcd.io.pixels.valid := (x < 160 && y < 144) && rLCDC(7)
+  ppu.io.nextPixel := lcd.io.pixels.ready
+
+  // Diagnostics
   io.led := ppu.io.diag
   io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## B"0"
 
+  // Timer
+  val timer     = Reg(UInt(12 bits))
+
+  timer := timer + 1
+
+  when ((timer & 0x3FF) === 0) {
+    rDIV := rDIV + 1
+  }
+
+  when (rTAC(2)) {
+    switch (rTAC(1 downto 0)) {
+      is(0) {
+        when((timer & 0xFFF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(1) {
+        when((timer & 0x3F) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(2) {
+        when((timer & 0xFF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+      is(3) {
+        when((timer & 0x3FF) === 0) {
+          rTIMA := rTIMA + 1
+        }
+      }
+    }
+
+    when (rTIMA === 0xFF) {
+      IRQ := True
+      rTIMA := rTMA
+    }
+  }
 }
 
+// Ulx3s implementation of Gameboy
 class GameBoyUlx3s extends Component {
   val io = new Bundle {
     val clk_25mhz = in Bool
@@ -302,7 +311,7 @@ class GameBoyUlx3s extends Component {
 
   val coreClockingArea = new ClockingArea(coreClockDomain) {
     
-    val gameboy = new GameBoy64Ulx3s()
+    val gameboy = new GameBoySystem()
     io.oled_csn := gameboy.io.oled_csn
     io.oled_resn := gameboy.io.oled_resn
     io.oled_dc := gameboy.io.oled_dc
@@ -312,13 +321,13 @@ class GameBoyUlx3s extends Component {
     io.led := gameboy.io.led
     io.leds := gameboy.io.leds
   
-    gameboy.io.btn := io.btn(3).asBits ## io.btn(4).asBits ## io.btn(6).asBits ## io.btn(5).asBits ## io.btn(2 downto 1) ## io.button(1 downto 0)
+    gameboy.io.btn := io.btn(3).asBits ## io.btn(4).asBits ## io.btn(6).asBits ## 
+                      io.btn(5).asBits ## io.btn(2 downto 1) ## io.button(1 downto 0)
   }
 }
 
 object GameBoyUlx3s {
   def main(args: Array[String]) {
-    print("Generation")
     SpinalConfig().generateVerilog(new GameBoyUlx3s())
   }
 }
@@ -327,7 +336,7 @@ object GameBoy64Ulx3sSim {
   import spinal.core.sim._
 
   def main(args: Array[String]) {
-    SimConfig.withWave.compile(new GameBoy64Ulx3s(true)).doSim{ dut =>
+    SimConfig.withWave.compile(new GameBoySystem(true)).doSim{ dut =>
       dut.clockDomain.forkStimulus(100)
 
       dut.clockDomain.waitSampling(100000)
