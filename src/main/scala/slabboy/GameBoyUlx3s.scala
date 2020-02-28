@@ -111,6 +111,10 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   val rTAC = Reg(UInt(8 bits)) 
   val IRQ = Reg(Bool)
 
+  val dmaActive = Reg(Bool)
+  val dmaOffset = Reg(UInt(10 bits))
+  val dmaPage = Reg(UInt(8 bits))
+  val dmaData = Reg(Bits(8 bits))
   val timer = Reg(UInt(12 bits))
 
   timer := timer + 1
@@ -153,6 +157,7 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
 
   rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
 
+
   rLY := ppu.io.currentY
 
   ppu.io.lcdControl := rLCDC
@@ -163,14 +168,16 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
   ppu.io.bgPalette := rBGP
 
   ppu.io.cpuSelOam := cpu.io.address(15 downto 8) === 0xFE
-  ppu.io.cpuAddr := cpu.io.address(7 downto 0)
-  ppu.io.cpuWr := write
-  ppu.io.cpuDataOut := dataOut.asBits
+  ppu.io.cpuAddr := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
+  ppu.io.cpuWr := write | (dmaActive && dmaOffset(1 downto 0) === 2)
+  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut.asBits
 
   // The 8kb video memory is separate
   // The other 48kb includes ROM and RAM
   // Bank switching is not supported
-  when (cpu.io.address >= 0xa000) {
+  when (dmaActive && dmaOffset(1 downto 0) === 0)  {
+    address := dmaPage @@ dmaOffset(9 downto 2)
+  } elsewhen (cpu.io.address >= 0xa000) {
     address := cpu.io.address - 0x2000
   } otherwise {
     address := cpu.io.address
@@ -200,33 +207,47 @@ class GameBoy64Ulx3s(sim: Boolean = false) extends Component {
         is(TMA) (rTMA := dataOut)
         is(TAC) (rTAC := dataOut)
         is(JOYP) (rButtonSelect := dataOut(5 downto 4).asBits)
+        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := dataOut}
       } 
       memory(address.resized) := dataOut
     }
   }
 
   // Reads from memory
-  switch (cpu.io.address) {
-    is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
-    is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
-    is(SCY) (cpu.io.dataIn := rSCY)
-    is(SCX) (cpu.io.dataIn := rSCX)
-    is(LY) (cpu.io.dataIn := rLY)
-    is(LYC) (cpu.io.dataIn := rLYC)
-    is(DMA) (cpu.io.dataIn := rDMA)
-    is(BGP) (cpu.io.dataIn := rBGP.asUInt)
-    is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
-    is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
-    is(WY) (cpu.io.dataIn := rWY)
-    is(WX) (cpu.io.dataIn := rWX)
-    is(DIV) (cpu.io.dataIn := rDIV)
-    is(TIMA) (cpu.io.dataIn := rTIMA)
-    is(TMA) (cpu.io.dataIn := rTMA)
-    is(TAC) (cpu.io.dataIn := rTAC)
-    is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
-    default ( cpu.io.dataIn := dataIn)
+  when (dmaActive && cpu.io.address >= 0xfe00 && cpu.io.address <= 0xfe9f) {
+    dmaData := dataIn.asBits
+    cpu.io.dataIn := 0
+  } otherwise {
+    switch (cpu.io.address) {
+      is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
+      is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
+      is(SCY) (cpu.io.dataIn := rSCY)
+      is(SCX) (cpu.io.dataIn := rSCX)
+      is(LY) (cpu.io.dataIn := rLY)
+      is(LYC) (cpu.io.dataIn := rLYC)
+      is(DMA) (cpu.io.dataIn := rDMA)
+      is(BGP) (cpu.io.dataIn := rBGP.asUInt)
+      is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
+      is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
+      is(WY) (cpu.io.dataIn := rWY)
+      is(WX) (cpu.io.dataIn := rWX)
+      is(DIV) (cpu.io.dataIn := rDIV)
+      is(TIMA) (cpu.io.dataIn := rTIMA)
+      is(TMA) (cpu.io.dataIn := rTMA)
+      is(TAC) (cpu.io.dataIn := rTAC)
+      is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
+      default ( cpu.io.dataIn := dataIn)
+    }
   }
- 
+
+  when (dmaActive) {
+    dmaOffset := dmaOffset + 1
+    when (dmaOffset === 160 * 4 - 1) {
+      dmaActive := False
+      dmaOffset := 0
+    }
+  }
+
   io.led := ppu.io.diag
   io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## B"0"
 

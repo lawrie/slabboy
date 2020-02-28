@@ -55,7 +55,7 @@ begin:
 init:
 	ld	a, %11100100 	; Window palette colors, from darkest to lightest
 	ld	[rBGP], a
-	ld	a,0		; SET SCREEN TO TO UPPER RIGHT HAND CORNER
+	ld	a,3		; SET SCREEN TO TO UPPER RIGHT HAND CORNER
 	ld	[rSCX], a
 	ld	[rSCY], a		
 	call	StopLCD		; YOU CAN NOT LOAD $8000 WITH LCD ON
@@ -67,7 +67,7 @@ init:
 	ld	[rLCDC], a	
 	ld	a, 112		; Create a Window
 	ld	[rWY], a
-	ld	a, 8
+	ld	a, 7
 	ld	[rWX], a
 	ld	a, 32		; ASCII FOR BLANK SPACE
 	ld	hl, _SCRN0	; Clear the screen
@@ -78,7 +78,7 @@ init:
 	ld	bc, SCRN_VX_B * SCRN_VY_B
 	call	mem_SetVRAM
 	ld	hl, _OAMRAM	; Create Sprite 0
-	ld	a, 16		; x and y = 16
+	ld	a, 32		; x and y = 16
 	ld	[hl], a
 	inc	hl
 	ld	[hl], a
@@ -97,9 +97,20 @@ init:
 loop:
 	ld	a, d
 	cp	$98
-	jr	NC, ok
+	jr	nc, ok1
 	ld	de, _SCRN0
-ok:
+ok1:
+	cp	$9c
+        jr	C, ok2
+	ld	de, _SCRN1-13
+ok2:
+	cp	$9b
+	jr	c, ok3
+	ld 	a, e
+	cp 	$f4
+	jr	c, ok3
+	ld	de, _SCRN1-13
+ok3:
 	ld	hl,Title
 	ld	bc, TitleEnd-Title
 	push	de			; Save DE
@@ -131,12 +142,24 @@ ok:
 	jr	NZ, home1
 	jr	loop
 left:
+	ld	hl, _OAMRAM+1
+	ld	a, [hl]
+	sub	8
+	ld	[hl], a
 	dec	de 			; Move back up char pos
         jr      loop
 right:
+	ld	hl, _OAMRAM+1		; Increment sprite xPos by 8
+	ld	a, [hl]
+	add	8
+	ld	[hl], a
 	inc	de 
         jr      loop
 down:
+	ld	hl, _OAMRAM
+	ld	a, [hl]
+	add	8
+	ld 	[hl], a
 	ld 	b ,32
 down1:
 	inc	de
@@ -144,12 +167,16 @@ down1:
 	jr	nz, down1
 	jr	loop
 up:
+	ld	hl, _OAMRAM
+	ld	a, [hl]
+	sub	8
+	ld	[hl], a
 	ld 	b ,32
 up1:
 	dec	de
 	dec	b
 	jr	nz, up1
-	jr	loop
+	jp	loop
 alignl:
 	srl	e
 	srl	e
@@ -173,7 +200,7 @@ alignr:
 	sla	e
 	sla	e
 	sla	e
-	ld	a, 6
+	ld	a, 7
 	add	a, e
 	ld 	e, a
 	jp	loop

@@ -16,21 +16,21 @@ B_BUTTON						EQU		1
 A_BUTTON						EQU		0
 
 ; IRQs
-SECTION	"Vblank",HOME[$0040]
+SECTION	"Vblank",ROM0[$0040]
 	reti
-SECTION	"LCDC",HOME[$0048]
+SECTION	"LCDC",ROM0[$0048]
 	reti
-SECTION	"Timer_Overflow",HOME[$0050]
+SECTION	"Timer_Overflow",ROM0[$0050]
 	reti
-SECTION	"Serial",HOME[$0058]
+SECTION	"Serial",ROM0[$0058]
 	reti
-SECTION	"p1thru4",HOME[$0060]
+SECTION	"p1thru4",ROM0[$0060]
 	reti
 
 ; ****************************************************************************************
 ; boot loader jumps to here.
 ; ****************************************************************************************
-SECTION	"start",HOME[$0100]
+SECTION	"start",ROM0[$0100]
 nop
 jp	begin
 
@@ -77,7 +77,7 @@ init:
 	ld	hl, _SCRN1	; Fill window with + signs
 	ld	bc, SCRN_VX_B * SCRN_VY_B
 	call	mem_SetVRAM
-	ld	hl, _OAMRAM	; Create Sprite 0
+	ld	hl, SpriteCache	; Create Sprite 0
 	ld	a, 32		; x and y = 16
 	ld	[hl], a
 	inc	hl
@@ -95,7 +95,7 @@ init:
 ; ****************************************************************************************
 	ld	de, _SCRN0+3+(SCRN_VY_B*10) ; x = 3, y = 10
 loop:
-	ld	a, d
+	ld	a, d			; Check that DE is within _SCRN0
 	cp	$98
 	jr	nc, ok1
 	ld	de, _SCRN0
@@ -111,11 +111,15 @@ ok2:
 	jr	c, ok3
 	ld	de, _SCRN1-13
 ok3:
-	ld	hl,Title
+	ld	hl,Title		; Copy Hello World to screen
 	ld	bc, TitleEnd-Title
 	push	de			; Save DE
 	call	mem_CopyVRAM
-	call	READ_INPUT	
+	ld	hl, SpriteCache		; Copy SpriteCache to OAM
+	ld	de, _OAMRAM		; Should use DMA
+	ld	bc, 160
+	call	mem_Copy	
+	call	READ_INPUT		; Read buttons
 	pop	de			; restore DE
 	ld	a, [joypad_down]
 	and	a, $FB			; Test if any relevant button  pressed
@@ -125,7 +129,7 @@ ok3:
 	ld	bc, TitleEnd-Title
 	call	mem_CopyVRAM
 	pop	de
-	ld	a, [joypad_down]
+	ld	a, [joypad_down]	; Test for specific buttons
 	bit	DPAD_RIGHT, A
 	jr	NZ, right
 	bit	DPAD_LEFT, A
@@ -142,21 +146,21 @@ ok3:
 	jr	NZ, home1
 	jr	loop
 left:
-	ld	hl, _OAMRAM+1
+	ld	hl, SpriteCache+1
 	ld	a, [hl]
 	sub	8
 	ld	[hl], a
 	dec	de 			; Move back up char pos
         jr      loop
 right:
-	ld	hl, _OAMRAM+1		; Increment sprite xPos by 8
+	ld	hl, SpriteCache+1	; Increment sprite xPos by 8
 	ld	a, [hl]
 	add	8
 	ld	[hl], a
 	inc	de 
         jr      loop
 down:
-	ld	hl, _OAMRAM
+	ld	hl, SpriteCache
 	ld	a, [hl]
 	add	8
 	ld 	[hl], a
@@ -165,9 +169,9 @@ down1:
 	inc	de
 	dec	b
 	jr	nz, down1
-	jr	loop
+	jp	loop
 up:
-	ld	hl, _OAMRAM
+	ld	hl, SpriteCache
 	ld	a, [hl]
 	sub	8
 	ld	[hl], a
@@ -178,7 +182,7 @@ up1:
 	jr	nz, up1
 	jp	loop
 alignl:
-	srl	e
+	srl	e			; Align text to left
 	srl	e
 	srl	e
 	srl	e
@@ -190,7 +194,7 @@ alignl:
 	sla	e
 	jp	loop
 alignr:
-	srl	e
+	srl	e			; Align text to right
 	srl	e
 	srl	e
 	srl	e
@@ -302,11 +306,13 @@ READ_INPUT:
 
 ; Internal RAM
 ;-------------
+SECTION	"Sprite_Cache", WRAM0[$C000]
+SpriteCache:
+DS		160		; Sprite definitions that are copied to OAM by DMA
 
-SECTION	"RAM_Other_Variables", BSS[$C0A0]
+SECTION	"RAM_Other_Variables", WRAM0[$C0A0]
 
 joypad_held:
 DS		1		; what buttons are currently held
 joypad_down:
 DS		1		; what buttons went down since last joypad read
-
