@@ -55,7 +55,7 @@ begin:
 init:
 	ld	a, %11100100 	; Window palette colors, from darkest to lightest
 	ld	[rBGP], a
-	ld	a,0		; SET SCREEN TO TO UPPER RIGHT HAND CORNER
+	ld	a,3		; SET SCREEN TO TO UPPER RIGHT HAND CORNER
 	ld	[rSCX], a
 	ld	[rSCY], a		
 	call	StopLCD		; YOU CAN NOT LOAD $8000 WITH LCD ON
@@ -97,9 +97,20 @@ init:
 loop:
 	ld	a, d
 	cp	$98
-	jr	NC, ok
+	jr	nc, ok1
 	ld	de, _SCRN0
-ok:
+ok1:
+	cp	$9c
+        jr	C, ok2
+	ld	de, _SCRN1-13
+ok2:
+	cp	$9b
+	jr	c, ok3
+	ld 	a, e
+	cp 	$f4
+	jr	c, ok3
+	ld	de, _SCRN1-13
+ok3:
 	ld	hl,Title
 	ld	bc, TitleEnd-Title
 	push	de			; Save DE
@@ -165,7 +176,7 @@ up1:
 	dec	de
 	dec	b
 	jr	nz, up1
-	jr	loop
+	jp	loop
 alignl:
 	srl	e
 	srl	e

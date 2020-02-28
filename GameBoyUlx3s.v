@@ -1,7 +1,16 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 27/02/2020, 18:59:58
+// Date      : 28/02/2020, 09:09:43
 // Component : GameBoyUlx3s
 
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define AddrSrc_binary_sequancial_type [3:0]
 `define AddrSrc_binary_sequancial_PC 4'b0000
@@ -48,15 +57,6 @@
 `define AluOp_binary_sequancial_Sla_1 6'b011110
 `define AluOp_binary_sequancial_Sra_1 6'b011111
 `define AluOp_binary_sequancial_Srl_1 6'b100000
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -4376,11 +4376,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_7 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_8 = (! byteToggle);
+  assign _zz_6 = (! byteToggle);
+  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_8 = (! resetCnt[22]);
   assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_10 = (! resetCnt[22]);
+  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -4400,12 +4400,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_10) begin
-      if(! _zz_6) begin
-        if(_zz_7)begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
+        if(_zz_10)begin
           if(_zz_9)begin
             if(! init) begin
-              if(_zz_8)begin
+              if(_zz_6)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -4431,13 +4431,13 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_10)begin
+      if(_zz_8)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_6)begin
+        if(_zz_7)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_7)begin
+          if(_zz_10)begin
             initCnt <= (initCnt + (11'b00000000001));
             if(_zz_9)begin
               if(init)begin
@@ -4479,7 +4479,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_8)begin
+                if(_zz_6)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -4507,12 +4507,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_10) begin
-      if(! _zz_6) begin
-        if(_zz_7)begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
+        if(_zz_10)begin
           if(_zz_9)begin
             if(! init) begin
-              if(_zz_8)begin
+              if(_zz_6)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -8412,8 +8412,9 @@ module PPUUlx3s (
   wire [7:0] _zz_28;
   wire [2:0] _zz_29;
   wire [2:0] _zz_30;
-  wire [3:0] _zz_31;
-  wire [1:0] _zz_32;
+  wire [2:0] _zz_31;
+  wire [3:0] _zz_32;
+  wire [1:0] _zz_33;
   wire [15:0] colors_0;
   wire [15:0] colors_1;
   wire [15:0] colors_2;
@@ -8441,18 +8442,20 @@ module PPUUlx3s (
   wire  hBlank;
   wire  vBlank;
   reg [1:0] spriteDValid;
+  wire [2:0] bitX_1;
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
   assign _zz_24 = (bitCycle == (5'b00001));
   assign _zz_25 = (bitCycle == (5'b00010));
-  assign _zz_26 = (bitCycle == (5'b00000));
-  assign _zz_27 = (bitCycle == (5'b00011));
+  assign _zz_26 = (bitCycle == (5'b00011));
+  assign _zz_27 = (bitCycle == (5'b00000));
   assign _zz_28 = ((8'b11110000) + hExtra);
-  assign _zz_29 = ((3'b111) - bitx);
-  assign _zz_30 = ((3'b111) - bitx);
-  assign _zz_31 = (color * (2'b10));
-  assign _zz_32 = io_bgPalette[_zz_31 +: 2];
+  assign _zz_29 = (bitx - io_startX[2 : 0]);
+  assign _zz_30 = ((3'b111) - bitX_1);
+  assign _zz_31 = ((3'b111) - bitX_1);
+  assign _zz_32 = (color * (2'b10));
+  assign _zz_33 = io_bgPalette[_zz_32 +: 2];
   ST7789 lcd ( 
     .io_pixels_valid(_zz_2),
     .io_pixels_ready(_zz_9),
@@ -8488,7 +8491,7 @@ module PPUUlx3s (
     ._zz_1(_zz_1) 
   );
   always @(*) begin
-    case(_zz_32)
+    case(_zz_33)
       2'b00 : begin
         _zz_8 = colors_0;
       end
@@ -8522,8 +8525,8 @@ module PPUUlx3s (
   assign textureAddress = (io_lcdControl[4] ? (13'b0000000000000) : (13'b0100000000000));
   assign inWindow = ((showWindow && (io_windowX <= x)) && (io_windowY <= y));
   assign bgOn = io_lcdControl[0];
-  assign tileX = (io_startX + x);
-  assign tileY = (io_startY + y);
+  assign tileX = (x + io_startX);
+  assign tileY = (y + io_startY);
   assign winTileX = (x - io_windowX);
   assign winTileY = (y - io_windowY);
   assign bitx = tileX[2 : 0];
@@ -8539,7 +8542,7 @@ module PPUUlx3s (
     spriteDValid = (2'b00);
     _zz_6 = (8'b00000000);
     io_address = (13'b0000000000000);
-    if(_zz_26)begin
+    if(_zz_27)begin
       if(inWindow)begin
         io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
       end else begin
@@ -8547,12 +8550,20 @@ module PPUUlx3s (
       end
     end else begin
       if(_zz_24)begin
-        io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
+        if(inWindow)begin
+          io_address = (textureAddress + {{{(1'b0),io_dataIn},winTileY[2 : 0]},(1'b0)});
+        end else begin
+          io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
+        end
       end else begin
         if(_zz_25)begin
-          io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
+          if(inWindow)begin
+            io_address = (textureAddress + {{{(1'b0),tile},winTileY[2 : 0]},(1'b1)});
+          end else begin
+            io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
+          end
         end else begin
-          if(_zz_27)begin
+          if(_zz_26)begin
             io_address = {{(1'b0),_zz_21},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
@@ -8571,8 +8582,9 @@ module PPUUlx3s (
     end
   end
 
-  assign bit0 = texture0[_zz_29];
-  assign bit1 = texture1[_zz_30];
+  assign bitX_1 = (inWindow ? _zz_29 : bitx);
+  assign bit0 = texture0[_zz_30];
+  assign bit1 = texture1[_zz_31];
   assign color = ((_zz_18 && (! inWindow)) ? _zz_19 : {bit1,bit0});
   assign _zz_3 = _zz_8;
   assign _zz_2 = (((x < (8'b10100000)) && (y < (8'b10010000))) && io_lcdControl[7]);
@@ -8596,7 +8608,7 @@ module PPUUlx3s (
 
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
-    if(! _zz_26) begin
+    if(! _zz_27) begin
       if(_zz_24)begin
         tile <= io_dataIn;
       end else begin
@@ -8607,7 +8619,7 @@ module PPUUlx3s (
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_27)begin
+          if(_zz_26)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin

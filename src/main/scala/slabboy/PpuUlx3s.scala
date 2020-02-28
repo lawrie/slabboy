@@ -66,8 +66,8 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
   val textureAddress = io.lcdControl(4) ? U(0, 13 bits) | U(0x800, 13 bits)
   val inWindow = showWindow && x >= io.windowX && y >= io.windowY
   val bgOn = io.lcdControl(0)
-  val tileX = io.startX + x
-  val tileY = io.startY + y
+  val tileX = x + io.startX
+  val tileY = y + io.startY
   val winTileX = x - io.windowX
   val winTileY = y - io.windowY
   val bitx = tileX(2 downto 0)
@@ -121,11 +121,19 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     }
   } elsewhen (bitCycle === 1) {
     // Save the tile number and set the address of first texture byte
-    io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
+    when (inWindow) {
+      io.address := textureAddress + (U"0" @@ io.dataIn @@ winTileY(2 downto 0) @@ U"0")
+    } otherwise {
+      io.address := textureAddress + (U"0" @@ io.dataIn @@ tileY(2 downto 0) @@ U"0")
+    }
     tile := io.dataIn
   } elsewhen (bitCycle === 2) {
     // Save the first texture value and set the address of the second
-    io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
+    when (inWindow) {
+      io.address := textureAddress + (U"0" @@ tile @@ winTileY(2 downto 0) @@ U"1")
+    } otherwise {
+      io.address := textureAddress + (U"0" @@ tile @@ tileY(2 downto 0) @@ U"1")
+    }
     when (bgOn) {
       texture0 := io.dataIn.asBits
     } otherwise {
@@ -149,8 +157,9 @@ case class PPUUlx3s(sim: Boolean = false) extends Component {
     sprites.io.data := io.dataIn.asBits
   }
 
-  val bit0 = texture0(7 - bitx)
-  val bit1 = texture1(7 - bitx)
+  val bitX = inWindow ? (bitx - io.startX(2 downto 0)) | bitx
+  val bit0 = texture0(7 - bitX)
+  val bit1 = texture1(7 - bitX)
   val color = (spritePixelActive && !inWindow) ? spritePixelData.asUInt | (bit1 ## bit0).asUInt
 
   when (lcd.io.pixels.ready) {
