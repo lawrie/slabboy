@@ -103,24 +103,22 @@ class GameBoySystem(sim: Boolean = false) extends Component {
 
   // Memory mapping
   val romSize  = 32 * 1024
-  val memSize  = 24 * 1024
+  val ramSize  = 24 * 1024
   val vramSize = 8 * 1024
 
   val rom      = Mem(Bits(8 bits), romSize)
-  val vidMem   = Mem(UInt(8 bits), vramSize)
-  val memory   = Mem(Bits(8 bits), memSize)
+  val vram     = Mem(UInt(8 bits), vramSize)
+  val ram      = Mem(Bits(8 bits), ramSize)
 
   // Load the rom
   BinTools.initRam(rom, "sw/test.gb")
 
-  // Address and data buses
-  val address = UInt(16 bits)
-  
-  val dataIn  = Reg(Bits(8 bits))
+  // Data bus
+  val ramIn  = Reg(Bits(8 bits))
   val romIn   = Reg(Bits(8 bits))
-  val ppuIn   = Reg(UInt(8 bits))
+  val vramIn   = Reg(UInt(8 bits))
   
-  val dataOut = cpu.io.dataOut.asBits
+  val ramOut = cpu.io.dataOut.asBits
   val enable  = cpu.io.mreq
   val write   = cpu.io.write
 
@@ -130,28 +128,18 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val dmaPage   = Reg(UInt(8 bits))
   val dmaData   = Reg(Bits(8 bits))
 
-  // Addressing decoding
-  when (dmaActive)  {
-    address := dmaPage @@ dmaOffset(9 downto 2)
-  } elsewhen (cpu.io.address >= 0xa000) {
-    address := cpu.io.address - 0xa000
-  } otherwise {
-    address := cpu.io.address - 0x8000
-  }
-
   // Pixel Processing Unit
   val ppu = PPUUlx3s(sim)
   
   // Input from memory
-  romIn  := rom(address.resized)
-  ppuIn  := vidMem(ppu.io.address)
-  dataIn := memory(address.resized)
+  romIn  := rom(cpu.io.address(14 downto 0))
+  vramIn := vram(ppu.io.address)
+  ramIn  := ram((cpu.io.address - 0xa000).resized)
 
   val x = ppu.io.x
   val y = ppu.io.y
-  val pixel = ppu.io.pixel
   
-  ppu.io.dataIn     := ppuIn
+  ppu.io.dataIn     := vramIn
   ppu.io.lcdControl := rLCDC
   ppu.io.startX     := rSCX
   ppu.io.startY     := rSCY
@@ -161,41 +149,41 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.cpuSelOam  := cpu.io.address(15 downto 8) === 0xFE
   ppu.io.cpuAddr    := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
   ppu.io.cpuWr      := write | (dmaActive && dmaOffset(1 downto 0) === 2)
-  ppu.io.cpuDataOut := dmaActive ? dmaData | dataOut
+  ppu.io.cpuDataOut := dmaActive ? dmaData | ramOut
 
   rLY := ppu.io.y
 
   // Writes to memory
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
-      vidMem((cpu.io.address - 0x8000).resized) := dataOut.asUInt
+      vram((cpu.io.address - 0x8000).resized) := ramOut.asUInt
     } otherwise {
       switch (cpu.io.address) {
-        is(LCDC) (rLCDC := dataOut)
-        is(STAT) (rSTAT := dataOut)
-        is(SCY) (rSCY := dataOut.asUInt)
-        is(SCX) (rSCX := dataOut.asUInt)
-        is(LYC) (rLYC := dataOut.asUInt)
-        is(DMA) (rDMA := dataOut.asUInt)
-        is(BGP) (rBGP := dataOut)
-        is(OBP0) (rOBP0 := dataOut)
-        is(OBP1) (rOBP1 := dataOut)
-        is(WY) (rWY := dataOut.asUInt)
-        is(WX) (rWX := dataOut.asUInt)
+        is(LCDC) (rLCDC := ramOut)
+        is(STAT) (rSTAT := ramOut)
+        is(SCY) (rSCY := ramOut.asUInt)
+        is(SCX) (rSCX := ramOut.asUInt)
+        is(LYC) (rLYC := ramOut.asUInt)
+        is(DMA) (rDMA := ramOut.asUInt)
+        is(BGP) (rBGP := ramOut)
+        is(OBP0) (rOBP0 := ramOut)
+        is(OBP1) (rOBP1 := ramOut)
+        is(WY) (rWY := ramOut.asUInt)
+        is(WX) (rWX := ramOut.asUInt)
         is(DIV) (rDIV := 0)
-        is(TIMA) (rTIMA := dataOut.asUInt)
-        is(TMA) (rTMA := dataOut.asUInt)
-        is(TAC) (rTAC := dataOut.asUInt)
-        is(JOYP) (rButtonSelect := dataOut(5 downto 4).asBits)
-        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := dataOut.asUInt}
+        is(TIMA) (rTIMA := ramOut.asUInt)
+        is(TMA) (rTMA := ramOut.asUInt)
+        is(TAC) (rTAC := ramOut.asUInt)
+        is(JOYP) (rButtonSelect := ramOut(5 downto 4).asBits)
+        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := ramOut.asUInt}
       } 
-      memory(address.resized) := dataOut
+      ram((cpu.io.address - 0xa000).resized) := ramOut
     }
   }
 
   // Reads from memory
   when (dmaActive && cpu.io.address >= 0xfe00 && cpu.io.address <= 0xfe9f) {
-    dmaData := dataIn
+    dmaData := ramIn
     cpu.io.dataIn := 0
   } otherwise {
     switch (cpu.io.address) {
@@ -216,7 +204,8 @@ class GameBoySystem(sim: Boolean = false) extends Component {
       is(TMA) (cpu.io.dataIn := rTMA)
       is(TAC) (cpu.io.dataIn := rTAC)
       is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
-      default ( cpu.io.dataIn := (cpu.io.address < 0x8000) ? romIn.asUInt | dataIn.asUInt)
+      // TODO: Support cpu reads from vram
+      default ( cpu.io.dataIn := (cpu.io.address < 0x8000) ? romIn.asUInt | ramIn.asUInt)
     }
   }
 
@@ -237,7 +226,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   io.oled_mosi := lcd.io.oled_mosi
   io.oled_clk := lcd.io.oled_clk
 
-  lcd.io.pixels.payload := pixel
+  lcd.io.pixels.payload := ppu.io.pixel
   lcd.io.pixels.valid := (x < 160 && y < 144) && rLCDC(7)
   ppu.io.nextPixel := lcd.io.pixels.ready
 
@@ -247,7 +236,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
 
   // Timer
   val timer     = Reg(UInt(12 bits))
-
   timer := timer + 1
 
   when ((timer & 0x3FF) === 0) {
