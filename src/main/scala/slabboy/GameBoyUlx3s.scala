@@ -73,7 +73,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val rSTAT = Reg(Bits(8 bits)) 
   val rSCY  = Reg(UInt(8 bits)) 
   val rSCX  = Reg(UInt(8 bits)) 
-  val rLY   = Reg(UInt(8 bits)) 
   val rLYC  = Reg(UInt(8 bits)) 
   val rDMA  = Reg(UInt(8 bits)) 
   val rBGP  = Reg(Bits(8 bits)) 
@@ -108,21 +107,22 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val iramSize = 8 * 1024
   val hramSize = 8 * 1024
 
-  val rom      = Mem(Bits(8 bits), romSize)
-  val vram     = Mem(Bits(8 bits), vramSize)
-  val eram     = Mem(Bits(8 bits), eramSize)
-  val iram     = Mem(Bits(8 bits), iramSize)
-  val hram     = Mem(Bits(8 bits), hramSize)
+  val rom      = Mem(Bits(8 bits), romSize)   // Rom
+  val vram     = Mem(Bits(8 bits), vramSize)  // Video memory
+  val eram     = Mem(Bits(8 bits), eramSize)  // External RAM
+  val iram     = Mem(Bits(8 bits), iramSize)  // Internal RAM
+  val hram     = Mem(Bits(8 bits), hramSize)  // High RAM
 
   // Load the rom
   BinTools.initRam(rom, "sw/test.gb")
 
   // Data bus
+  val romIn  = Reg(Bits(8 bits))
+  val vramIn = Reg(Bits(8 bits))
+  val eramIn = Reg(Bits(8 bits))
   val iramIn = Reg(Bits(8 bits))
   val hramIn = Reg(Bits(8 bits))
-  val eramIn = Reg(Bits(8 bits))
-  val romIn  = Reg(Bits(8 bits))
-  val ppuIn = Reg(Bits(8 bits))
+  val ppuIn  = Reg(Bits(8 bits))
   
   val ramOut = cpu.io.dataOut.asBits
   val enable = cpu.io.mreq
@@ -131,7 +131,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   // DMA for sprites
   val dmaActive = Reg(Bool)
   val dmaOffset = Reg(UInt(10 bits))
-  val dmaPage   = Reg(UInt(8 bits))
+  val dmaPage   = Reg(UInt(5 bits))
   val dmaData   = Reg(Bits(8 bits))
 
   // Pixel Processing Unit
@@ -139,14 +139,19 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   
   // Input from memory
   romIn  := rom(cpu.io.address(14 downto 0))
-  ppuIn := vram(ppu.io.address)
-  eramIn := eram((cpu.io.address - 0xA000).resized)
-  iramIn := iram((cpu.io.address - 0xC000).resized)
-  hramIn := hram((cpu.io.address - 0xE000).resized)
+  vramIn := vram((cpu.io.address - 0xA000).resize(13))
+  eramIn := eram((cpu.io.address - 0xA000).resize(13))
+  iramIn := iram(dmaActive ? (dmaPage @@ dmaOffset(9 downto 2)) | (cpu.io.address - 0xC000).resize(13))
+  hramIn := hram((cpu.io.address - 0xE000).resize(13))
 
+  // vram input from PPU
+  ppuIn := vram(ppu.io.address)
+
+  // Current screen co-ordinates
   val x = ppu.io.x
   val y = ppu.io.y
   
+  // Send relevant data to PPU
   ppu.io.dataIn     := ppuIn.asUInt
   ppu.io.lcdControl := rLCDC
   ppu.io.startX     := rSCX
@@ -159,18 +164,16 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.cpuWr      := write | (dmaActive && dmaOffset(1 downto 0) === 2)
   ppu.io.cpuDataOut := dmaActive ? dmaData | ramOut
 
-  rLY := ppu.io.y
-
   // Writes to memory
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
-      vram((cpu.io.address - 0x8000).resized) := ramOut
-    } elsewhen (cpu.io.address >= 0xA000 && cpu.io.address < 0xC000) {
-      eram((cpu.io.address - 0xA000).resized) := ramOut
-    } elsewhen (cpu.io.address >= 0xC000 && cpu.io.address < 0xE000) {
-      iram((cpu.io.address - 0xC000).resized) := ramOut
-    } elsewhen (cpu.io.address >= 0xE000 && cpu.io.address < 0xFDFF) {
-      iram((cpu.io.address - 0xE000).resized) := ramOut // Echo memory
+      vram((cpu.io.address - 0x8000).resize(13)) := ramOut
+    } elsewhen (cpu.io.address < 0xC000) {
+      eram((cpu.io.address - 0xA000).resize(13)) := ramOut
+    } elsewhen (cpu.io.address < 0xE000) {
+      iram((cpu.io.address - 0xC000).resize(13)) := ramOut
+    } elsewhen (cpu.io.address < 0xFDFF) {
+      iram((cpu.io.address - 0xE000).resize(13)) := ramOut // Echo memory
     } otherwise {
       switch (cpu.io.address) {
         is(LCDC) (rLCDC := ramOut)
@@ -189,33 +192,30 @@ class GameBoySystem(sim: Boolean = false) extends Component {
         is(TMA) (rTMA := ramOut.asUInt)
         is(TAC) (rTAC := ramOut.asUInt)
         is(JOYP) (rButtonSelect := ramOut(5 downto 4).asBits)
-        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := ramOut.asUInt}
+        is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := ramOut(4 downto 0).asUInt}
       } 
-      hram((cpu.io.address - 0xE000).resized) := ramOut
+      hram((cpu.io.address - 0xE000).resize(13)) := ramOut
     }
   }
 
   // Reads from memory
-  when (dmaActive && cpu.io.address >= 0xFE00 && cpu.io.address <= 0xFE9F) {
-    dmaData := 0 // TODO
-    cpu.io.dataIn := 0
-  } elsewhen (cpu.io.address < 0x8000) {
+  when (cpu.io.address < 0x8000) {
     cpu.io.dataIn := romIn.asUInt
-  } elsewhen (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
-    cpu.io.dataIn := 0 // vram
-  } elsewhen (cpu.io.address >= 0xA000 && cpu.io.address < 0xC000) {
+  } elsewhen (cpu.io.address < 0xA000) {
+    cpu.io.dataIn := vramIn.asUInt
+  } elsewhen (cpu.io.address < 0xC000) {
     cpu.io.dataIn := eramIn.asUInt
-  } elsewhen (cpu.io.address >= 0xC000 && cpu.io.address < 0xE000) {
+  } elsewhen (cpu.io.address < 0xE000) {
     cpu.io.dataIn := iramIn.asUInt
-  } elsewhen (cpu.io.address >= 0xE000 && cpu.io.address < 0xFDFF) {
+  } elsewhen (cpu.io.address < 0xFDFF) {
     cpu.io.dataIn := iramIn.asUInt // Echo memory
   } otherwise {
     switch (cpu.io.address) {
       is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
-      is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (rLY === rLYC) ## ppu.io.mode).asUInt)
+      is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (y === rLYC) ## ppu.io.mode).asUInt)
       is(SCY) (cpu.io.dataIn := rSCY)
       is(SCX) (cpu.io.dataIn := rSCX)
-      is(LY) (cpu.io.dataIn := rLY)
+      is(LY) (cpu.io.dataIn := y)
       is(LYC) (cpu.io.dataIn := rLYC)
       is(DMA) (cpu.io.dataIn := rDMA)
       is(BGP) (cpu.io.dataIn := rBGP.asUInt)
@@ -231,13 +231,13 @@ class GameBoySystem(sim: Boolean = false) extends Component {
       default (cpu.io.dataIn := hramIn.asUInt)
     }
   }
-
+  
   // DMA for sprites
   when (dmaActive) {
     dmaOffset := dmaOffset + 1
+    dmaData := iramIn
     when (dmaOffset === 160 * 4 - 1) {
       dmaActive := False
-      dmaOffset := 0
     }
   }
 
