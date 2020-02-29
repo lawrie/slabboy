@@ -1,18 +1,7 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 29/02/2020, 09:58:25
+// Date      : 29/02/2020, 11:26:16
 // Component : GameBoyUlx3s
 
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -57,6 +46,17 @@
 `define AddrOp_binary_sequancial_ToPC 3'b100
 `define AddrOp_binary_sequancial_R8 3'b101
 `define AddrOp_binary_sequancial_HLR8 3'b110
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -8239,10 +8239,10 @@ module PPUUlx3s (
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_13 = (bitCycle == (5'b00001));
-  assign _zz_14 = (bitCycle == (5'b00010));
-  assign _zz_15 = (bitCycle == (5'b00000));
-  assign _zz_16 = (bitCycle == (5'b00011));
+  assign _zz_13 = (bitCycle == (5'b00011));
+  assign _zz_14 = (bitCycle == (5'b00001));
+  assign _zz_15 = (bitCycle == (5'b00010));
+  assign _zz_16 = (bitCycle == (5'b00000));
   assign _zz_17 = ((8'b11110000) + hExtra);
   assign _zz_18 = (bitx - io_startX[2 : 0]);
   assign _zz_19 = ((3'b111) - bitX_1);
@@ -8316,28 +8316,28 @@ module PPUUlx3s (
     spriteDValid = (2'b00);
     _zz_4 = (8'b00000000);
     io_address = (13'b0000000000000);
-    if(_zz_15)begin
+    if(_zz_16)begin
       if(inWindow)begin
         io_address = (windowAddress + {{(3'b000),winTileY[7 : 3]},winTileX[7 : 3]});
       end else begin
         io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
       end
     end else begin
-      if(_zz_13)begin
+      if(_zz_14)begin
         if(inWindow)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},winTileY[2 : 0]},(1'b0)});
         end else begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end
       end else begin
-        if(_zz_14)begin
+        if(_zz_15)begin
           if(inWindow)begin
             io_address = (textureAddress + {{{(1'b0),tile},winTileY[2 : 0]},(1'b1)});
           end else begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end else begin
-          if(_zz_16)begin
+          if(_zz_13)begin
             io_address = {{(1'b0),_zz_10},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
@@ -8381,18 +8381,18 @@ module PPUUlx3s (
 
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
-    if(! _zz_15) begin
-      if(_zz_13)begin
+    if(! _zz_16) begin
+      if(_zz_14)begin
         tile <= io_dataIn;
       end else begin
-        if(_zz_14)begin
+        if(_zz_15)begin
           if(bgOn)begin
             texture0 <= io_dataIn;
           end else begin
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_16)begin
+          if(_zz_13)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin
@@ -8453,11 +8453,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (! resetCnt[22]);
-  assign _zz_7 = (! byteToggle);
-  assign _zz_8 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_6 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_8 = (! resetCnt[22]);
+  assign _zz_9 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_10 = (! byteToggle);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -8477,12 +8477,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_6) begin
-      if(! _zz_8) begin
-        if(_zz_10)begin
-          if(_zz_9)begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
+        if(_zz_9)begin
+          if(_zz_6)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_10)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -8508,15 +8508,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_6)begin
+      if(_zz_8)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_8)begin
+        if(_zz_7)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_10)begin
+          if(_zz_9)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_9)begin
+            if(_zz_6)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -8556,7 +8556,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_7)begin
+                if(_zz_10)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -8584,12 +8584,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_6) begin
-      if(! _zz_8) begin
-        if(_zz_10)begin
-          if(_zz_9)begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
+        if(_zz_9)begin
+          if(_zz_6)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_10)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -8613,51 +8613,67 @@ module GameBoySystem (
       output [4:0] io_leds,
       input  [7:0] io_btn,
       input   clkout0,
-      input   _zz_5);
-  reg [7:0] _zz_6;
-  wire [7:0] _zz_7;
-  wire  _zz_8;
-  wire [7:0] _zz_9;
-  wire [7:0] _zz_10;
-  wire  _zz_11;
-  wire  _zz_12;
+      input   _zz_10);
+  reg [7:0] _zz_11;
+  wire [7:0] _zz_12;
   wire [7:0] _zz_13;
-  wire [7:0] _zz_14;
+  wire  _zz_14;
   wire [7:0] _zz_15;
-  wire [15:0] _zz_16;
-  wire [7:0] _zz_17;
+  wire [7:0] _zz_16;
+  wire  _zz_17;
   wire  _zz_18;
-  wire  _zz_19;
-  wire  _zz_20;
+  wire [7:0] _zz_19;
+  wire [7:0] _zz_20;
   wire [7:0] _zz_21;
-  wire [1:0] _zz_22;
-  wire [12:0] _zz_23;
-  wire [7:0] _zz_24;
+  wire [7:0] _zz_22;
+  wire [7:0] _zz_23;
+  wire [15:0] _zz_24;
   wire [7:0] _zz_25;
-  wire [15:0] _zz_26;
-  wire [7:0] _zz_27;
-  wire [7:0] _zz_28;
-  wire  _zz_29;
-  wire [7:0] _zz_30;
-  wire [7:0] _zz_31;
-  wire  _zz_32;
-  wire  _zz_33;
-  wire  _zz_34;
-  wire  _zz_35;
-  wire  _zz_36;
+  wire  _zz_26;
+  wire  _zz_27;
+  wire  _zz_28;
+  wire [7:0] _zz_29;
+  wire [1:0] _zz_30;
+  wire [12:0] _zz_31;
+  wire [7:0] _zz_32;
+  wire [7:0] _zz_33;
+  wire [15:0] _zz_34;
+  wire [7:0] _zz_35;
+  wire [7:0] _zz_36;
   wire  _zz_37;
-  wire  _zz_38;
-  wire  _zz_39;
-  wire [1:0] _zz_40;
-  wire [14:0] _zz_41;
-  wire [7:0] _zz_42;
-  wire [15:0] _zz_43;
-  wire [12:0] _zz_44;
-  wire [15:0] _zz_45;
-  wire [14:0] _zz_46;
-  wire [7:0] _zz_47;
+  wire [7:0] _zz_38;
+  wire [7:0] _zz_39;
+  wire  _zz_40;
+  wire  _zz_41;
+  wire  _zz_42;
+  wire  _zz_43;
+  wire  _zz_44;
+  wire  _zz_45;
+  wire  _zz_46;
+  wire  _zz_47;
+  wire  _zz_48;
+  wire  _zz_49;
+  wire  _zz_50;
+  wire [1:0] _zz_51;
+  wire [12:0] _zz_52;
+  wire [12:0] _zz_53;
+  wire [12:0] _zz_54;
+  wire [7:0] _zz_55;
+  wire [15:0] _zz_56;
+  wire [12:0] _zz_57;
+  wire [15:0] _zz_58;
+  wire [12:0] _zz_59;
+  wire [15:0] _zz_60;
+  wire [12:0] _zz_61;
+  wire [15:0] _zz_62;
+  wire [12:0] _zz_63;
+  wire [15:0] _zz_64;
+  wire [12:0] _zz_65;
   reg  _zz_1;
   reg  _zz_2;
+  reg  _zz_3;
+  reg  _zz_4;
+  reg  _zz_5;
   reg [7:0] rLCDC;
   reg [7:0] rSTAT;
   reg [7:0] rSCY;
@@ -8676,259 +8692,338 @@ module GameBoySystem (
   reg [7:0] rTMA;
   reg [7:0] rTAC;
   reg [1:0] rButtonSelect;
-  reg  IRQ;
-  reg [7:0] ramIn;
+  reg  rIRQ;
+  reg  rIE;
+  reg [7:0] iramIn;
+  reg [7:0] hramIn;
+  reg [7:0] eramIn;
   reg [7:0] romIn;
-  reg [7:0] vramIn;
+  reg [7:0] ppuIn;
   wire [7:0] ramOut;
   reg  dmaActive;
   reg [9:0] dmaOffset;
   reg [7:0] dmaPage;
   reg [7:0] dmaData;
-  wire [14:0] _zz_3;
-  wire [15:0] _zz_4;
+  wire [14:0] _zz_6;
+  wire [15:0] _zz_7;
+  wire [15:0] _zz_8;
+  wire [15:0] _zz_9;
   reg [11:0] timer;
   reg [7:0] rom [0:32767];
   reg [7:0] vram [0:8191];
-  reg [7:0] ram [0:24575];
-  assign _zz_38 = ((dmaActive && ((16'b1111111000000000) <= _zz_16)) && (_zz_16 <= (16'b1111111010011111)));
-  assign _zz_39 = (((16'b1000000000000000) <= _zz_16) && (_zz_16 < (16'b1010000000000000)));
-  assign _zz_40 = rTAC[1 : 0];
-  assign _zz_41 = _zz_4[14:0];
-  assign _zz_42 = (rWX - (8'b00000111));
-  assign _zz_43 = (_zz_16 - (16'b1000000000000000));
-  assign _zz_44 = _zz_43[12:0];
-  assign _zz_45 = (_zz_16 - (16'b1010000000000000));
-  assign _zz_46 = _zz_45[14:0];
-  assign _zz_47 = ramOut;
+  reg [7:0] eram [0:8191];
+  reg [7:0] iram [0:8191];
+  reg [7:0] hram [0:8191];
+  assign _zz_46 = (((16'b1010000000000000) <= _zz_24) && (_zz_24 < (16'b1100000000000000)));
+  assign _zz_47 = ((dmaActive && ((16'b1111111000000000) <= _zz_24)) && (_zz_24 <= (16'b1111111010011111)));
+  assign _zz_48 = (((16'b1100000000000000) <= _zz_24) && (_zz_24 < (16'b1110000000000000)));
+  assign _zz_49 = (((16'b1110000000000000) <= _zz_24) && (_zz_24 < (16'b1111110111111111)));
+  assign _zz_50 = (((16'b1000000000000000) <= _zz_24) && (_zz_24 < (16'b1010000000000000)));
+  assign _zz_51 = rTAC[1 : 0];
+  assign _zz_52 = _zz_7[12:0];
+  assign _zz_53 = _zz_8[12:0];
+  assign _zz_54 = _zz_9[12:0];
+  assign _zz_55 = (rWX - (8'b00000111));
+  assign _zz_56 = (_zz_24 - (16'b1000000000000000));
+  assign _zz_57 = _zz_56[12:0];
+  assign _zz_58 = (_zz_24 - (16'b1010000000000000));
+  assign _zz_59 = _zz_58[12:0];
+  assign _zz_60 = (_zz_24 - (16'b1100000000000000));
+  assign _zz_61 = _zz_60[12:0];
+  assign _zz_62 = (_zz_24 - (16'b1110000000000000));
+  assign _zz_63 = _zz_62[12:0];
+  assign _zz_64 = (_zz_24 - (16'b1110000000000000));
+  assign _zz_65 = _zz_64[12:0];
   initial begin
     $readmemb("GameBoyUlx3s.v_toplevel_coreClockingArea_gameboy_rom.bin",rom);
   end
-  assign _zz_13 = rom[_zz_3];
+  assign _zz_19 = rom[_zz_6];
   always @ (posedge clkout0) begin
-    if(_zz_2) begin
-      vram[_zz_44] <= _zz_47;
+    if(_zz_5) begin
+      vram[_zz_57] <= ramOut;
     end
   end
 
-  assign _zz_14 = vram[_zz_23];
+  assign _zz_20 = vram[_zz_31];
+  always @ (posedge clkout0) begin
+    if(_zz_4) begin
+      eram[_zz_59] <= ramOut;
+    end
+  end
+
+  assign _zz_21 = eram[_zz_52];
+  always @ (posedge clkout0) begin
+    if(_zz_3) begin
+      iram[_zz_61] <= ramOut;
+    end
+    if(_zz_2) begin
+      iram[_zz_63] <= ramOut;
+    end
+  end
+
+  assign _zz_22 = iram[_zz_53];
   always @ (posedge clkout0) begin
     if(_zz_1) begin
-      ram[_zz_46] <= ramOut;
+      hram[_zz_65] <= ramOut;
     end
   end
 
-  assign _zz_15 = ram[_zz_41];
+  assign _zz_23 = hram[_zz_54];
   Cpu cpu_1 ( 
-    .io_address(_zz_16),
-    .io_dataIn(_zz_6),
-    .io_dataOut(_zz_17),
-    .io_mreq(_zz_18),
-    .io_write(_zz_19),
-    .io_halt(_zz_20),
-    .io_diag(_zz_21),
+    .io_address(_zz_24),
+    .io_dataIn(_zz_11),
+    .io_dataOut(_zz_25),
+    .io_mreq(_zz_26),
+    .io_write(_zz_27),
+    .io_halt(_zz_28),
+    .io_diag(_zz_29),
     .clkout0(clkout0),
-    ._zz_2(_zz_5) 
+    ._zz_2(_zz_10) 
   );
   PPUUlx3s ppu ( 
     .io_lcdControl(rLCDC),
     .io_startX(rSCX),
     .io_startY(rSCY),
-    .io_windowX(_zz_7),
+    .io_windowX(_zz_12),
     .io_windowY(rWY),
     .io_bgPalette(rBGP),
-    .io_dataIn(vramIn),
-    .io_mode(_zz_22),
-    .io_address(_zz_23),
-    .io_x(_zz_24),
-    .io_y(_zz_25),
-    .io_pixel(_zz_26),
-    .io_nextPixel(_zz_29),
-    .io_diag(_zz_27),
-    .io_cpuSelOam(_zz_8),
-    .oamAddr(_zz_9),
-    .io_cpuDataOut(_zz_10),
-    .io_cpuWr(_zz_11),
-    .io_cpuDataIn(_zz_28),
+    .io_dataIn(_zz_13),
+    .io_mode(_zz_30),
+    .io_address(_zz_31),
+    .io_x(_zz_32),
+    .io_y(_zz_33),
+    .io_pixel(_zz_34),
+    .io_nextPixel(_zz_37),
+    .io_diag(_zz_35),
+    .io_cpuSelOam(_zz_14),
+    .oamAddr(_zz_15),
+    .io_cpuDataOut(_zz_16),
+    .io_cpuWr(_zz_17),
+    .io_cpuDataIn(_zz_36),
     .clkout0(clkout0),
-    ._zz_1(_zz_5) 
+    ._zz_1(_zz_10) 
   );
   ST7789 lcd ( 
-    .io_pixels_valid(_zz_12),
-    .io_pixels_ready(_zz_29),
-    .io_pixels_payload(_zz_26),
-    .io_x(_zz_30),
-    .io_y(_zz_31),
-    .io_next_pixel(_zz_32),
-    .io_oled_csn(_zz_33),
-    .io_oled_clk(_zz_34),
-    .io_oled_mosi(_zz_35),
-    .io_oled_dc(_zz_36),
-    .io_oled_resn(_zz_37),
+    .io_pixels_valid(_zz_18),
+    .io_pixels_ready(_zz_37),
+    .io_pixels_payload(_zz_34),
+    .io_x(_zz_38),
+    .io_y(_zz_39),
+    .io_next_pixel(_zz_40),
+    .io_oled_csn(_zz_41),
+    .io_oled_clk(_zz_42),
+    .io_oled_mosi(_zz_43),
+    .io_oled_dc(_zz_44),
+    .io_oled_resn(_zz_45),
     .clkout0(clkout0),
-    ._zz_2(_zz_5) 
+    ._zz_2(_zz_10) 
   );
   always @ (*) begin
     _zz_1 = 1'b0;
     _zz_2 = 1'b0;
-    if(_zz_19)begin
-      if(_zz_39)begin
-        _zz_2 = 1'b1;
+    _zz_3 = 1'b0;
+    _zz_4 = 1'b0;
+    _zz_5 = 1'b0;
+    if(_zz_27)begin
+      if(_zz_50)begin
+        _zz_5 = 1'b1;
       end else begin
-        _zz_1 = 1'b1;
+        if(_zz_46)begin
+          _zz_4 = 1'b1;
+        end else begin
+          if(_zz_48)begin
+            _zz_3 = 1'b1;
+          end else begin
+            if(_zz_49)begin
+              _zz_2 = 1'b1;
+            end else begin
+              _zz_1 = 1'b1;
+            end
+          end
+        end
       end
     end
   end
 
-  assign ramOut = _zz_17;
-  assign _zz_3 = _zz_16[14 : 0];
-  assign _zz_4 = (_zz_16 - (16'b1010000000000000));
-  assign _zz_7 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_42);
-  assign _zz_8 = (_zz_16[15 : 8] == (8'b11111110));
-  assign _zz_9 = (dmaActive ? dmaOffset[9 : 2] : _zz_16[7 : 0]);
-  assign _zz_11 = (_zz_19 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
-  assign _zz_10 = (dmaActive ? dmaData : ramOut);
+  assign ramOut = _zz_25;
+  assign _zz_6 = _zz_24[14 : 0];
+  assign _zz_7 = (_zz_24 - (16'b1010000000000000));
+  assign _zz_8 = (_zz_24 - (16'b1100000000000000));
+  assign _zz_9 = (_zz_24 - (16'b1110000000000000));
+  assign _zz_13 = ppuIn;
+  assign _zz_12 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_55);
+  assign _zz_14 = (_zz_24[15 : 8] == (8'b11111110));
+  assign _zz_15 = (dmaActive ? dmaOffset[9 : 2] : _zz_24[7 : 0]);
+  assign _zz_17 = (_zz_27 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
+  assign _zz_16 = (dmaActive ? dmaData : ramOut);
   always @ (*) begin
-    if(_zz_38)begin
-      _zz_6 = (8'b00000000);
+    if(_zz_47)begin
+      _zz_11 = (8'b00000000);
     end else begin
-      case(_zz_16)
-        16'b1111111101000000 : begin
-          _zz_6 = (rLCDC & (8'b01111111));
+      if((_zz_24 < (16'b1000000000000000)))begin
+        _zz_11 = romIn;
+      end else begin
+        if((((16'b1000000000000000) <= _zz_24) && (_zz_24 < (16'b1010000000000000))))begin
+          _zz_11 = (8'b00000000);
+        end else begin
+          if((((16'b1010000000000000) <= _zz_24) && (_zz_24 < (16'b1100000000000000))))begin
+            _zz_11 = eramIn;
+          end else begin
+            if((((16'b1100000000000000) <= _zz_24) && (_zz_24 < (16'b1110000000000000))))begin
+              _zz_11 = iramIn;
+            end else begin
+              if((((16'b1110000000000000) <= _zz_24) && (_zz_24 < (16'b1111110111111111))))begin
+                _zz_11 = iramIn;
+              end else begin
+                case(_zz_24)
+                  16'b1111111101000000 : begin
+                    _zz_11 = (rLCDC & (8'b01111111));
+                  end
+                  16'b1111111101000001 : begin
+                    _zz_11 = {{rSTAT[7 : 3],(rLY == rLYC)},_zz_30};
+                  end
+                  16'b1111111101000010 : begin
+                    _zz_11 = rSCY;
+                  end
+                  16'b1111111101000011 : begin
+                    _zz_11 = rSCX;
+                  end
+                  16'b1111111101000100 : begin
+                    _zz_11 = rLY;
+                  end
+                  16'b1111111101000101 : begin
+                    _zz_11 = rLYC;
+                  end
+                  16'b1111111101000110 : begin
+                    _zz_11 = rDMA;
+                  end
+                  16'b1111111101000111 : begin
+                    _zz_11 = rBGP;
+                  end
+                  16'b1111111101001000 : begin
+                    _zz_11 = rOBP0;
+                  end
+                  16'b1111111101001001 : begin
+                    _zz_11 = rOBP1;
+                  end
+                  16'b1111111101001010 : begin
+                    _zz_11 = rWY;
+                  end
+                  16'b1111111101001011 : begin
+                    _zz_11 = rWX;
+                  end
+                  16'b1111111100000100 : begin
+                    _zz_11 = rDIV;
+                  end
+                  16'b1111111100000101 : begin
+                    _zz_11 = rTIMA;
+                  end
+                  16'b1111111100000110 : begin
+                    _zz_11 = rTMA;
+                  end
+                  16'b1111111100000111 : begin
+                    _zz_11 = rTAC;
+                  end
+                  16'b1111111100000000 : begin
+                    _zz_11 = rJOYP;
+                  end
+                  default : begin
+                    _zz_11 = hramIn;
+                  end
+                endcase
+              end
+            end
+          end
         end
-        16'b1111111101000001 : begin
-          _zz_6 = {{rSTAT[7 : 3],(rLY == rLYC)},_zz_22};
-        end
-        16'b1111111101000010 : begin
-          _zz_6 = rSCY;
-        end
-        16'b1111111101000011 : begin
-          _zz_6 = rSCX;
-        end
-        16'b1111111101000100 : begin
-          _zz_6 = rLY;
-        end
-        16'b1111111101000101 : begin
-          _zz_6 = rLYC;
-        end
-        16'b1111111101000110 : begin
-          _zz_6 = rDMA;
-        end
-        16'b1111111101000111 : begin
-          _zz_6 = rBGP;
-        end
-        16'b1111111101001000 : begin
-          _zz_6 = rOBP0;
-        end
-        16'b1111111101001001 : begin
-          _zz_6 = rOBP1;
-        end
-        16'b1111111101001010 : begin
-          _zz_6 = rWY;
-        end
-        16'b1111111101001011 : begin
-          _zz_6 = rWX;
-        end
-        16'b1111111100000100 : begin
-          _zz_6 = rDIV;
-        end
-        16'b1111111100000101 : begin
-          _zz_6 = rTIMA;
-        end
-        16'b1111111100000110 : begin
-          _zz_6 = rTMA;
-        end
-        16'b1111111100000111 : begin
-          _zz_6 = rTAC;
-        end
-        16'b1111111100000000 : begin
-          _zz_6 = rJOYP;
-        end
-        default : begin
-          _zz_6 = ((_zz_16 < (16'b1000000000000000)) ? romIn : ramIn);
-        end
-      endcase
+      end
     end
   end
 
   assign io_oled_csn = 1'b1;
-  assign io_oled_resn = _zz_37;
-  assign io_oled_dc = _zz_36;
-  assign io_oled_mosi = _zz_35;
-  assign io_oled_clk = _zz_34;
-  assign _zz_12 = (((_zz_24 < (8'b10100000)) && (_zz_25 < (8'b10010000))) && rLCDC[7]);
-  assign io_led = _zz_27;
+  assign io_oled_resn = _zz_45;
+  assign io_oled_dc = _zz_44;
+  assign io_oled_mosi = _zz_43;
+  assign io_oled_clk = _zz_42;
+  assign _zz_18 = (((_zz_32 < (8'b10100000)) && (_zz_33 < (8'b10010000))) && rLCDC[7]);
+  assign io_led = _zz_35;
   assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},(1'b0)};
   always @ (posedge clkout0) begin
     rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
-    IRQ <= 1'b0;
-    romIn <= _zz_13;
-    vramIn <= _zz_14;
-    ramIn <= _zz_15;
-    rLY <= _zz_25;
-    if(_zz_19)begin
-      if(! _zz_39) begin
-        case(_zz_16)
-          16'b1111111101000000 : begin
-            rLCDC <= ramOut;
+    romIn <= _zz_19;
+    ppuIn <= _zz_20;
+    eramIn <= _zz_21;
+    iramIn <= _zz_22;
+    hramIn <= _zz_23;
+    rLY <= _zz_33;
+    if(_zz_27)begin
+      if(! _zz_50) begin
+        if(! _zz_46) begin
+          if(! _zz_48) begin
+            if(! _zz_49) begin
+              case(_zz_24)
+                16'b1111111101000000 : begin
+                  rLCDC <= ramOut;
+                end
+                16'b1111111101000001 : begin
+                  rSTAT <= ramOut;
+                end
+                16'b1111111101000010 : begin
+                  rSCY <= ramOut;
+                end
+                16'b1111111101000011 : begin
+                  rSCX <= ramOut;
+                end
+                16'b1111111101000101 : begin
+                  rLYC <= ramOut;
+                end
+                16'b1111111101000110 : begin
+                  rDMA <= ramOut;
+                end
+                16'b1111111101000111 : begin
+                  rBGP <= ramOut;
+                end
+                16'b1111111101001000 : begin
+                  rOBP0 <= ramOut;
+                end
+                16'b1111111101001001 : begin
+                  rOBP1 <= ramOut;
+                end
+                16'b1111111101001010 : begin
+                  rWY <= ramOut;
+                end
+                16'b1111111101001011 : begin
+                  rWX <= ramOut;
+                end
+                16'b1111111100000100 : begin
+                  rDIV <= (8'b00000000);
+                end
+                16'b1111111100000101 : begin
+                  rTIMA <= ramOut;
+                end
+                16'b1111111100000110 : begin
+                  rTMA <= ramOut;
+                end
+                16'b1111111100000111 : begin
+                  rTAC <= ramOut;
+                end
+                16'b1111111100000000 : begin
+                  rButtonSelect <= ramOut[5 : 4];
+                end
+                16'b1111111101000110 : begin
+                  dmaActive <= 1'b1;
+                  dmaOffset <= (10'b0000000000);
+                  dmaPage <= ramOut;
+                end
+                default : begin
+                end
+              endcase
+            end
           end
-          16'b1111111101000001 : begin
-            rSTAT <= ramOut;
-          end
-          16'b1111111101000010 : begin
-            rSCY <= ramOut;
-          end
-          16'b1111111101000011 : begin
-            rSCX <= ramOut;
-          end
-          16'b1111111101000101 : begin
-            rLYC <= ramOut;
-          end
-          16'b1111111101000110 : begin
-            rDMA <= ramOut;
-          end
-          16'b1111111101000111 : begin
-            rBGP <= ramOut;
-          end
-          16'b1111111101001000 : begin
-            rOBP0 <= ramOut;
-          end
-          16'b1111111101001001 : begin
-            rOBP1 <= ramOut;
-          end
-          16'b1111111101001010 : begin
-            rWY <= ramOut;
-          end
-          16'b1111111101001011 : begin
-            rWX <= ramOut;
-          end
-          16'b1111111100000100 : begin
-            rDIV <= (8'b00000000);
-          end
-          16'b1111111100000101 : begin
-            rTIMA <= ramOut;
-          end
-          16'b1111111100000110 : begin
-            rTMA <= ramOut;
-          end
-          16'b1111111100000111 : begin
-            rTAC <= ramOut;
-          end
-          16'b1111111100000000 : begin
-            rButtonSelect <= ramOut[5 : 4];
-          end
-          16'b1111111101000110 : begin
-            dmaActive <= 1'b1;
-            dmaOffset <= (10'b0000000000);
-            dmaPage <= ramOut;
-          end
-          default : begin
-          end
-        endcase
+        end
       end
     end
-    if(_zz_38)begin
-      dmaData <= ramIn;
+    if(_zz_47)begin
+      dmaData <= (8'b00000000);
     end
     if(dmaActive)begin
       dmaOffset <= (dmaOffset + (10'b0000000001));
@@ -8942,7 +9037,7 @@ module GameBoySystem (
       rDIV <= (rDIV + (8'b00000001));
     end
     if(rTAC[2])begin
-      case(_zz_40)
+      case(_zz_51)
         2'b00 : begin
           if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
             rTIMA <= (rTIMA + (8'b00000001));
@@ -8965,7 +9060,7 @@ module GameBoySystem (
         end
       endcase
       if((rTIMA == (8'b11111111)))begin
-        IRQ <= 1'b1;
+        rIRQ <= 1'b1;
         rTIMA <= rTMA;
       end
     end
@@ -9010,7 +9105,7 @@ module GameBoyUlx3s (
     .io_leds(_zz_11),
     .io_btn(_zz_2),
     .clkout0(_zz_3),
-    ._zz_5(_zz_1) 
+    ._zz_10(_zz_1) 
   );
   assign _zz_1 = btn[0];
   assign oled_csn = _zz_5;

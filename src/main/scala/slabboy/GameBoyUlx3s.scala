@@ -30,25 +30,25 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val TMA        = 0xff06
   val TAC        = 0xff07
 
-  val rAUD1SWEEP = 0xff10
-  val rAUD1LEN   = 0xff11
-  val rAUD1ENV   = 0xff12
-  val rAUD1LOW   = 0xff13
-  val rAUD1HIGH  = 0xff14
+  val AUD1SWEEP  = 0xff10
+  val AUD1LEN    = 0xff11
+  val AUD1ENV    = 0xff12
+  val AUD1LOW    = 0xff13
+  val AUD1HIGH   = 0xff14
 
-  val rAUD2LEN   = 0xff16
-  val rAUD2ENV   = 0xff17
-  val rAUD2LOW   = 0xff18
-  val rAUD2HIGH  = 0xff19
+  val AUD2LEN    = 0xff16
+  val AUD2ENV    = 0xff17
+  val AUD2LOW    = 0xff18
+  val AUD2HIGH   = 0xff19
 
-  val rAUD3ENA   = 0xff1a
-  val rAUD3LEN   = 0xff1b
-  val rAUD3LEVEL = 0xff1c
-  val rAUD3LOW   = 0xff1d
-  val rAUD3HIGH  = 0xff1e
+  val AUD3ENA    = 0xff1a
+  val AUD3LEN    = 0xff1b
+  val AUD3LEVEL  = 0xff1c
+  val AUD3LOW    = 0xff1d
+  val AUD3HIGH   = 0xff1e
 
-  val rAUDVOL    = 0xff24
-  val rAUDTERM   = 0xff25
+  val AUDVOL     = 0xff24
+  val AUDTERM    = 0xff25
   val AUDENA     = 0xff26
 
   val LCDC       = 0xff40
@@ -65,8 +65,8 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val WY         = 0xff4a
   val WX         = 0xff4b
 
-  val rIF        = 0xff0f
-  val rIE        = 0xffff
+  val IF        = 0xff0f
+  val IE        = 0xffff
 
   // Gameboy registers
   val rLCDC = Reg(Bits(8 bits)) 
@@ -98,29 +98,35 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   )
 
   // IRQ: TODO
-  val IRQ = Reg(Bool)
-  IRQ := False
+  val rIRQ = Reg(Bool)
+  val rIE  = Reg(Bool)
 
   // Memory mapping
   val romSize  = 32 * 1024
-  val ramSize  = 24 * 1024
   val vramSize = 8 * 1024
+  val eramSize = 8 * 1024
+  val iramSize = 8 * 1024
+  val hramSize = 8 * 1024
 
   val rom      = Mem(Bits(8 bits), romSize)
-  val vram     = Mem(UInt(8 bits), vramSize)
-  val ram      = Mem(Bits(8 bits), ramSize)
+  val vram     = Mem(Bits(8 bits), vramSize)
+  val eram     = Mem(Bits(8 bits), eramSize)
+  val iram     = Mem(Bits(8 bits), iramSize)
+  val hram     = Mem(Bits(8 bits), hramSize)
 
   // Load the rom
   BinTools.initRam(rom, "sw/test.gb")
 
   // Data bus
-  val ramIn  = Reg(Bits(8 bits))
-  val romIn   = Reg(Bits(8 bits))
-  val vramIn   = Reg(UInt(8 bits))
+  val iramIn = Reg(Bits(8 bits))
+  val hramIn = Reg(Bits(8 bits))
+  val eramIn = Reg(Bits(8 bits))
+  val romIn  = Reg(Bits(8 bits))
+  val ppuIn = Reg(Bits(8 bits))
   
   val ramOut = cpu.io.dataOut.asBits
-  val enable  = cpu.io.mreq
-  val write   = cpu.io.write
+  val enable = cpu.io.mreq
+  val write  = cpu.io.write
 
   // DMA for sprites
   val dmaActive = Reg(Bool)
@@ -133,13 +139,15 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   
   // Input from memory
   romIn  := rom(cpu.io.address(14 downto 0))
-  vramIn := vram(ppu.io.address)
-  ramIn  := ram((cpu.io.address - 0xa000).resized)
+  ppuIn := vram(ppu.io.address)
+  eramIn := eram((cpu.io.address - 0xA000).resized)
+  iramIn := iram((cpu.io.address - 0xC000).resized)
+  hramIn := hram((cpu.io.address - 0xE000).resized)
 
   val x = ppu.io.x
   val y = ppu.io.y
   
-  ppu.io.dataIn     := vramIn
+  ppu.io.dataIn     := ppuIn.asUInt
   ppu.io.lcdControl := rLCDC
   ppu.io.startX     := rSCX
   ppu.io.startY     := rSCY
@@ -156,7 +164,13 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   // Writes to memory
   when (write) {
     when (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
-      vram((cpu.io.address - 0x8000).resized) := ramOut.asUInt
+      vram((cpu.io.address - 0x8000).resized) := ramOut
+    } elsewhen (cpu.io.address >= 0xA000 && cpu.io.address < 0xC000) {
+      eram((cpu.io.address - 0xA000).resized) := ramOut
+    } elsewhen (cpu.io.address >= 0xC000 && cpu.io.address < 0xE000) {
+      iram((cpu.io.address - 0xC000).resized) := ramOut
+    } elsewhen (cpu.io.address >= 0xE000 && cpu.io.address < 0xFDFF) {
+      iram((cpu.io.address - 0xE000).resized) := ramOut // Echo memory
     } otherwise {
       switch (cpu.io.address) {
         is(LCDC) (rLCDC := ramOut)
@@ -177,14 +191,24 @@ class GameBoySystem(sim: Boolean = false) extends Component {
         is(JOYP) (rButtonSelect := ramOut(5 downto 4).asBits)
         is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := ramOut.asUInt}
       } 
-      ram((cpu.io.address - 0xa000).resized) := ramOut
+      hram((cpu.io.address - 0xE000).resized) := ramOut
     }
   }
 
   // Reads from memory
-  when (dmaActive && cpu.io.address >= 0xfe00 && cpu.io.address <= 0xfe9f) {
-    dmaData := ramIn
+  when (dmaActive && cpu.io.address >= 0xFE00 && cpu.io.address <= 0xFE9F) {
+    dmaData := 0 // TODO
     cpu.io.dataIn := 0
+  } elsewhen (cpu.io.address < 0x8000) {
+    cpu.io.dataIn := romIn.asUInt
+  } elsewhen (cpu.io.address >= 0x8000 && cpu.io.address < 0xA000) {
+    cpu.io.dataIn := 0 // vram
+  } elsewhen (cpu.io.address >= 0xA000 && cpu.io.address < 0xC000) {
+    cpu.io.dataIn := eramIn.asUInt
+  } elsewhen (cpu.io.address >= 0xC000 && cpu.io.address < 0xE000) {
+    cpu.io.dataIn := iramIn.asUInt
+  } elsewhen (cpu.io.address >= 0xE000 && cpu.io.address < 0xFDFF) {
+    cpu.io.dataIn := iramIn.asUInt // Echo memory
   } otherwise {
     switch (cpu.io.address) {
       is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
@@ -204,8 +228,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
       is(TMA) (cpu.io.dataIn := rTMA)
       is(TAC) (cpu.io.dataIn := rTAC)
       is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
-      // TODO: Support cpu reads from vram
-      default ( cpu.io.dataIn := (cpu.io.address < 0x8000) ? romIn.asUInt | ramIn.asUInt)
+      default (cpu.io.dataIn := hramIn.asUInt)
     }
   }
 
@@ -267,7 +290,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
     }
 
     when (rTIMA === 0xFF) {
-      IRQ := True
+      rIRQ := True
       rTIMA := rTMA
     }
   }
