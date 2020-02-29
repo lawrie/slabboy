@@ -74,7 +74,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val rSCY  = Reg(UInt(8 bits)) 
   val rSCX  = Reg(UInt(8 bits)) 
   val rLYC  = Reg(UInt(8 bits)) 
-  val rDMA  = Reg(UInt(8 bits)) 
   val rBGP  = Reg(Bits(8 bits)) 
   val rOBP0 = Reg(Bits(8 bits)) 
   val rOBP1 = Reg(Bits(8 bits)) 
@@ -125,7 +124,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val ppuIn  = Reg(Bits(8 bits))
   
   val ramOut = cpu.io.dataOut.asBits
-  val enable = cpu.io.mreq
   val write  = cpu.io.write
 
   // DMA for sprites
@@ -159,9 +157,9 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.windowX    := (rWX < 7) ? U(0, 8 bits) | rWX - 7
   ppu.io.windowY    := rWY
   ppu.io.bgPalette  := rBGP
-  ppu.io.cpuSelOam  := cpu.io.address(15 downto 8) === 0xFE
+  ppu.io.cpuSelOam  := dmaActive | cpu.io.address(15 downto 8) === 0xFE
   ppu.io.cpuAddr    := dmaActive ? dmaOffset(9 downto 2) | cpu.io.address(7 downto 0)
-  ppu.io.cpuWr      := write | (dmaActive && dmaOffset(1 downto 0) === 2)
+  ppu.io.cpuWr      := write | (dmaActive && (dmaOffset(1 downto 0) === 2))
   ppu.io.cpuDataOut := dmaActive ? dmaData | ramOut
 
   // Writes to memory
@@ -181,7 +179,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
         is(SCY) (rSCY := ramOut.asUInt)
         is(SCX) (rSCX := ramOut.asUInt)
         is(LYC) (rLYC := ramOut.asUInt)
-        is(DMA) (rDMA := ramOut.asUInt)
         is(BGP) (rBGP := ramOut)
         is(OBP0) (rOBP0 := ramOut)
         is(OBP1) (rOBP1 := ramOut)
@@ -217,7 +214,6 @@ class GameBoySystem(sim: Boolean = false) extends Component {
       is(SCX) (cpu.io.dataIn := rSCX)
       is(LY) (cpu.io.dataIn := y)
       is(LYC) (cpu.io.dataIn := rLYC)
-      is(DMA) (cpu.io.dataIn := rDMA)
       is(BGP) (cpu.io.dataIn := rBGP.asUInt)
       is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
       is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
@@ -231,12 +227,12 @@ class GameBoySystem(sim: Boolean = false) extends Component {
       default (cpu.io.dataIn := hramIn.asUInt)
     }
   }
-  
+    
   // DMA for sprites
   when (dmaActive) {
     dmaOffset := dmaOffset + 1
     dmaData := iramIn
-    when (dmaOffset === 160 * 4 - 1) {
+    when (dmaOffset === (160 * 4 - 1)) {
       dmaActive := False
     }
   }
@@ -255,10 +251,10 @@ class GameBoySystem(sim: Boolean = false) extends Component {
 
   // Diagnostics
   io.led := ppu.io.diag
-  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## B"0"
+  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## dmaActive
 
   // Timer
-  val timer     = Reg(UInt(12 bits))
+  val timer = Reg(UInt(12 bits))
   timer := timer + 1
 
   when ((timer & 0x3FF) === 0) {

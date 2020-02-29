@@ -115,10 +115,16 @@ ok3:
 	ld	bc, TitleEnd-Title
 	push	de			; Save DE
 	call	mem_CopyVRAM
-	ld	hl, SpriteCache		; Copy SpriteCache to OAM
-	ld	de, _OAMRAM		; Should use DMA
-	ld	bc, 160
-	call	mem_Copy	
+	;ld	hl, SpriteCache		; Copy SpriteCache to OAM
+	;ld	de, _OAMRAM		; Should use DMA
+	;ld	bc, 160
+	;call	mem_Copy
+	ld	a, 0			; Sprite DMA - direct
+	ld	[rDMA], a
+	ld	a, $28
+wait1:
+	dec	a
+	jr	nz, wait1
 	call	READ_INPUT		; Read buttons
 	pop	de			; restore DE
 	ld	a, [joypad_down]
