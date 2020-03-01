@@ -60,7 +60,7 @@ object Cpu {
 
   object AluOp extends SpinalEnum {
     val Nop, Add, Adc, Sub, Sbc, And, Xor, Or, Cp, Sub1, Sbc1,
-      Inc, Dec, Cpl, Ccf, Scf, Swap, Add1, Adc1,
+      Inc, Dec, Cpl, Ccf, Scf, Swap, Add1, Adc1, Ei, Di,
       Rlca, Rrca, Rla, Rra, Bit, Set, Reset,
       Rlc, Rrc, Rl, Rr, Sla, Sra, Srl = newElement()
   }
@@ -85,6 +85,8 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
     val address = out UInt(16 bits)
     val dataIn = in UInt(8 bits)
     val dataOut = out UInt(8 bits)
+    val irq = in Bool
+    val ack = out Bool
     val mreq = out Bool
     val write = out Bool
     val halt = out Bool
@@ -118,7 +120,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   )
 
   // Led diagnostics
-  io.diag := registers8(0)
+  io.diag := tCount(23 downto 16)
 
   val temp = Reg(UInt(8 bits)) init(0)
   io.dataOut := temp
@@ -148,6 +150,8 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   alu.io.operandB := temp
   alu.io.ir := ir
 
+  val ime = alu.io.ime
+
   switch(decoder.io.addrSrc) {
     is(AddrSrc.PC) { io.address := registers16(Reg16.PC) }
     is(AddrSrc.HL) { io.address := registers16(Reg16.HL) }
@@ -165,6 +169,8 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
       io.address(7 downto 0) := registers8(Reg8.C)
     }
   }
+
+  io.ack := False
 
   val tCycleFsm = new StateMachine {
     val t1State: State = new State with EntryPoint {
@@ -211,6 +217,8 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
       whenIsActive {
         mreq := False
         write := False
+        // Acknowledge interrupt if requested and not masked
+        when (io.irq && ime) (io.ack := True)
         when (decoder.io.nextMCycle === 0) {
           prefix := decoder.io.nextPrefix
         }
@@ -256,41 +264,43 @@ object CpuDecoder {
   case class MCycle(
     aluOp: SpinalEnumElement[AluOp.type],
     opA: Int,
-    opBSelect: Option[Int],
-    storeSelect: Option[Int],
-    memRead: Boolean,
-    memWrite: Boolean,
-    addrSrc: SpinalEnumElement[AddrSrc.type],
-    addrOp: SpinalEnumElement[AddrOp.type],
-    halt: Boolean,
-    condition: Option[SpinalEnumElement[Condition.type]],
-    prefix:Boolean,
-    condBreak: Boolean
+    opBSelect: Option[Int] = None,
+    storeSelect: Option[Int] = None,
+    memRead: Boolean = false,
+    memWrite: Boolean = false,
+    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
+    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Inc,
+    halt: Boolean = false,
+    condition: Option[SpinalEnumElement[Condition.type]] = None,
+    prefix:Boolean = false,
+    condBreak: Boolean = false
   )
 
+  // Simple fetch cycle
   def fetchCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
-    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, false, false)
+    MCycle(aluOp, Reg8.A, opBSelect, storeSelect)
   }
 
-  def fetchCycle1(aluOp: SpinalEnumElement[AluOp.type],
+  // Fetch cycle with second Reg
+  def fetchCycleReg(aluOp: SpinalEnumElement[AluOp.type],
                  opA: Int,
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
-    MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Inc, false, None, false, false)
+    MCycle(aluOp, opA, opBSelect, storeSelect)
   }
 
+  // Extra cycle with no memory access
   def dummyCycle(aluOp: SpinalEnumElement[AluOp.type],
                  opA: Int,
                  opBSelect: Option[Int],
                  storeSelect: Option[Int]) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.HL, AddrOp.Nop, false, None, false, false)
+           AddrSrc.HL, AddrOp.Nop)
   }
 
+  // Extra cycle with address operation
   def dummyCycle1(aluOp: SpinalEnumElement[AluOp.type],
                  opA: Int,
                  opBSelect: Option[Int],
@@ -298,9 +308,10 @@ object CpuDecoder {
                  addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.SP,
                  addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           addrSrc, addrOp, false, None, false, false)
+           addrSrc, addrOp)
   }
 
+  // Conditional cycle
   def condBreakCycle(storeSelect: Option[Int],
                  condition: Option[SpinalEnumElement[Condition.type]] = None,
                  addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
@@ -315,30 +326,33 @@ object CpuDecoder {
                  storeSelect: Option[Int],
                  condition: Option[SpinalEnumElement[Condition.type]] = None) = {
     MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Nop, false, condition, false, false)
+           AddrSrc.PC, AddrOp.Nop, false, condition)
   }
 
+  // Memory read cycle
   def memReadCycle(aluOp: SpinalEnumElement[AluOp.type],
                    storeSelect: Option[Int],
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, None, false, false)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp)
   }
 
+  // Conditional memory read cycle
   def condMemReadCycle(aluOp: SpinalEnumElement[AluOp.type],
                    storeSelect: Option[Int],
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop,
                    condition: Option[SpinalEnumElement[Condition.type]] = None) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition, false, false)
+    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition)
   }
 
+  // Memory write cycle
   def memWriteCycle(aluOp: SpinalEnumElement[AluOp.type],
                     opBSelect: Option[Int],
                     storeSelect: Option[Int],
                     addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                     addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp, false, None, false, false)
+    MCycle(aluOp, Reg8.A, opBSelect, storeSelect, false, true, addrSrc, addrOp)
   }
 
   // helper function for the regular op code pattern
@@ -360,6 +374,7 @@ object CpuDecoder {
     )
   }
 
+  // helper function for bit operations
   def bit8Bit(base: Seq[Int],
                      aluOp: SpinalEnumElement[AluOp.type]
                     ) : Seq[(Seq[Int], Seq[MCycle])] = {
@@ -394,6 +409,7 @@ object CpuDecoder {
     )
   }
 
+  // Microcode for prefix operations
   val prefixMicrocode = 
     bit8Bit(Seq(0x00), AluOp.Rlc) ++
     bit8Bit(Seq(0x08), AluOp.Rrc) ++
@@ -407,15 +423,16 @@ object CpuDecoder {
     bit8Bit(Seq(0x80, 0x88, 0x90, 0x98, 0xA0, 0xA8, 0xB0, 0xB8), AluOp.Reset) ++
     bit8Bit(Seq(0xC0, 0xC8, 0xD0, 0xD8, 0xE0, 0xE8, 0xF0), AluOp.Set)
 
+  // Main miicrocode
   val Microcode = Seq(
     // nop
     (0x00, Seq(fetchCycle(AluOp.Nop, None, None))),
     // stop - currently nop
     (0x10, Seq(fetchCycle(AluOp.Nop, None, None))),
     // di - currently nop
-    (0xf3, Seq(fetchCycle(AluOp.Nop, None, None))),
+    (0xf3, Seq(fetchCycle(AluOp.Di, None, None))),
     // ei - currently nop
-    (0xfb, Seq(fetchCycle(AluOp.Nop, None, None))),
+    (0xfb, Seq(fetchCycle(AluOp.Ei, None, None))),
     // halt
     (0x76, Seq(MCycle(AluOp.Nop, Reg8.A, None, None, false, false,
                AddrSrc.PC, AddrOp.Nop, true, None, false, false)))
@@ -532,19 +549,19 @@ object CpuDecoder {
     (0xEE, Seq(fetchCycle(AluOp.Nop, None, None),
              memReadCycle(AluOp.Xor, Some(Reg8.A), addrOp=AddrOp.Inc))),
     // add HL, BC
-    (0x09, Seq(fetchCycle1(AluOp.Add, Reg8.L, Some(Reg8.C), Some(Reg8.L)),
+    (0x09, Seq(fetchCycleReg(AluOp.Add, Reg8.L, Some(Reg8.C), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.B), Some(Reg8.H)))),
     // add HL, DE
-    (0x19, Seq(fetchCycle1(AluOp.Add, Reg8.L,Some(Reg8.E), Some(Reg8.L)),
+    (0x19, Seq(fetchCycleReg(AluOp.Add, Reg8.L,Some(Reg8.E), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.D), Some(Reg8.H)))),
     // add HL, HL
-    (0x29, Seq(fetchCycle1(AluOp.Add, Reg8.L, Some(Reg8.L), Some(Reg8.L)),
+    (0x29, Seq(fetchCycleReg(AluOp.Add, Reg8.L, Some(Reg8.L), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.H), Some(Reg8.H)))),
     // add HL, SP
-    (0x39, Seq(fetchCycle1(AluOp.Add, Reg8.L, Some(Reg8.SPL), Some(Reg8.L)),
+    (0x39, Seq(fetchCycleReg(AluOp.Add, Reg8.L, Some(Reg8.SPL), Some(Reg8.L)),
                dummyCycle(AluOp.Adc, Reg8.H, Some(Reg8.SPH), Some(Reg8.H)))),
     // ls sp, hl
-    (0xF9, Seq(fetchCycle1(AluOp.Nop, Reg8.L, None, Some(Reg8.L)),
+    (0xF9, Seq(fetchCycleReg(AluOp.Nop, Reg8.L, None, Some(Reg8.L)),
                dummyCycle(AluOp.Nop, Reg8.H, None, Some(Reg8.H)))),
     // ld B, d8
     (0x06, Seq(fetchCycle(AluOp.Nop, None, None),
@@ -679,7 +696,7 @@ object CpuDecoder {
              memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop, Some(Reg8.PCH), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
     // reti 
-    (0xD9, Seq(fetchCycle(AluOp.Nop, None, None),
+    (0xD9, Seq(fetchCycle(AluOp.Ei, None, None),
              memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
              memReadCycle(AluOp.Nop, Some(Reg8.PCH), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
     // ret Z
@@ -1079,7 +1096,11 @@ class CpuAlu extends Component {
     val operandB = in UInt(8 bits)
     val result = out UInt(8 bits)
     val ir = in UInt(8 bits)
+    val ime = out Bool
   }
+
+  val rIME = Reg(Bool) init True
+  io.ime := rIME
 
   // use 9-bits internally so the carry bit is easily available
   val wideResult = UInt(9 bits)
@@ -1261,6 +1282,14 @@ class CpuAlu extends Component {
     is(AluOp.Reset) {
       wideResult := wideOpB & ~(U(1, 9 bits) |<< io.ir(5 downto 3))
       io.flagsOut := io.flagsIn
+    }
+    is(AluOp.Ei) {
+      wideResult := 0
+      rIME := True
+    }
+    is(AluOp.Di) {
+      wideResult := 0
+      rIME := False
     }
   }
 }

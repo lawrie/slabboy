@@ -84,6 +84,8 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val rTIMA = Reg(UInt(8 bits)) 
   val rTMA  = Reg(UInt(8 bits)) 
   val rTAC  = Reg(UInt(8 bits)) 
+  val rIE   = Reg(Bits(5 bits))
+  val rIF   = Reg(Bits(5 bits))
 
   // Buttons
   val rButtonSelect = Reg(Bits(2 bits))
@@ -97,7 +99,35 @@ class GameBoySystem(sim: Boolean = false) extends Component {
 
   // IRQ: TODO
   val rIRQ = Reg(Bool)
-  val rIE  = Reg(Bool)
+  cpu.io.irq := rIRQ
+
+  val rIV = Reg(Bits(8 bits)) // Interrupt vector
+
+  // Request an interupt if any requested but not masked
+  when ((rIF & rIE) =/= 0) (rIRQ := True)
+
+  // Check if interrupt acknowledged
+  when (cpu.io.ack) {
+    rIRQ := False
+
+    // Set vector and clear rIF bit
+    when (rIF(0)) {
+      rIV := 0x40
+      rIF(0) := False
+    } elsewhen (rIF(1)) {
+      rIV := 0x48
+      rIF(1) := False
+    } elsewhen (rIF(2)) {
+      rIV := 0x50
+      rIF(2) := False
+    } elsewhen (rIF(3)) {
+      rIV := 0x58
+      rIF(3) := False
+    } elsewhen (rIF(4)) {
+      rIV := 0x60
+      rIF(4) := False
+    }
+  }
 
   // Memory mapping
   val romSize  = 32 * 1024
@@ -189,6 +219,8 @@ class GameBoySystem(sim: Boolean = false) extends Component {
         is(TMA) (rTMA := ramOut.asUInt)
         is(TAC) (rTAC := ramOut.asUInt)
         is(JOYP) (rButtonSelect := ramOut(5 downto 4).asBits)
+        is(IE) (rIE := ramOut(4 downto 0))
+        is(IF) (rIF := ramOut(4 downto 0))
         is(DMA) {dmaActive := True; dmaOffset := 0; dmaPage := ramOut(4 downto 0).asUInt}
       } 
       hram((cpu.io.address - 0xE000).resize(13)) := ramOut
@@ -250,8 +282,9 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.nextPixel := lcd.io.pixels.ready
 
   // Diagnostics
-  io.led := ppu.io.diag
-  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## dmaActive
+  //io.led := ppu.io.diag
+  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## cpu.io.halt
+  io.led := cpu.io.diag.asBits
 
   // Timer
   val timer = Reg(UInt(12 bits))
@@ -286,7 +319,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
     }
 
     when (rTIMA === 0xFF) {
-      rIRQ := True
+      rIF(2) := True // Request timer interrupt
       rTIMA := rTMA
     }
   }

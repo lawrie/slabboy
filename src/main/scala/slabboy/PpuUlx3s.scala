@@ -201,7 +201,7 @@ case class Sprite() extends Component {
   val data0 = Reg(Bits(8 bits))      // The first data byte of the texture
   val data1 = Reg(Bits(8 bits))      // The second data byte of the texture
 
-  io.diag := tile.asBits
+  io.diag := yPos.asBits
 
   val height = io.size16 ? U(16, 8 bits) | U(8, 8 bits) // The height ofd the sprite (8 or 16)
 

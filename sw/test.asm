@@ -119,12 +119,11 @@ ok3:
 	;ld	de, _OAMRAM		; Should use DMA
 	;ld	bc, 160
 	;call	mem_Copy
-	ld	a, 0			; Sprite DMA - direct
-	ld	[rDMA], a
-	ld	a, $28
-wait1:
-	dec	a
-	jr	nz, wait1
+	ld	de, $FF80		; Copy CopySprites to high mem
+	ld	hl, CopySprites
+	ld	bc, CopySpritesEnd-CopySprites
+	call 	mem_Copy
+	call	$FF80			; Call it
 	call	READ_INPUT		; Read buttons
 	pop	de			; restore DE
 	ld	a, [joypad_down]
@@ -224,7 +223,15 @@ wait:
 	halt
 	nop
 	jr	wait
-	
+CopySprites:
+	ld	a, 0			; Sprite DMA - direct
+	ld	[rDMA], a
+	ld	a, $28
+wait1:
+	dec	a
+	jr	nz, wait1
+        reti
+CopySpritesEnd:	
 ; ****************************************************************************************
 ; hard-coded data
 ; ****************************************************************************************

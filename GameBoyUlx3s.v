@@ -1,7 +1,27 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 29/02/2020, 16:15:25
+// Date      : 01/03/2020, 19:28:17
 // Component : GameBoyUlx3s
 
+
+`define AddrSrc_binary_sequancial_type [3:0]
+`define AddrSrc_binary_sequancial_PC 4'b0000
+`define AddrSrc_binary_sequancial_HL 4'b0001
+`define AddrSrc_binary_sequancial_BC 4'b0010
+`define AddrSrc_binary_sequancial_DE 4'b0011
+`define AddrSrc_binary_sequancial_WZ 4'b0100
+`define AddrSrc_binary_sequancial_FFZ 4'b0101
+`define AddrSrc_binary_sequancial_FFC 4'b0110
+`define AddrSrc_binary_sequancial_SP 4'b0111
+`define AddrSrc_binary_sequancial_SP1 4'b1000
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -23,40 +43,22 @@
 `define AluOp_binary_sequancial_Swap 6'b010000
 `define AluOp_binary_sequancial_Add1 6'b010001
 `define AluOp_binary_sequancial_Adc1 6'b010010
-`define AluOp_binary_sequancial_Rlca 6'b010011
-`define AluOp_binary_sequancial_Rrca 6'b010100
-`define AluOp_binary_sequancial_Rla 6'b010101
-`define AluOp_binary_sequancial_Rra 6'b010110
-`define AluOp_binary_sequancial_Bit_1 6'b010111
-`define AluOp_binary_sequancial_Set 6'b011000
-`define AluOp_binary_sequancial_Reset 6'b011001
-`define AluOp_binary_sequancial_Rlc 6'b011010
-`define AluOp_binary_sequancial_Rrc 6'b011011
-`define AluOp_binary_sequancial_Rl 6'b011100
-`define AluOp_binary_sequancial_Rr 6'b011101
-`define AluOp_binary_sequancial_Sla_1 6'b011110
-`define AluOp_binary_sequancial_Sra_1 6'b011111
-`define AluOp_binary_sequancial_Srl_1 6'b100000
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
-
-`define AddrSrc_binary_sequancial_type [3:0]
-`define AddrSrc_binary_sequancial_PC 4'b0000
-`define AddrSrc_binary_sequancial_HL 4'b0001
-`define AddrSrc_binary_sequancial_BC 4'b0010
-`define AddrSrc_binary_sequancial_DE 4'b0011
-`define AddrSrc_binary_sequancial_WZ 4'b0100
-`define AddrSrc_binary_sequancial_FFZ 4'b0101
-`define AddrSrc_binary_sequancial_FFC 4'b0110
-`define AddrSrc_binary_sequancial_SP 4'b0111
-`define AddrSrc_binary_sequancial_SP1 4'b1000
+`define AluOp_binary_sequancial_Ei 6'b010011
+`define AluOp_binary_sequancial_Di 6'b010100
+`define AluOp_binary_sequancial_Rlca 6'b010101
+`define AluOp_binary_sequancial_Rrca 6'b010110
+`define AluOp_binary_sequancial_Rla 6'b010111
+`define AluOp_binary_sequancial_Rra 6'b011000
+`define AluOp_binary_sequancial_Bit_1 6'b011001
+`define AluOp_binary_sequancial_Set 6'b011010
+`define AluOp_binary_sequancial_Reset 6'b011011
+`define AluOp_binary_sequancial_Rlc 6'b011100
+`define AluOp_binary_sequancial_Rrc 6'b011101
+`define AluOp_binary_sequancial_Rl 6'b011110
+`define AluOp_binary_sequancial_Rr 6'b011111
+`define AluOp_binary_sequancial_Sla_1 6'b100000
+`define AluOp_binary_sequancial_Sra_1 6'b100001
+`define AluOp_binary_sequancial_Srl_1 6'b100010
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -108,7 +110,7 @@ module Sprite (
   assign _zz_4 = (io_y + (8'b00010000));
   assign _zz_5 = (yPos + height);
   assign _zz_6 = (io_x + (8'b00001000));
-  assign io_diag = tile;
+  assign io_diag = yPos;
   assign height = (io_size16 ? (8'b00010000) : (8'b00001000));
   assign yVisible = ((yPos <= _zz_3) && (_zz_4 < _zz_5));
   assign xVisible = ((xPos <= _zz_6) && (io_x < xPos));
@@ -1084,6 +1086,12 @@ module CpuDecoder (
         io_store = 1'b1;
       end
     end else begin
+      if((io_ir == (8'b11110011)))begin
+        io_aluOp = `AluOp_binary_sequancial_Di;
+      end
+      if((io_ir == (8'b11111011)))begin
+        io_aluOp = `AluOp_binary_sequancial_Ei;
+      end
       if((io_ir == (8'b01110110)))begin
         io_addrOp = `AddrOp_binary_sequancial_Nop;
         io_nextHalt = 1'b1;
@@ -3020,6 +3028,7 @@ module CpuDecoder (
       end
       if((io_ir == (8'b11011001)))begin
         if((io_mCycle == (3'b000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Ei;
           io_memWrite = 1'b0;
           io_nextMCycle = (io_mCycle + (3'b001));
         end
@@ -4003,6 +4012,7 @@ module CpuAlu (
       input  [7:0] io_operandB,
       output [7:0] io_result,
       input  [7:0] io_ir,
+      output  io_ime,
       input   clkout0,
       input   _zz_1);
   wire [8:0] _zz_2;
@@ -4021,6 +4031,7 @@ module CpuAlu (
   wire [8:0] _zz_15;
   wire [8:0] _zz_16;
   wire [8:0] _zz_17;
+  reg  rIME;
   reg [8:0] wideResult;
   wire [8:0] wideOpA;
   wire [8:0] wideOpB;
@@ -4044,6 +4055,7 @@ module CpuAlu (
   assign _zz_15 = {8'd0, _zz_14};
   assign _zz_16 = ((9'b000000001) <<< io_ir[5 : 3]);
   assign _zz_17 = ((9'b000000001) <<< io_ir[5 : 3]);
+  assign io_ime = rIME;
   assign io_result = wideResult[7 : 0];
   assign wideOpA = {1'd0, io_operandA};
   assign wideOpB = {1'd0, io_operandB};
@@ -4250,11 +4262,98 @@ module CpuAlu (
         wideResult = (wideOpB | _zz_16);
         io_flagsOut = io_flagsIn;
       end
-      default : begin
+      `AluOp_binary_sequancial_Reset : begin
         wideResult = (wideOpB & (~ _zz_17));
         io_flagsOut = io_flagsIn;
       end
+      `AluOp_binary_sequancial_Ei : begin
+        wideResult = (9'b000000000);
+      end
+      default : begin
+        wideResult = (9'b000000000);
+      end
     endcase
+  end
+
+  always @ (posedge clkout0 or negedge _zz_1) begin
+    if (!_zz_1) begin
+      rIME <= 1'b1;
+    end else begin
+      case(io_op)
+        `AluOp_binary_sequancial_Nop : begin
+        end
+        `AluOp_binary_sequancial_Add : begin
+        end
+        `AluOp_binary_sequancial_Add1 : begin
+        end
+        `AluOp_binary_sequancial_Adc : begin
+        end
+        `AluOp_binary_sequancial_Adc1 : begin
+        end
+        `AluOp_binary_sequancial_Sub : begin
+        end
+        `AluOp_binary_sequancial_Sbc : begin
+        end
+        `AluOp_binary_sequancial_Sub1 : begin
+        end
+        `AluOp_binary_sequancial_Sbc1 : begin
+        end
+        `AluOp_binary_sequancial_And_1 : begin
+        end
+        `AluOp_binary_sequancial_Xor_1 : begin
+        end
+        `AluOp_binary_sequancial_Or_1 : begin
+        end
+        `AluOp_binary_sequancial_Cp : begin
+        end
+        `AluOp_binary_sequancial_Inc : begin
+        end
+        `AluOp_binary_sequancial_Dec : begin
+        end
+        `AluOp_binary_sequancial_Cpl : begin
+        end
+        `AluOp_binary_sequancial_Ccf : begin
+        end
+        `AluOp_binary_sequancial_Scf : begin
+        end
+        `AluOp_binary_sequancial_Swap : begin
+        end
+        `AluOp_binary_sequancial_Rlca : begin
+        end
+        `AluOp_binary_sequancial_Rlc : begin
+        end
+        `AluOp_binary_sequancial_Rrca : begin
+        end
+        `AluOp_binary_sequancial_Rrc : begin
+        end
+        `AluOp_binary_sequancial_Rla : begin
+        end
+        `AluOp_binary_sequancial_Rl : begin
+        end
+        `AluOp_binary_sequancial_Rra : begin
+        end
+        `AluOp_binary_sequancial_Rr : begin
+        end
+        `AluOp_binary_sequancial_Sla_1 : begin
+        end
+        `AluOp_binary_sequancial_Sra_1 : begin
+        end
+        `AluOp_binary_sequancial_Srl_1 : begin
+        end
+        `AluOp_binary_sequancial_Bit_1 : begin
+        end
+        `AluOp_binary_sequancial_Set : begin
+        end
+        `AluOp_binary_sequancial_Reset : begin
+        end
+        `AluOp_binary_sequancial_Ei : begin
+          rIME <= 1'b1;
+        end
+        default : begin
+          rIME <= 1'b0;
+        end
+      endcase
+    end
   end
 
   always @ (posedge clkout0) begin
@@ -4324,6 +4423,10 @@ module CpuAlu (
       `AluOp_binary_sequancial_Bit_1 : begin
       end
       `AluOp_binary_sequancial_Set : begin
+      end
+      `AluOp_binary_sequancial_Reset : begin
+      end
+      `AluOp_binary_sequancial_Ei : begin
       end
       default : begin
       end
@@ -7531,6 +7634,8 @@ module Cpu (
       output reg [15:0] io_address,
       input  [7:0] io_dataIn,
       output [7:0] io_dataOut,
+      input   io_irq,
+      output reg  io_ack,
       output  io_mreq,
       output  io_write,
       output  io_halt,
@@ -7554,41 +7659,42 @@ module Cpu (
   wire  _zz_17;
   wire [7:0] _zz_18;
   wire [7:0] _zz_19;
-  wire [7:0] _zz_20;
+  wire  _zz_20;
   wire [7:0] _zz_21;
-  wire [15:0] _zz_22;
-  wire [7:0] _zz_23;
-  wire [15:0] _zz_24;
-  wire [7:0] _zz_25;
+  wire [7:0] _zz_22;
+  wire [15:0] _zz_23;
+  wire [7:0] _zz_24;
+  wire [15:0] _zz_25;
   wire [7:0] _zz_26;
-  wire [15:0] _zz_27;
-  wire [7:0] _zz_28;
-  wire [15:0] _zz_29;
-  wire [7:0] _zz_30;
+  wire [7:0] _zz_27;
+  wire [15:0] _zz_28;
+  wire [7:0] _zz_29;
+  wire [15:0] _zz_30;
   wire [7:0] _zz_31;
-  wire [15:0] _zz_32;
-  wire [7:0] _zz_33;
-  wire [15:0] _zz_34;
-  wire [7:0] _zz_35;
+  wire [7:0] _zz_32;
+  wire [15:0] _zz_33;
+  wire [7:0] _zz_34;
+  wire [15:0] _zz_35;
   wire [7:0] _zz_36;
-  wire [15:0] _zz_37;
-  wire [7:0] _zz_38;
-  wire [15:0] _zz_39;
-  wire [7:0] _zz_40;
+  wire [7:0] _zz_37;
+  wire [15:0] _zz_38;
+  wire [7:0] _zz_39;
+  wire [15:0] _zz_40;
   wire [7:0] _zz_41;
-  wire [15:0] _zz_42;
-  wire [7:0] _zz_43;
-  wire [15:0] _zz_44;
-  wire [7:0] _zz_45;
+  wire [7:0] _zz_42;
+  wire [15:0] _zz_43;
+  wire [7:0] _zz_44;
+  wire [15:0] _zz_45;
   wire [7:0] _zz_46;
-  wire [15:0] _zz_47;
-  wire [7:0] _zz_48;
-  wire [15:0] _zz_49;
-  wire [7:0] _zz_50;
+  wire [7:0] _zz_47;
+  wire [15:0] _zz_48;
+  wire [7:0] _zz_49;
+  wire [15:0] _zz_50;
   wire [7:0] _zz_51;
-  wire [15:0] _zz_52;
-  wire [7:0] _zz_53;
-  wire [15:0] _zz_54;
+  wire [7:0] _zz_52;
+  wire [15:0] _zz_53;
+  wire [7:0] _zz_54;
+  wire [15:0] _zz_55;
   reg [31:0] tCount;
   reg  mreq;
   reg  write;
@@ -7624,41 +7730,41 @@ module Cpu (
   reg `tCycleFsm_enumDefinition_binary_sequancial_type tCycleFsm_stateReg;
   reg `tCycleFsm_enumDefinition_binary_sequancial_type tCycleFsm_stateNext;
   wire [15:0] _zz_1;
-  assign _zz_20 = (ir - (8'b11000111));
-  assign _zz_21 = temp;
-  assign _zz_22 = {{8{_zz_21[7]}}, _zz_21};
-  assign _zz_23 = temp;
-  assign _zz_24 = {{8{_zz_23[7]}}, _zz_23};
-  assign _zz_25 = (ir - (8'b11000111));
-  assign _zz_26 = temp;
-  assign _zz_27 = {{8{_zz_26[7]}}, _zz_26};
-  assign _zz_28 = temp;
-  assign _zz_29 = {{8{_zz_28[7]}}, _zz_28};
-  assign _zz_30 = (ir - (8'b11000111));
-  assign _zz_31 = temp;
-  assign _zz_32 = {{8{_zz_31[7]}}, _zz_31};
-  assign _zz_33 = temp;
-  assign _zz_34 = {{8{_zz_33[7]}}, _zz_33};
-  assign _zz_35 = (ir - (8'b11000111));
-  assign _zz_36 = temp;
-  assign _zz_37 = {{8{_zz_36[7]}}, _zz_36};
-  assign _zz_38 = temp;
-  assign _zz_39 = {{8{_zz_38[7]}}, _zz_38};
-  assign _zz_40 = (ir - (8'b11000111));
-  assign _zz_41 = temp;
-  assign _zz_42 = {{8{_zz_41[7]}}, _zz_41};
-  assign _zz_43 = temp;
-  assign _zz_44 = {{8{_zz_43[7]}}, _zz_43};
-  assign _zz_45 = (ir - (8'b11000111));
-  assign _zz_46 = temp;
-  assign _zz_47 = {{8{_zz_46[7]}}, _zz_46};
-  assign _zz_48 = temp;
-  assign _zz_49 = {{8{_zz_48[7]}}, _zz_48};
-  assign _zz_50 = (ir - (8'b11000111));
-  assign _zz_51 = temp;
-  assign _zz_52 = {{8{_zz_51[7]}}, _zz_51};
-  assign _zz_53 = temp;
-  assign _zz_54 = {{8{_zz_53[7]}}, _zz_53};
+  assign _zz_21 = (ir - (8'b11000111));
+  assign _zz_22 = temp;
+  assign _zz_23 = {{8{_zz_22[7]}}, _zz_22};
+  assign _zz_24 = temp;
+  assign _zz_25 = {{8{_zz_24[7]}}, _zz_24};
+  assign _zz_26 = (ir - (8'b11000111));
+  assign _zz_27 = temp;
+  assign _zz_28 = {{8{_zz_27[7]}}, _zz_27};
+  assign _zz_29 = temp;
+  assign _zz_30 = {{8{_zz_29[7]}}, _zz_29};
+  assign _zz_31 = (ir - (8'b11000111));
+  assign _zz_32 = temp;
+  assign _zz_33 = {{8{_zz_32[7]}}, _zz_32};
+  assign _zz_34 = temp;
+  assign _zz_35 = {{8{_zz_34[7]}}, _zz_34};
+  assign _zz_36 = (ir - (8'b11000111));
+  assign _zz_37 = temp;
+  assign _zz_38 = {{8{_zz_37[7]}}, _zz_37};
+  assign _zz_39 = temp;
+  assign _zz_40 = {{8{_zz_39[7]}}, _zz_39};
+  assign _zz_41 = (ir - (8'b11000111));
+  assign _zz_42 = temp;
+  assign _zz_43 = {{8{_zz_42[7]}}, _zz_42};
+  assign _zz_44 = temp;
+  assign _zz_45 = {{8{_zz_44[7]}}, _zz_44};
+  assign _zz_46 = (ir - (8'b11000111));
+  assign _zz_47 = temp;
+  assign _zz_48 = {{8{_zz_47[7]}}, _zz_47};
+  assign _zz_49 = temp;
+  assign _zz_50 = {{8{_zz_49[7]}}, _zz_49};
+  assign _zz_51 = (ir - (8'b11000111));
+  assign _zz_52 = temp;
+  assign _zz_53 = {{8{_zz_52[7]}}, _zz_52};
+  assign _zz_54 = temp;
+  assign _zz_55 = {{8{_zz_54[7]}}, _zz_54};
   CpuDecoder decoder ( 
     .io_mCycle(mCycle),
     .io_nextMCycle(_zz_5),
@@ -7686,6 +7792,7 @@ module Cpu (
     .io_operandB(temp),
     .io_result(_zz_19),
     .io_ir(ir),
+    .io_ime(_zz_20),
     .clkout0(clkout0),
     ._zz_1(_zz_2) 
   );
@@ -7799,7 +7906,7 @@ module Cpu (
   assign registers8_11 = registers16_5[7 : 0];
   assign registers8_12 = registers16_6[15 : 8];
   assign registers8_13 = registers16_6[7 : 0];
-  assign io_diag = registers8_0;
+  assign io_diag = tCount[23 : 16];
   assign io_dataOut = temp;
   assign io_halt = halt;
   always @ (*) begin
@@ -7836,8 +7943,8 @@ module Cpu (
     endcase
   end
 
-  assign tCycleFsm_wantExit = 1'b0;
   always @ (*) begin
+    io_ack = 1'b0;
     tCycleFsm_stateNext = tCycleFsm_stateReg;
     case(tCycleFsm_stateReg)
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State : begin
@@ -7850,6 +7957,9 @@ module Cpu (
         tCycleFsm_stateNext = `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State;
       end
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State : begin
+        if((io_irq && _zz_20))begin
+          io_ack = 1'b1;
+        end
         if((! halt))begin
           tCycleFsm_stateNext = `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State;
         end
@@ -7860,6 +7970,7 @@ module Cpu (
     endcase
   end
 
+  assign tCycleFsm_wantExit = 1'b0;
   assign _zz_1 = ({15'd0,(1'b1)} <<< _zz_10);
   always @ (posedge clkout0 or negedge _zz_2) begin
     if (!_zz_2) begin
@@ -7924,16 +8035,16 @@ module Cpu (
                   registers16_6 <= (registers16_6 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_6 <= {8'd0, _zz_20};
+                  registers16_6 <= {8'd0, _zz_21};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_6;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_6 <= (registers16_6 + _zz_22);
+                  registers16_6 <= (registers16_6 + _zz_23);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_6 + _zz_24);
+                  registers16_4 <= (registers16_6 + _zz_25);
                 end
                 default : begin
                 end
@@ -7948,16 +8059,16 @@ module Cpu (
                   registers16_4 <= (registers16_4 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_4 <= {8'd0, _zz_25};
+                  registers16_4 <= {8'd0, _zz_26};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_4;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_4 <= (registers16_4 + _zz_27);
+                  registers16_4 <= (registers16_4 + _zz_28);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_4 + _zz_29);
+                  registers16_4 <= (registers16_4 + _zz_30);
                 end
                 default : begin
                 end
@@ -7972,16 +8083,16 @@ module Cpu (
                   registers16_1 <= (registers16_1 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_1 <= {8'd0, _zz_30};
+                  registers16_1 <= {8'd0, _zz_31};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_1;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_1 <= (registers16_1 + _zz_32);
+                  registers16_1 <= (registers16_1 + _zz_33);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_1 + _zz_34);
+                  registers16_4 <= (registers16_1 + _zz_35);
                 end
                 default : begin
                 end
@@ -7996,16 +8107,16 @@ module Cpu (
                   registers16_2 <= (registers16_2 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_2 <= {8'd0, _zz_35};
+                  registers16_2 <= {8'd0, _zz_36};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_2;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_2 <= (registers16_2 + _zz_37);
+                  registers16_2 <= (registers16_2 + _zz_38);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_2 + _zz_39);
+                  registers16_4 <= (registers16_2 + _zz_40);
                 end
                 default : begin
                 end
@@ -8020,16 +8131,16 @@ module Cpu (
                   registers16_3 <= (registers16_3 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_3 <= {8'd0, _zz_40};
+                  registers16_3 <= {8'd0, _zz_41};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_3;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_3 <= (registers16_3 + _zz_42);
+                  registers16_3 <= (registers16_3 + _zz_43);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_3 + _zz_44);
+                  registers16_4 <= (registers16_3 + _zz_45);
                 end
                 default : begin
                 end
@@ -8044,16 +8155,16 @@ module Cpu (
                   registers16_5 <= (registers16_5 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_5 <= {8'd0, _zz_45};
+                  registers16_5 <= {8'd0, _zz_46};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_5;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_5 <= (registers16_5 + _zz_47);
+                  registers16_5 <= (registers16_5 + _zz_48);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_5 + _zz_49);
+                  registers16_4 <= (registers16_5 + _zz_50);
                 end
                 default : begin
                 end
@@ -8068,16 +8179,16 @@ module Cpu (
                   registers16_5 <= (registers16_5 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_5 <= {8'd0, _zz_50};
+                  registers16_5 <= {8'd0, _zz_51};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_5;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_5 <= (registers16_5 + _zz_52);
+                  registers16_5 <= (registers16_5 + _zz_53);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_5 + _zz_54);
+                  registers16_4 <= (registers16_5 + _zz_55);
                 end
                 default : begin
                 end
@@ -8241,8 +8352,8 @@ module PPUUlx3s (
   wire [1:0] color;
   assign _zz_13 = (bitCycle == (5'b00000));
   assign _zz_14 = (bitCycle == (5'b00010));
-  assign _zz_15 = (bitCycle == (5'b00011));
-  assign _zz_16 = (bitCycle == (5'b00001));
+  assign _zz_15 = (bitCycle == (5'b00001));
+  assign _zz_16 = (bitCycle == (5'b00011));
   assign _zz_17 = ((8'b11110000) + hExtra);
   assign _zz_18 = (bitx - io_startX[2 : 0]);
   assign _zz_19 = ((3'b111) - bitX_1);
@@ -8323,7 +8434,7 @@ module PPUUlx3s (
         io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
       end
     end else begin
-      if(_zz_16)begin
+      if(_zz_15)begin
         if(inWindow)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},winTileY[2 : 0]},(1'b0)});
         end else begin
@@ -8337,7 +8448,7 @@ module PPUUlx3s (
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end else begin
-          if(_zz_15)begin
+          if(_zz_16)begin
             io_address = {{(1'b0),_zz_10},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
@@ -8382,7 +8493,7 @@ module PPUUlx3s (
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
     if(! _zz_13) begin
-      if(_zz_16)begin
+      if(_zz_15)begin
         tile <= io_dataIn;
       end else begin
         if(_zz_14)begin
@@ -8392,7 +8503,7 @@ module PPUUlx3s (
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_15)begin
+          if(_zz_16)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin
@@ -8453,10 +8564,10 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_7 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_8 = (! resetCnt[22]);
-  assign _zz_9 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_7 = (! resetCnt[22]);
+  assign _zz_8 = (initCnt[10 : 4] != (7'b0100100));
+  assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
   assign _zz_10 = (! byteToggle);
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
@@ -8477,10 +8588,10 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_8) begin
-      if(! _zz_9) begin
-        if(_zz_6)begin
-          if(_zz_7)begin
+    if(! _zz_7) begin
+      if(! _zz_6) begin
+        if(_zz_8)begin
+          if(_zz_9)begin
             if(! init) begin
               if(_zz_10)begin
                 io_pixels_ready = 1'b1;
@@ -8508,15 +8619,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_8)begin
+      if(_zz_7)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_9)begin
+        if(_zz_6)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_6)begin
+          if(_zz_8)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_7)begin
+            if(_zz_9)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -8584,10 +8695,10 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_8) begin
-      if(! _zz_9) begin
-        if(_zz_6)begin
-          if(_zz_7)begin
+    if(! _zz_7) begin
+      if(! _zz_6) begin
+        if(_zz_8)begin
+          if(_zz_9)begin
             if(! init) begin
               if(_zz_10)begin
                 io_next_pixel <= 1'b1;
@@ -8633,18 +8744,18 @@ module GameBoySystem (
   wire  _zz_28;
   wire  _zz_29;
   wire  _zz_30;
-  wire [7:0] _zz_31;
-  wire [1:0] _zz_32;
-  wire [12:0] _zz_33;
-  wire [7:0] _zz_34;
+  wire  _zz_31;
+  wire [7:0] _zz_32;
+  wire [1:0] _zz_33;
+  wire [12:0] _zz_34;
   wire [7:0] _zz_35;
-  wire [15:0] _zz_36;
-  wire [7:0] _zz_37;
+  wire [7:0] _zz_36;
+  wire [15:0] _zz_37;
   wire [7:0] _zz_38;
-  wire  _zz_39;
-  wire [7:0] _zz_40;
+  wire [7:0] _zz_39;
+  wire  _zz_40;
   wire [7:0] _zz_41;
-  wire  _zz_42;
+  wire [7:0] _zz_42;
   wire  _zz_43;
   wire  _zz_44;
   wire  _zz_45;
@@ -8654,23 +8765,24 @@ module GameBoySystem (
   wire  _zz_49;
   wire  _zz_50;
   wire  _zz_51;
-  wire [1:0] _zz_52;
-  wire [15:0] _zz_53;
+  wire  _zz_52;
+  wire [1:0] _zz_53;
   wire [15:0] _zz_54;
   wire [15:0] _zz_55;
-  wire [12:0] _zz_56;
-  wire [15:0] _zz_57;
-  wire [7:0] _zz_58;
-  wire [15:0] _zz_59;
-  wire [12:0] _zz_60;
-  wire [15:0] _zz_61;
-  wire [12:0] _zz_62;
-  wire [15:0] _zz_63;
-  wire [12:0] _zz_64;
-  wire [15:0] _zz_65;
-  wire [12:0] _zz_66;
-  wire [15:0] _zz_67;
-  wire [12:0] _zz_68;
+  wire [15:0] _zz_56;
+  wire [12:0] _zz_57;
+  wire [15:0] _zz_58;
+  wire [7:0] _zz_59;
+  wire [15:0] _zz_60;
+  wire [12:0] _zz_61;
+  wire [15:0] _zz_62;
+  wire [12:0] _zz_63;
+  wire [15:0] _zz_64;
+  wire [12:0] _zz_65;
+  wire [15:0] _zz_66;
+  wire [12:0] _zz_67;
+  wire [15:0] _zz_68;
+  wire [12:0] _zz_69;
   reg  _zz_1;
   reg  _zz_2;
   reg  _zz_3;
@@ -8691,9 +8803,11 @@ module GameBoySystem (
   reg [7:0] rTIMA;
   reg [7:0] rTMA;
   reg [7:0] rTAC;
+  reg [4:0] rIE;
+  reg [4:0] rIF;
   reg [1:0] rButtonSelect;
   reg  rIRQ;
-  reg  rIE;
+  reg [7:0] rIV;
   reg [7:0] romIn;
   reg [7:0] vramIn;
   reg [7:0] eramIn;
@@ -8716,59 +8830,59 @@ module GameBoySystem (
   reg [7:0] eram [0:8191];
   reg [7:0] iram [0:8191];
   reg [7:0] hram [0:8191];
-  assign _zz_48 = (_zz_26 < (16'b1100000000000000));
-  assign _zz_49 = (_zz_26 < (16'b1110000000000000));
-  assign _zz_50 = (_zz_26 < (16'b1111110111111111));
+  assign _zz_49 = (_zz_26 < (16'b1100000000000000));
+  assign _zz_50 = (_zz_26 < (16'b1110000000000000));
   assign _zz_51 = (((16'b1000000000000000) <= _zz_26) && (_zz_26 < (16'b1010000000000000)));
-  assign _zz_52 = rTAC[1 : 0];
-  assign _zz_53 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_52 = (_zz_26 < (16'b1111110111111111));
+  assign _zz_53 = rTAC[1 : 0];
   assign _zz_54 = (_zz_26 - (16'b1010000000000000));
-  assign _zz_55 = (_zz_26 - (16'b1100000000000000));
-  assign _zz_56 = _zz_55[12:0];
-  assign _zz_57 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_58 = (rWX - (8'b00000111));
-  assign _zz_59 = (_zz_26 - (16'b1000000000000000));
-  assign _zz_60 = _zz_59[12:0];
-  assign _zz_61 = (_zz_26 - (16'b1010000000000000));
-  assign _zz_62 = _zz_61[12:0];
-  assign _zz_63 = (_zz_26 - (16'b1100000000000000));
-  assign _zz_64 = _zz_63[12:0];
-  assign _zz_65 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_66 = _zz_65[12:0];
-  assign _zz_67 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_68 = _zz_67[12:0];
+  assign _zz_55 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_56 = (_zz_26 - (16'b1100000000000000));
+  assign _zz_57 = _zz_56[12:0];
+  assign _zz_58 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_59 = (rWX - (8'b00000111));
+  assign _zz_60 = (_zz_26 - (16'b1000000000000000));
+  assign _zz_61 = _zz_60[12:0];
+  assign _zz_62 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_63 = _zz_62[12:0];
+  assign _zz_64 = (_zz_26 - (16'b1100000000000000));
+  assign _zz_65 = _zz_64[12:0];
+  assign _zz_66 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_67 = _zz_66[12:0];
+  assign _zz_68 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_69 = _zz_68[12:0];
   initial begin
     $readmemb("GameBoyUlx3s.v_toplevel_coreClockingArea_gameboy_rom.bin",rom);
   end
   assign _zz_20 = rom[_zz_6];
   always @ (posedge clkout0) begin
     if(_zz_5) begin
-      vram[_zz_60] <= ramOut;
+      vram[_zz_61] <= ramOut;
     end
   end
 
   assign _zz_21 = vram[_zz_7];
-  assign _zz_22 = vram[_zz_33];
+  assign _zz_22 = vram[_zz_34];
   always @ (posedge clkout0) begin
     if(_zz_4) begin
-      eram[_zz_62] <= ramOut;
+      eram[_zz_63] <= ramOut;
     end
   end
 
   assign _zz_23 = eram[_zz_8];
   always @ (posedge clkout0) begin
     if(_zz_3) begin
-      iram[_zz_64] <= ramOut;
+      iram[_zz_65] <= ramOut;
     end
     if(_zz_2) begin
-      iram[_zz_66] <= ramOut;
+      iram[_zz_67] <= ramOut;
     end
   end
 
   assign _zz_24 = iram[_zz_9];
   always @ (posedge clkout0) begin
     if(_zz_1) begin
-      hram[_zz_68] <= ramOut;
+      hram[_zz_69] <= ramOut;
     end
   end
 
@@ -8777,10 +8891,12 @@ module GameBoySystem (
     .io_address(_zz_26),
     .io_dataIn(_zz_12),
     .io_dataOut(_zz_27),
-    .io_mreq(_zz_28),
-    .io_write(_zz_29),
-    .io_halt(_zz_30),
-    .io_diag(_zz_31),
+    .io_irq(rIRQ),
+    .io_ack(_zz_28),
+    .io_mreq(_zz_29),
+    .io_write(_zz_30),
+    .io_halt(_zz_31),
+    .io_diag(_zz_32),
     .clkout0(clkout0),
     ._zz_2(_zz_11) 
   );
@@ -8792,33 +8908,33 @@ module GameBoySystem (
     .io_windowY(rWY),
     .io_bgPalette(rBGP),
     .io_dataIn(_zz_14),
-    .io_mode(_zz_32),
-    .io_address(_zz_33),
-    .io_x(_zz_34),
-    .io_y(_zz_35),
-    .io_pixel(_zz_36),
-    .io_nextPixel(_zz_39),
-    .io_diag(_zz_37),
+    .io_mode(_zz_33),
+    .io_address(_zz_34),
+    .io_x(_zz_35),
+    .io_y(_zz_36),
+    .io_pixel(_zz_37),
+    .io_nextPixel(_zz_40),
+    .io_diag(_zz_38),
     .io_cpuSelOam(_zz_15),
     .oamAddr(_zz_16),
     .io_cpuDataOut(_zz_17),
     .io_cpuWr(_zz_18),
-    .io_cpuDataIn(_zz_38),
+    .io_cpuDataIn(_zz_39),
     .clkout0(clkout0),
     ._zz_1(_zz_11) 
   );
   ST7789 lcd ( 
     .io_pixels_valid(_zz_19),
-    .io_pixels_ready(_zz_39),
-    .io_pixels_payload(_zz_36),
-    .io_x(_zz_40),
-    .io_y(_zz_41),
-    .io_next_pixel(_zz_42),
-    .io_oled_csn(_zz_43),
-    .io_oled_clk(_zz_44),
-    .io_oled_mosi(_zz_45),
-    .io_oled_dc(_zz_46),
-    .io_oled_resn(_zz_47),
+    .io_pixels_ready(_zz_40),
+    .io_pixels_payload(_zz_37),
+    .io_x(_zz_41),
+    .io_y(_zz_42),
+    .io_next_pixel(_zz_43),
+    .io_oled_csn(_zz_44),
+    .io_oled_clk(_zz_45),
+    .io_oled_mosi(_zz_46),
+    .io_oled_dc(_zz_47),
+    .io_oled_resn(_zz_48),
     .clkout0(clkout0),
     ._zz_2(_zz_11) 
   );
@@ -8828,17 +8944,17 @@ module GameBoySystem (
     _zz_3 = 1'b0;
     _zz_4 = 1'b0;
     _zz_5 = 1'b0;
-    if(_zz_29)begin
+    if(_zz_30)begin
       if(_zz_51)begin
         _zz_5 = 1'b1;
       end else begin
-        if(_zz_48)begin
+        if(_zz_49)begin
           _zz_4 = 1'b1;
         end else begin
-          if(_zz_49)begin
+          if(_zz_50)begin
             _zz_3 = 1'b1;
           end else begin
-            if(_zz_50)begin
+            if(_zz_52)begin
               _zz_2 = 1'b1;
             end else begin
               _zz_1 = 1'b1;
@@ -8851,15 +8967,15 @@ module GameBoySystem (
 
   assign ramOut = _zz_27;
   assign _zz_6 = _zz_26[14 : 0];
-  assign _zz_7 = _zz_53[12:0];
-  assign _zz_8 = _zz_54[12:0];
-  assign _zz_9 = (dmaActive ? {dmaPage,dmaOffset[9 : 2]} : _zz_56);
-  assign _zz_10 = _zz_57[12:0];
+  assign _zz_7 = _zz_54[12:0];
+  assign _zz_8 = _zz_55[12:0];
+  assign _zz_9 = (dmaActive ? {dmaPage,dmaOffset[9 : 2]} : _zz_57);
+  assign _zz_10 = _zz_58[12:0];
   assign _zz_14 = ppuIn;
-  assign _zz_13 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_58);
+  assign _zz_13 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_59);
   assign _zz_15 = (dmaActive || (_zz_26[15 : 8] == (8'b11111110)));
   assign _zz_16 = (dmaActive ? dmaOffset[9 : 2] : _zz_26[7 : 0]);
-  assign _zz_18 = (_zz_29 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
+  assign _zz_18 = (_zz_30 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
   assign _zz_17 = (dmaActive ? dmaData : ramOut);
   always @ (*) begin
     if((_zz_26 < (16'b1000000000000000)))begin
@@ -8882,7 +8998,7 @@ module GameBoySystem (
                   _zz_12 = (rLCDC & (8'b01111111));
                 end
                 16'b1111111101000001 : begin
-                  _zz_12 = {{rSTAT[7 : 3],(_zz_35 == rLYC)},_zz_32};
+                  _zz_12 = {{rSTAT[7 : 3],(_zz_36 == rLYC)},_zz_33};
                 end
                 16'b1111111101000010 : begin
                   _zz_12 = rSCY;
@@ -8891,7 +9007,7 @@ module GameBoySystem (
                   _zz_12 = rSCX;
                 end
                 16'b1111111101000100 : begin
-                  _zz_12 = _zz_35;
+                  _zz_12 = _zz_36;
                 end
                 16'b1111111101000101 : begin
                   _zz_12 = rLYC;
@@ -8938,26 +9054,56 @@ module GameBoySystem (
   end
 
   assign io_oled_csn = 1'b1;
-  assign io_oled_resn = _zz_47;
-  assign io_oled_dc = _zz_46;
-  assign io_oled_mosi = _zz_45;
-  assign io_oled_clk = _zz_44;
-  assign _zz_19 = (((_zz_34 < (8'b10100000)) && (_zz_35 < (8'b10010000))) && rLCDC[7]);
-  assign io_led = _zz_37;
-  assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},dmaActive};
+  assign io_oled_resn = _zz_48;
+  assign io_oled_dc = _zz_47;
+  assign io_oled_mosi = _zz_46;
+  assign io_oled_clk = _zz_45;
+  assign _zz_19 = (((_zz_35 < (8'b10100000)) && (_zz_36 < (8'b10010000))) && rLCDC[7]);
+  assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},_zz_31};
+  assign io_led = _zz_32;
   always @ (posedge clkout0) begin
     rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
+    if(((rIF & rIE) != (5'b00000)))begin
+      rIRQ <= 1'b1;
+    end
+    if(_zz_28)begin
+      rIRQ <= 1'b0;
+      if(rIF[0])begin
+        rIV <= (8'b01000000);
+        rIF[0] <= 1'b0;
+      end else begin
+        if(rIF[1])begin
+          rIV <= (8'b01001000);
+          rIF[1] <= 1'b0;
+        end else begin
+          if(rIF[2])begin
+            rIV <= (8'b01010000);
+            rIF[2] <= 1'b0;
+          end else begin
+            if(rIF[3])begin
+              rIV <= (8'b01011000);
+              rIF[3] <= 1'b0;
+            end else begin
+              if(rIF[4])begin
+                rIV <= (8'b01100000);
+                rIF[4] <= 1'b0;
+              end
+            end
+          end
+        end
+      end
+    end
     romIn <= _zz_20;
     vramIn <= _zz_21;
     eramIn <= _zz_23;
     iramIn <= _zz_24;
     hramIn <= _zz_25;
     ppuIn <= _zz_22;
-    if(_zz_29)begin
+    if(_zz_30)begin
       if(! _zz_51) begin
-        if(! _zz_48) begin
-          if(! _zz_49) begin
-            if(! _zz_50) begin
+        if(! _zz_49) begin
+          if(! _zz_50) begin
+            if(! _zz_52) begin
               case(_zz_26)
                 16'b1111111101000000 : begin
                   rLCDC <= ramOut;
@@ -9004,6 +9150,12 @@ module GameBoySystem (
                 16'b1111111100000000 : begin
                   rButtonSelect <= ramOut[5 : 4];
                 end
+                16'b1111111111111111 : begin
+                  rIE <= ramOut[4 : 0];
+                end
+                16'b1111111100001111 : begin
+                  rIF <= ramOut[4 : 0];
+                end
                 16'b1111111101000110 : begin
                   dmaActive <= 1'b1;
                   dmaOffset <= (10'b0000000000);
@@ -9029,7 +9181,7 @@ module GameBoySystem (
       rDIV <= (rDIV + (8'b00000001));
     end
     if(rTAC[2])begin
-      case(_zz_52)
+      case(_zz_53)
         2'b00 : begin
           if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
             rTIMA <= (rTIMA + (8'b00000001));
@@ -9052,7 +9204,7 @@ module GameBoySystem (
         end
       endcase
       if((rTIMA == (8'b11111111)))begin
-        rIRQ <= 1'b1;
+        rIF[2] <= 1'b1;
         rTIMA <= rTMA;
       end
     end
