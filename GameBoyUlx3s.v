@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 01/03/2020, 20:24:39
+// Date      : 02/03/2020, 15:00:50
 // Component : GameBoyUlx3s
 
 
@@ -3057,6 +3057,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if(io_flags[7])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3085,6 +3087,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if((! io_flags[7]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3113,6 +3117,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if(io_flags[4])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3141,6 +3147,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if((! io_flags[4]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3420,6 +3428,8 @@ module CpuDecoder (
           io_memWrite = 1'b1;
           if(io_flags[7])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b011)))begin
@@ -3457,11 +3467,13 @@ module CpuDecoder (
         end
         if((io_mCycle == (3'b010)))begin
           io_storeSelect = (4'b0010);
-          io_store = io_flags[7];
+          io_store = io_flags[4];
           io_memRead = 1'b1;
           io_memWrite = 1'b1;
-          if(io_flags[7])begin
+          if(io_flags[4])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b011)))begin
@@ -3504,6 +3516,8 @@ module CpuDecoder (
           io_memWrite = 1'b1;
           if((! io_flags[7]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b011)))begin
@@ -3546,6 +3560,8 @@ module CpuDecoder (
           io_memWrite = 1'b1;
           if((! io_flags[4]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b011)))begin
@@ -3807,6 +3823,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if(io_flags[7])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3823,6 +3841,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if(io_flags[4])begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3839,6 +3859,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if((! io_flags[7]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -3855,6 +3877,8 @@ module CpuDecoder (
           io_memWrite = 1'b0;
           if((! io_flags[4]))begin
             io_nextMCycle = (io_mCycle + (3'b001));
+          end else begin
+            io_memWrite = 1'b0;
           end
         end
         if((io_mCycle == (3'b010)))begin
@@ -7905,7 +7929,7 @@ module Cpu (
   assign registers8_11 = registers16_5[7 : 0];
   assign registers8_12 = registers16_6[15 : 8];
   assign registers8_13 = registers16_6[7 : 0];
-  assign io_diag = tCount[23 : 16];
+  assign io_diag = registers8_11;
   assign io_dataOut = temp;
   assign io_halt = halt;
   always @ (*) begin
@@ -8350,8 +8374,8 @@ module PPUUlx3s (
   wire  bit1;
   wire [1:0] color;
   assign _zz_13 = (bitCycle == (5'b00001));
-  assign _zz_14 = (bitCycle == (5'b00011));
-  assign _zz_15 = (bitCycle == (5'b00010));
+  assign _zz_14 = (bitCycle == (5'b00010));
+  assign _zz_15 = (bitCycle == (5'b00011));
   assign _zz_16 = (bitCycle == (5'b00000));
   assign _zz_17 = ((8'b11110000) + hExtra);
   assign _zz_18 = (bitx - io_startX[2 : 0]);
@@ -8440,14 +8464,14 @@ module PPUUlx3s (
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end
       end else begin
-        if(_zz_15)begin
+        if(_zz_14)begin
           if(inWindow)begin
             io_address = (textureAddress + {{{(1'b0),tile},winTileY[2 : 0]},(1'b1)});
           end else begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end else begin
-          if(_zz_14)begin
+          if(_zz_15)begin
             io_address = {{(1'b0),_zz_10},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
@@ -8495,14 +8519,14 @@ module PPUUlx3s (
       if(_zz_13)begin
         tile <= io_dataIn;
       end else begin
-        if(_zz_15)begin
+        if(_zz_14)begin
           if(bgOn)begin
             texture0 <= io_dataIn;
           end else begin
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_14)begin
+          if(_zz_15)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin
@@ -8563,11 +8587,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_8 = (! resetCnt[22]);
+  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_7 = (! resetCnt[22]);
+  assign _zz_8 = (! byteToggle);
   assign _zz_9 = (initCnt[3 : 0] == (4'b0000));
-  assign _zz_10 = (! byteToggle);
+  assign _zz_10 = (initCnt[10 : 4] != (7'b0100100));
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -8587,12 +8611,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_8) begin
-      if(! _zz_7) begin
-        if(_zz_6)begin
+    if(! _zz_7) begin
+      if(! _zz_6) begin
+        if(_zz_10)begin
           if(_zz_9)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_8)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -8618,13 +8642,13 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_8)begin
+      if(_zz_7)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_7)begin
+        if(_zz_6)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
-          if(_zz_6)begin
+          if(_zz_10)begin
             initCnt <= (initCnt + (11'b00000000001));
             if(_zz_9)begin
               if(init)begin
@@ -8666,7 +8690,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_10)begin
+                if(_zz_8)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -8694,12 +8718,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_8) begin
-      if(! _zz_7) begin
-        if(_zz_6)begin
+    if(! _zz_7) begin
+      if(! _zz_6) begin
+        if(_zz_10)begin
           if(_zz_9)begin
             if(! init) begin
-              if(_zz_10)begin
+              if(_zz_8)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -8829,10 +8853,10 @@ module GameBoySystem (
   reg [7:0] eram [0:8191];
   reg [7:0] iram [0:8191];
   reg [7:0] hram [0:8191];
-  assign _zz_49 = (((16'b1000000000000000) <= _zz_26) && (_zz_26 < (16'b1010000000000000)));
-  assign _zz_50 = (_zz_26 < (16'b1110000000000000));
+  assign _zz_49 = (_zz_26 < (16'b1110000000000000));
+  assign _zz_50 = (_zz_26 < (16'b1100000000000000));
   assign _zz_51 = (_zz_26 < (16'b1111110111111111));
-  assign _zz_52 = (_zz_26 < (16'b1100000000000000));
+  assign _zz_52 = (((16'b1000000000000000) <= _zz_26) && (_zz_26 < (16'b1010000000000000)));
   assign _zz_53 = rTAC[1 : 0];
   assign _zz_54 = (_zz_26 - (16'b1010000000000000));
   assign _zz_55 = (_zz_26 - (16'b1010000000000000));
@@ -8944,13 +8968,13 @@ module GameBoySystem (
     _zz_4 = 1'b0;
     _zz_5 = 1'b0;
     if(_zz_30)begin
-      if(_zz_49)begin
+      if(_zz_52)begin
         _zz_5 = 1'b1;
       end else begin
-        if(_zz_52)begin
+        if(_zz_50)begin
           _zz_4 = 1'b1;
         end else begin
-          if(_zz_50)begin
+          if(_zz_49)begin
             _zz_3 = 1'b1;
           end else begin
             if(_zz_51)begin
@@ -9058,8 +9082,8 @@ module GameBoySystem (
   assign io_oled_mosi = _zz_46;
   assign io_oled_clk = _zz_45;
   assign _zz_19 = (((_zz_35 < (8'b10100000)) && (_zz_36 < (8'b10010000))) && rLCDC[7]);
+  assign io_led = _zz_38;
   assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},_zz_31};
-  assign io_led = _zz_32;
   always @ (posedge clkout0) begin
     rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
     if(((rIF & rIE) != (5'b00000)))begin
@@ -9099,9 +9123,9 @@ module GameBoySystem (
     hramIn <= _zz_25;
     ppuIn <= _zz_22;
     if(_zz_30)begin
-      if(! _zz_49) begin
-        if(! _zz_52) begin
-          if(! _zz_50) begin
+      if(! _zz_52) begin
+        if(! _zz_50) begin
+          if(! _zz_49) begin
             if(! _zz_51) begin
               case(_zz_26)
                 16'b1111111101000000 : begin

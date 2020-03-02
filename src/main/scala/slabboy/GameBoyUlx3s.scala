@@ -282,9 +282,9 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.nextPixel := lcd.io.pixels.ready
 
   // Diagnostics
-  //io.led := ppu.io.diag
+  io.led := ppu.io.diag
   io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## cpu.io.halt
-  io.led := cpu.io.diag.asBits
+  //io.led := cpu.io.diag.asBits
 
   // Timer
   val timer = Reg(UInt(12 bits))

@@ -120,7 +120,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   )
 
   // Led diagnostics
-  io.diag := tCount(23 downto 16)
+  io.diag := registers8(Reg8.SPL)
 
   val temp = Reg(UInt(8 bits)) init(0)
   io.dataOut := temp
@@ -763,7 +763,7 @@ object CpuDecoder {
     // call C, nn
     (0xDC, Seq(fetchCycle(AluOp.Nop, None, None),
                memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               condBreakCycle(Some(Reg8.W), condition=Some(Condition.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
+               condBreakCycle(Some(Reg8.W), condition=Some(Condition.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(AluOp.Nop, Some(Reg8.PCH), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(AluOp.Nop, Some(Reg8.PCL), None, addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
@@ -956,7 +956,6 @@ class CpuDecoder extends Component {
   } 
 
   // default to most common options
-  //decodeCycle(DefaultCycle)
   io.aluOp := AluOp.Nop
   io.opA := Reg8.A
   io.opBSelect := 0
@@ -1018,19 +1017,27 @@ class CpuDecoder extends Component {
                       if (x == Condition.Z) {
                         when (io.flags(Flags.Z)) {
                           io.nextMCycle := io.mCycle + 1
-                        } 
+                        } otherwise {
+                          io.memWrite := False
+                        }
                       } else if (x == Condition.NZ) {
                         when (~io.flags(Flags.Z)) {
                           io.nextMCycle := io.mCycle + 1
-                        } 
+                        } otherwise {
+                          io.memWrite := False
+                        }
                       } else if (x == Condition.C) {
                         when (io.flags(Flags.C)) {
                           io.nextMCycle := io.mCycle + 1
-                        } 
+                        } otherwise {
+                          io.memWrite := False
+                        }  
                       } else if (x == Condition.NC) {
                         when (~io.flags(Flags.C)) {
                           io.nextMCycle := io.mCycle + 1
-                        } 
+                        } otherwise {
+                          io.memWrite := False
+                        }
                       }
                     }
                     case None =>
