@@ -314,31 +314,12 @@ object CpuDecoder {
            addrSrc, addrOp, false, condition, false, true)
   }
 
-  // Conditional extra cycle
-  def condExtraCycle(aluOp: SpinalEnumElement[AluOp.type],
-                     opA: Int,
-                     opBSelect: Option[Int],
-                     storeSelect: Option[Int],
-                     condition: Option[SpinalEnumElement[Condition.type]] = None) = {
-    MCycle(aluOp, opA, opBSelect, storeSelect, false, false,
-           AddrSrc.PC, AddrOp.Nop, false, condition)
-  }
-
   // Memory read cycle
   def memReadCycle(aluOp: SpinalEnumElement[AluOp.type],
                    storeSelect: Option[Int],
                    addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
                    addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
     MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp)
-  }
-
-  // Conditional memory read cycle
-  def condMemReadCycle(aluOp: SpinalEnumElement[AluOp.type],
-                       storeSelect: Option[Int],
-                       addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.PC,
-                       addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop,
-                       condition: Option[SpinalEnumElement[Condition.type]] = None) = {
-    MCycle(aluOp, Reg8.A, None, storeSelect, true, false, addrSrc, addrOp, false, condition)
   }
 
   // Memory write cycle
