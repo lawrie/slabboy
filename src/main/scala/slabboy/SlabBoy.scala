@@ -300,13 +300,9 @@ object CpuDecoder {
   }
 
   // Extra cycle with address operation
-  def extraCycle1(aluOp: SpinalEnumElement[AluOp.type],
-                  opA: Int,
-                  opBSelect: Option[Int],
-                  storeSelect: Option[Int],
-                  addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.SP,
-                  addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
-    MCycle(aluOp, opA, opBSelect, storeSelect, false, false, addrSrc, addrOp)
+  def addrCycle(addrSrc: SpinalEnumElement[AddrSrc.type] = AddrSrc.SP,
+                addrOp: SpinalEnumElement[AddrOp.type] = AddrOp.Nop) = {
+    MCycle(AluOp.Nop, Reg8.A, None, None, false, false, addrSrc, addrOp)
   }
 
   // Conditional cycle
@@ -555,7 +551,7 @@ object CpuDecoder {
     // add HL, SP
     (0x39, Seq(fetchCycleReg(AluOp.Add, Reg8.L, Some(Reg8.SPL), Some(Reg8.L)),
                extraCycle(AluOp.Adc, Reg8.H, Some(Reg8.SPH), Some(Reg8.H)))),
-    // ls sp, hl
+    // ld sp, hl
     (0xF9, Seq(fetchCycleReg(AluOp.Nop, Reg8.L, None, Some(Reg8.L)),
                extraCycle(AluOp.Nop, Reg8.H, None, Some(Reg8.H)))),
     // ld B, d8
@@ -674,6 +670,10 @@ object CpuDecoder {
     (0x31, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop,Some(Reg8.SPL), addrOp=AddrOp.Inc),
                memReadCycle(AluOp.Nop,Some(Reg8.SPH), addrOp=AddrOp.Inc))),
+    // ld hl, SP+r8
+    (0xF8, Seq(fetchCycle(),
+               memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.HLR8))),
     // ret 
     (0xC9, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.PCL), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
@@ -706,42 +706,42 @@ object CpuDecoder {
     (0xC7, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 08
     (0xCF, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 10
     (0xD7, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 18
     (0xDF, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 20
     (0xE7, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 28
     (0xEF, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 30
     (0xF7, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // rst 38
     (0xFF, Seq(fetchCycle(),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Rst))),
     // prefix
     (0xCB, Seq(MCycle(prefix=true))),
     // call nn
@@ -750,35 +750,35 @@ object CpuDecoder {
                memReadCycle(AluOp.Nop, Some(Reg8.W), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // call Z, nn
     (0xCC, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // call C, nn
     (0xDC, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // call NZ, nn
     (0xC4, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.NZ), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // call NC, nn
     (0xD4, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.NC), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // pop bc
     (0xC1, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.C), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc),
@@ -797,77 +797,73 @@ object CpuDecoder {
                memReadCycle(AluOp.Nop, Some(Reg8.A), addrSrc=AddrSrc.SP, addrOp=AddrOp.Inc))),
     // push bc
     (0xC5, Seq(fetchCycle(),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.B), addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.C), addrSrc=AddrSrc.SP))),
     // push de
     (0xD5, Seq(fetchCycle(),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.D), addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.E), addrSrc=AddrSrc.SP))),
     // push hl
     (0xE5, Seq(fetchCycle(),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.H), addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.L), addrSrc=AddrSrc.SP))),
     // push af
     (0xF5, Seq(fetchCycle(),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.A), addrSrc=AddrSrc.SP, addrOp=AddrOp.Dec),
                memWriteCycle(Some(Reg8.F), addrSrc=AddrSrc.SP))),
     // add sp, r8
     (0xE8, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.R8))),
-    // ld hl, SP+r8
-    (0xF8, Seq(fetchCycle(),
-               memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.SP, addrOp=AddrOp.HLR8))),
+               addrCycle(addrSrc=AddrSrc.SP, addrOp=AddrOp.R8))),
     // jr d8
     (0x18, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, None, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jr z, d8
     (0x28, Seq(fetchCycle(),
                condBreakCycle(None, condition=Some(Condition.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jr c, d8
     (0x38, Seq(fetchCycle(),
                condBreakCycle(None, condition=Some(Condition.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jr nz, d8
     (0x20, Seq(fetchCycle(),
                condBreakCycle(None, condition=Some(Condition.NZ), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jr nc, d8
     (0x30, Seq(fetchCycle(),
                condBreakCycle(None, condition=Some(Condition.NC), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
+               addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.R8))), 
     // jp nz,a16
     (0xC2, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.NZ), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // jp a16
     (0xC3, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                memReadCycle(AluOp.Nop, Some(Reg8.W), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // jp z,a16
     (0xCA, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // jp nc,a16
     (0xD2, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.NC), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC))),
     // jp c,a16
     (0xDA, Seq(fetchCycle(),
                memReadCycle(AluOp.Nop, Some(Reg8.Z), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
                condBreakCycle(Some(Reg8.W), condition=Some(Condition.C), addrSrc=AddrSrc.PC, addrOp=AddrOp.Inc),
-               extraCycle1(AluOp.Nop, Reg8.A, None, None, addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC)))
+               addrCycle(addrSrc=AddrSrc.WZ, addrOp=AddrOp.ToPC)))
   )
 
   val DefaultCycle = Microcode(0)._2(0)

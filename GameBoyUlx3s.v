@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 03/03/2020, 09:00:27
+// Date      : 03/03/2020, 09:36:29
 // Component : GameBoyUlx3s
 
 
@@ -3005,6 +3005,21 @@ module CpuDecoder (
           io_memRead = 1'b1;
         end
       end
+      if((io_ir == (8'b11111000)))begin
+        if((io_mCycle == (3'b000)))begin
+          io_memWrite = 1'b0;
+          io_nextMCycle = (io_mCycle + (3'b001));
+        end
+        if((io_mCycle == (3'b001)))begin
+          io_memRead = 1'b1;
+          io_memWrite = 1'b0;
+          io_nextMCycle = (io_mCycle + (3'b001));
+        end
+        if((io_mCycle == (3'b010)))begin
+          io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          io_addrOp = `AddrOp_binary_sequancial_HLR8;
+        end
+      end
       if((io_ir == (8'b11001001)))begin
         if((io_mCycle == (3'b000)))begin
           io_memWrite = 1'b0;
@@ -3782,21 +3797,6 @@ module CpuDecoder (
         if((io_mCycle == (3'b010)))begin
           io_addrSrc = `AddrSrc_binary_sequancial_SP;
           io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b11111000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_HLR8;
         end
       end
       if((io_ir == (8'b00011000)))begin
