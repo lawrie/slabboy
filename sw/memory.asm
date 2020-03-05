@@ -78,7 +78,7 @@ mem_Copy::
 
 ;***************************************************************************
 ;*
-;* mem_Copy - "Copy" a monochrome font from ROM to RAM
+;* mem_CopyMono - "Copy" a monochrome font from ROM to RAM
 ;*
 ;* input:
 ;*   hl - pSource
@@ -121,7 +121,7 @@ mem_SetVRAM::
         lcd_WaitVRAM
         pop     af
         ld      [hl+],a
-        ei
+        ;ei
 .skip	dec	c
 	jr	nz,.loop
 	dec	b
@@ -142,11 +142,11 @@ mem_CopyVRAM::
 	inc	b
 	inc	c
 	jr	.skip
-.loop   di
+.loop   ;di
         lcd_WaitVRAM
         ld      a,[hl+]
 	ld	[de],a
-        ei
+        ;ei
 	inc	de
 .skip	dec	c
 	jr	nz,.loop

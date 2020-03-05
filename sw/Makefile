@@ -4,7 +4,7 @@ clean:
 	rm -f *.gb
 
 %.gb : %.o
-	rgblink -o $@ $<
+	rgblink -mtest.map -o $@ $<
 
 %.o : %.asm
 	rgbasm -o $@ $<

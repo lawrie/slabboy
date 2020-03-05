@@ -27,6 +27,7 @@ object TopLevelSim {
       val memory = loadProgram("sw/test.gb")
       fork {
         while (true) {
+          dut.io.irq #= false
           dut.clockDomain.waitRisingEdgeWhere(dut.io.en.toBoolean == true)
           val address = dut.io.address.toInt
           if (dut.io.write.toBoolean) {
@@ -34,6 +35,56 @@ object TopLevelSim {
           } else {
             dut.io.dataIn #= memory(address).toInt & 0xFF
           }
+        }
+      }
+
+      dut.clockDomain.waitRisingEdgeWhere(dut.io.halt.toBoolean == true)
+      sleep(2)
+      coreDump("coredump.bin", memory)
+      simSuccess()
+    }
+  }
+}
+
+object TopLevelIntSim {
+  val MemorySize = 64 * 1024
+
+  def loadProgram(path: String): Array[Byte] = {
+    Files.readAllBytes(Paths.get(path)).padTo(MemorySize, 0.toByte)
+  }
+
+  def coreDump(path: String, mem: Array[Byte]) {
+    Files.write(Paths.get(path), mem)
+  }
+
+  def main(args: Array[String]) {
+    SimConfig.withWave.compile(new SlabBoy).doSim { dut =>
+      // perform initial reset and generate a clock signal
+      dut.clockDomain.forkStimulus(period = 2)
+      
+      // create a concurrent thread to handle the memory accesses
+      // separate from the main test bench execution
+      val memory = loadProgram("sw/test.gb")
+      var i = 0
+      fork {
+        while (true) {
+          if (i == 10) {
+            dut.io.irq #= true
+          } else {
+            dut.io.irq #= false
+          }
+          dut.clockDomain.waitRisingEdgeWhere(dut.io.en.toBoolean == true)
+          val address = dut.io.address.toInt
+          if (dut.io.write.toBoolean) {
+            memory(address) = dut.io.dataOut.toInt.toByte
+          } else {
+            if (dut.io.ack.toBoolean) {
+              dut.io.dataIn #= 0x50
+            } else {
+              dut.io.dataIn #= memory(address).toInt & 0xFF
+            }
+          }
+          i += 1
         }
       }
 

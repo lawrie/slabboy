@@ -69,26 +69,26 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val IE        = 0xffff
 
   // Gameboy registers
-  val rLCDC = Reg(Bits(8 bits)) 
-  val rSTAT = Reg(Bits(8 bits)) 
-  val rSCY  = Reg(UInt(8 bits)) 
-  val rSCX  = Reg(UInt(8 bits)) 
-  val rLYC  = Reg(UInt(8 bits)) 
-  val rBGP  = Reg(Bits(8 bits)) 
-  val rOBP0 = Reg(Bits(8 bits)) 
-  val rOBP1 = Reg(Bits(8 bits)) 
-  val rWY   = Reg(UInt(8 bits)) 
-  val rWX   = Reg(UInt(8 bits)) 
-  val rJOYP = Reg(Bits(8 bits)) 
-  val rDIV  = Reg(UInt(8 bits)) 
-  val rTIMA = Reg(UInt(8 bits)) 
-  val rTMA  = Reg(UInt(8 bits)) 
-  val rTAC  = Reg(UInt(8 bits)) 
-  val rIE   = Reg(Bits(5 bits))
-  val rIF   = Reg(Bits(5 bits))
+  val rLCDC = Reg(Bits(8 bits)) init 0
+  val rSTAT = Reg(Bits(8 bits)) init 0
+  val rSCY  = Reg(UInt(8 bits)) init 0
+  val rSCX  = Reg(UInt(8 bits)) init 0
+  val rLYC  = Reg(UInt(8 bits)) init 0
+  val rBGP  = Reg(Bits(8 bits)) init 0
+  val rOBP0 = Reg(Bits(8 bits)) init 0
+  val rOBP1 = Reg(Bits(8 bits)) init 0
+  val rWY   = Reg(UInt(8 bits)) init 0
+  val rWX   = Reg(UInt(8 bits)) init 0
+  val rJOYP = Reg(Bits(8 bits)) init 0
+  val rDIV  = Reg(UInt(8 bits)) init 0
+  val rTIMA = Reg(UInt(8 bits)) init 0
+  val rTMA  = Reg(UInt(8 bits)) init 0
+  val rTAC  = Reg(UInt(8 bits)) init 0
+  val rIE   = Reg(Bits(5 bits)) init 0
+  val rIF   = Reg(Bits(5 bits)) init 0
 
   // Buttons
-  val rButtonSelect = Reg(Bits(2 bits))
+  val rButtonSelect = Reg(Bits(2 bits)) init 0
   rJOYP:= !rButtonSelect(0) ? (B"0000"  ## ~io.btn(7 downto 4)) | (B"0000"  ## ~io.btn(3 downto 0))
 
   // CPU
@@ -97,34 +97,34 @@ class GameBoySystem(sim: Boolean = false) extends Component {
     spInit = 0xFFFF
   )
 
-  // IRQ: TODO
-  val rIRQ = Reg(Bool)
+  // Interrupts
+  val rIRQ = Reg(Bool) init False
   cpu.io.irq := rIRQ
-
-  val rIV = Reg(Bits(8 bits)) // Interrupt vector
 
   // Request an interupt if any requested but not masked
   when ((rIF & rIE) =/= 0) (rIRQ := True)
+
+  // Set the interrupt vector 
+  val iV = ((rIF(0) & rIE(0)) ? U(0x40, 8 bits) |
+           ((rIF(1) & rIE(1)) ? U(0x48, 8 bits) |
+           ((rIF(2) & rIE(2)) ? U(0x50, 8 bits) |
+           ((rIF(3) & rIE(3)) ? U(0x58, 8 bits) |
+           ((rIF(4) & rIE(4)) ? U(0x60, 8 bits) | U(0x00, 8 bits))))))
 
   // Check if interrupt acknowledged
   when (cpu.io.ack) {
     rIRQ := False
 
-    // Set vector and clear rIF bit
-    when (rIF(0)) {
-      rIV := 0x40
+    // Clear rIF bit
+    when (rIF(0) & rIE(0)) {
       rIF(0) := False
-    } elsewhen (rIF(1)) {
-      rIV := 0x48
+    } elsewhen (rIF(1) & rIE(1)) {
       rIF(1) := False
-    } elsewhen (rIF(2)) {
-      rIV := 0x50
+    } elsewhen (rIF(2) & rIE(2)) {
       rIF(2) := False
-    } elsewhen (rIF(3)) {
-      rIV := 0x58
+    } elsewhen (rIF(3) & rIE(3)) {
       rIF(3) := False
-    } elsewhen (rIF(4)) {
-      rIV := 0x60
+    } elsewhen (rIF(4) & rIE(4)) {
       rIF(4) := False
     }
   }
@@ -157,7 +157,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   val write  = cpu.io.write
 
   // DMA for sprites
-  val dmaActive = Reg(Bool)
+  val dmaActive = Reg(Bool) init False
   val dmaOffset = Reg(UInt(10 bits))
   val dmaPage   = Reg(UInt(5 bits))
   val dmaData   = Reg(Bits(8 bits))
@@ -228,35 +228,39 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   }
 
   // Reads from memory
-  when (cpu.io.address < 0x8000) {
-    cpu.io.dataIn := romIn.asUInt
-  } elsewhen (cpu.io.address < 0xA000) {
-    cpu.io.dataIn := vramIn.asUInt
-  } elsewhen (cpu.io.address < 0xC000) {
-    cpu.io.dataIn := eramIn.asUInt
-  } elsewhen (cpu.io.address < 0xE000) {
-    cpu.io.dataIn := iramIn.asUInt
-  } elsewhen (cpu.io.address < 0xFDFF) {
-    cpu.io.dataIn := iramIn.asUInt // Echo memory
+  when (cpu.io.ack) { // Interrupt acknowledged
+    cpu.io.dataIn := iV
   } otherwise {
-    switch (cpu.io.address) {
-      is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
-      is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (y === rLYC) ## ppu.io.mode).asUInt)
-      is(SCY) (cpu.io.dataIn := rSCY)
-      is(SCX) (cpu.io.dataIn := rSCX)
-      is(LY) (cpu.io.dataIn := y)
-      is(LYC) (cpu.io.dataIn := rLYC)
-      is(BGP) (cpu.io.dataIn := rBGP.asUInt)
-      is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
-      is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
-      is(WY) (cpu.io.dataIn := rWY)
-      is(WX) (cpu.io.dataIn := rWX)
-      is(DIV) (cpu.io.dataIn := rDIV)
-      is(TIMA) (cpu.io.dataIn := rTIMA)
-      is(TMA) (cpu.io.dataIn := rTMA)
-      is(TAC) (cpu.io.dataIn := rTAC)
-      is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
-      default (cpu.io.dataIn := hramIn.asUInt)
+    when (cpu.io.address < 0x8000) {
+      cpu.io.dataIn := romIn.asUInt
+    } elsewhen (cpu.io.address < 0xA000) {
+      cpu.io.dataIn := vramIn.asUInt
+    } elsewhen (cpu.io.address < 0xC000) {
+      cpu.io.dataIn := eramIn.asUInt
+    } elsewhen (cpu.io.address < 0xE000) {
+      cpu.io.dataIn := iramIn.asUInt
+    } elsewhen (cpu.io.address < 0xFDFF) {
+      cpu.io.dataIn := iramIn.asUInt // Echo memory
+    } otherwise {
+      switch (cpu.io.address) {
+        is(LCDC) (cpu.io.dataIn := rLCDC.asUInt & 0x7f) // Say LCD is off for now
+        is(STAT) (cpu.io.dataIn := (rSTAT(7 downto 3) ## (y === rLYC) ## ppu.io.mode).asUInt)
+        is(SCY) (cpu.io.dataIn := rSCY)
+        is(SCX) (cpu.io.dataIn := rSCX)
+        is(LY) (cpu.io.dataIn := y)
+        is(LYC) (cpu.io.dataIn := rLYC)
+        is(BGP) (cpu.io.dataIn := rBGP.asUInt)
+        is(OBP0) (cpu.io.dataIn := rOBP0.asUInt)
+        is(OBP1) (cpu.io.dataIn := rOBP1.asUInt)
+        is(WY) (cpu.io.dataIn := rWY)
+        is(WX) (cpu.io.dataIn := rWX)
+        is(DIV) (cpu.io.dataIn := rDIV)
+        is(TIMA) (cpu.io.dataIn := rTIMA)
+        is(TMA) (cpu.io.dataIn := rTMA)
+        is(TAC) (cpu.io.dataIn := rTAC)
+        is(JOYP) (cpu.io.dataIn := rJOYP.asUInt)
+        default (cpu.io.dataIn := hramIn.asUInt)
+      }
     }
   }
     
@@ -282,12 +286,12 @@ class GameBoySystem(sim: Boolean = false) extends Component {
   ppu.io.nextPixel := lcd.io.pixels.ready
 
   // Diagnostics
-  io.led := ppu.io.diag
-  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## cpu.io.halt
-  //io.led := cpu.io.diag.asBits
+  //io.led := ppu.io.diag
+  io.leds := io.btn(7).asBits ## io.btn(6).asBits ## io.btn(4).asBits ## io.btn(5).asBits ## cpu.io.ime
+  io.led := cpu.io.diag.asBits
 
   // Timer
-  val timer = Reg(UInt(12 bits))
+  val timer = Reg(UInt(12 bits)) init 0
   timer := timer + 1
 
   when ((timer & 0x3FF) === 0) {
@@ -321,6 +325,7 @@ class GameBoySystem(sim: Boolean = false) extends Component {
     when (rTIMA === 0xFF) {
       rIF(2) := True // Request timer interrupt
       rTIMA := rTMA
+      //rTAC(2) := False // one-shot
     }
   }
 }
@@ -372,14 +377,14 @@ object GameBoyUlx3s {
   }
 }
 
-object GameBoy64Ulx3sSim {
+object GameBoyUlx3sSim {
   import spinal.core.sim._
 
   def main(args: Array[String]) {
     SimConfig.withWave.compile(new GameBoySystem(true)).doSim{ dut =>
       dut.clockDomain.forkStimulus(100)
 
-      dut.clockDomain.waitSampling(100000)
+      dut.clockDomain.waitSampling(1000000)
     }
   }
 }

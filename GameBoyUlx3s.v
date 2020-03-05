@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.1.6    git head : 369ec039630c441c429b64ffc0a9ec31d21b7196
-// Date      : 03/03/2020, 09:48:09
+// Date      : 05/03/2020, 11:39:47
 // Component : GameBoyUlx3s
 
 
@@ -13,15 +13,6 @@
 `define AddrSrc_binary_sequancial_FFC 4'b0110
 `define AddrSrc_binary_sequancial_SP 4'b0111
 `define AddrSrc_binary_sequancial_SP1 4'b1000
-
-`define AddrOp_binary_sequancial_type [2:0]
-`define AddrOp_binary_sequancial_Nop 3'b000
-`define AddrOp_binary_sequancial_Inc 3'b001
-`define AddrOp_binary_sequancial_Dec 3'b010
-`define AddrOp_binary_sequancial_Rst 3'b011
-`define AddrOp_binary_sequancial_ToPC 3'b100
-`define AddrOp_binary_sequancial_R8 3'b101
-`define AddrOp_binary_sequancial_HLR8 3'b110
 
 `define AluOp_binary_sequancial_type [5:0]
 `define AluOp_binary_sequancial_Nop 6'b000000
@@ -59,6 +50,16 @@
 `define AluOp_binary_sequancial_Sla_1 6'b100000
 `define AluOp_binary_sequancial_Sra_1 6'b100001
 `define AluOp_binary_sequancial_Srl_1 6'b100010
+
+`define AddrOp_binary_sequancial_type [2:0]
+`define AddrOp_binary_sequancial_Nop 3'b000
+`define AddrOp_binary_sequancial_Inc 3'b001
+`define AddrOp_binary_sequancial_Dec 3'b010
+`define AddrOp_binary_sequancial_Rst 3'b011
+`define AddrOp_binary_sequancial_ToPC 3'b100
+`define AddrOp_binary_sequancial_R8 3'b101
+`define AddrOp_binary_sequancial_HLR8 3'b110
+`define AddrOp_binary_sequancial_Int_1 3'b111
 
 `define tCycleFsm_enumDefinition_binary_sequancial_type [2:0]
 `define tCycleFsm_enumDefinition_binary_sequancial_boot 3'b000
@@ -302,7 +303,8 @@ module CpuDecoder (
       output reg  io_nextHalt,
       input  [7:0] io_flags,
       input   io_prefix,
-      output reg  io_nextPrefix);
+      output reg  io_nextPrefix,
+      input   io_interrupt);
   always @ (*) begin
     io_aluOp = `AluOp_binary_sequancial_Nop;
     io_opA = (4'b0000);
@@ -317,3708 +319,3736 @@ module CpuDecoder (
     io_nextHalt = 1'b0;
     io_nextPrefix = 1'b0;
     io_memWrite = 1'b0;
-    if(io_prefix)begin
-      if((io_ir == (8'b00000000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Rlc;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00000111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlc;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Rrc;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00001111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrc;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Rl;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00010111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rl;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Rr;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00011111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rr;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sla_1;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00100111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sla_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sra_1;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00101111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sra_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Swap;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00110111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Swap;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Srl_1;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00111111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Srl_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b01000000)) || ((io_ir == (8'b01001000)) || ((io_ir == (8'b01010000)) || ((io_ir == (8'b01011000)) || ((io_ir == (8'b01100000)) || ((io_ir == (8'b01101000)) || ((io_ir == (8'b01110000)) || (io_ir == (8'b01111000))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000001)) || ((io_ir == (8'b01001001)) || ((io_ir == (8'b01010001)) || ((io_ir == (8'b01011001)) || ((io_ir == (8'b01100001)) || ((io_ir == (8'b01101001)) || ((io_ir == (8'b01110001)) || (io_ir == (8'b01111001))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000010)) || ((io_ir == (8'b01001010)) || ((io_ir == (8'b01010010)) || ((io_ir == (8'b01011010)) || ((io_ir == (8'b01100010)) || ((io_ir == (8'b01101010)) || ((io_ir == (8'b01110010)) || (io_ir == (8'b01111010))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000011)) || ((io_ir == (8'b01001011)) || ((io_ir == (8'b01010011)) || ((io_ir == (8'b01011011)) || ((io_ir == (8'b01100011)) || ((io_ir == (8'b01101011)) || ((io_ir == (8'b01110011)) || (io_ir == (8'b01111011))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000100)) || ((io_ir == (8'b01001100)) || ((io_ir == (8'b01010100)) || ((io_ir == (8'b01011100)) || ((io_ir == (8'b01100100)) || ((io_ir == (8'b01101100)) || ((io_ir == (8'b01110100)) || (io_ir == (8'b01111100))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000101)) || ((io_ir == (8'b01001101)) || ((io_ir == (8'b01010101)) || ((io_ir == (8'b01011101)) || ((io_ir == (8'b01100101)) || ((io_ir == (8'b01101101)) || ((io_ir == (8'b01110101)) || (io_ir == (8'b01111101))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b01000110)) || ((io_ir == (8'b01001110)) || ((io_ir == (8'b01010110)) || ((io_ir == (8'b01011110)) || ((io_ir == (8'b01100110)) || ((io_ir == (8'b01101110)) || ((io_ir == (8'b01110110)) || (io_ir == (8'b01111110))))))))))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Bit_1;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if(((io_ir == (8'b01000111)) || ((io_ir == (8'b01001111)) || ((io_ir == (8'b01010111)) || ((io_ir == (8'b01011111)) || ((io_ir == (8'b01100111)) || ((io_ir == (8'b01101111)) || ((io_ir == (8'b01110111)) || (io_ir == (8'b01111111))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Bit_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-      end
-      if(((io_ir == (8'b10000000)) || ((io_ir == (8'b10001000)) || ((io_ir == (8'b10010000)) || ((io_ir == (8'b10011000)) || ((io_ir == (8'b10100000)) || ((io_ir == (8'b10101000)) || ((io_ir == (8'b10110000)) || (io_ir == (8'b10111000))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000001)) || ((io_ir == (8'b10001001)) || ((io_ir == (8'b10010001)) || ((io_ir == (8'b10011001)) || ((io_ir == (8'b10100001)) || ((io_ir == (8'b10101001)) || ((io_ir == (8'b10110001)) || (io_ir == (8'b10111001))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000010)) || ((io_ir == (8'b10001010)) || ((io_ir == (8'b10010010)) || ((io_ir == (8'b10011010)) || ((io_ir == (8'b10100010)) || ((io_ir == (8'b10101010)) || ((io_ir == (8'b10110010)) || (io_ir == (8'b10111010))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000011)) || ((io_ir == (8'b10001011)) || ((io_ir == (8'b10010011)) || ((io_ir == (8'b10011011)) || ((io_ir == (8'b10100011)) || ((io_ir == (8'b10101011)) || ((io_ir == (8'b10110011)) || (io_ir == (8'b10111011))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000100)) || ((io_ir == (8'b10001100)) || ((io_ir == (8'b10010100)) || ((io_ir == (8'b10011100)) || ((io_ir == (8'b10100100)) || ((io_ir == (8'b10101100)) || ((io_ir == (8'b10110100)) || (io_ir == (8'b10111100))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000101)) || ((io_ir == (8'b10001101)) || ((io_ir == (8'b10010101)) || ((io_ir == (8'b10011101)) || ((io_ir == (8'b10100101)) || ((io_ir == (8'b10101101)) || ((io_ir == (8'b10110101)) || (io_ir == (8'b10111101))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b10000110)) || ((io_ir == (8'b10001110)) || ((io_ir == (8'b10010110)) || ((io_ir == (8'b10011110)) || ((io_ir == (8'b10100110)) || ((io_ir == (8'b10101110)) || ((io_ir == (8'b10110110)) || (io_ir == (8'b10111110))))))))))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Reset;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if(((io_ir == (8'b10000111)) || ((io_ir == (8'b10001111)) || ((io_ir == (8'b10010111)) || ((io_ir == (8'b10011111)) || ((io_ir == (8'b10100111)) || ((io_ir == (8'b10101111)) || ((io_ir == (8'b10110111)) || (io_ir == (8'b10111111))))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Reset;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000000)) || ((io_ir == (8'b11001000)) || ((io_ir == (8'b11010000)) || ((io_ir == (8'b11011000)) || ((io_ir == (8'b11100000)) || ((io_ir == (8'b11101000)) || (io_ir == (8'b11110000)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000001)) || ((io_ir == (8'b11001001)) || ((io_ir == (8'b11010001)) || ((io_ir == (8'b11011001)) || ((io_ir == (8'b11100001)) || ((io_ir == (8'b11101001)) || (io_ir == (8'b11110001)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000010)) || ((io_ir == (8'b11001010)) || ((io_ir == (8'b11010010)) || ((io_ir == (8'b11011010)) || ((io_ir == (8'b11100010)) || ((io_ir == (8'b11101010)) || (io_ir == (8'b11110010)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000011)) || ((io_ir == (8'b11001011)) || ((io_ir == (8'b11010011)) || ((io_ir == (8'b11011011)) || ((io_ir == (8'b11100011)) || ((io_ir == (8'b11101011)) || (io_ir == (8'b11110011)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000100)) || ((io_ir == (8'b11001100)) || ((io_ir == (8'b11010100)) || ((io_ir == (8'b11011100)) || ((io_ir == (8'b11100100)) || ((io_ir == (8'b11101100)) || (io_ir == (8'b11110100)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000101)) || ((io_ir == (8'b11001101)) || ((io_ir == (8'b11010101)) || ((io_ir == (8'b11011101)) || ((io_ir == (8'b11100101)) || ((io_ir == (8'b11101101)) || (io_ir == (8'b11110101)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if(((io_ir == (8'b11000110)) || ((io_ir == (8'b11001110)) || ((io_ir == (8'b11010110)) || ((io_ir == (8'b11011110)) || ((io_ir == (8'b11100110)) || ((io_ir == (8'b11101110)) || (io_ir == (8'b11110110)))))))))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Set;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if(((io_ir == (8'b11000111)) || ((io_ir == (8'b11001111)) || ((io_ir == (8'b11010111)) || ((io_ir == (8'b11011111)) || ((io_ir == (8'b11100111)) || ((io_ir == (8'b11101111)) || (io_ir == (8'b11110111)))))))))begin
-        io_aluOp = `AluOp_binary_sequancial_Set;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
+    if(io_interrupt)begin
+      if((io_mCycle == (3'b000)))begin
+        io_aluOp = `AluOp_binary_sequancial_Di;
+        io_addrOp = `AddrOp_binary_sequancial_Nop;
+        io_memWrite = 1'b1;
+        io_nextMCycle = (io_mCycle + (3'b001));
+      end
+      if((io_mCycle == (3'b001)))begin
+        io_opBSelect = (4'b1100);
+        io_loadOpB = 1'b1;
+        io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+        io_addrOp = `AddrOp_binary_sequancial_Dec;
+        io_memWrite = 1'b1;
+        io_nextMCycle = (io_mCycle + (3'b001));
+      end
+      if((io_mCycle == (3'b010)))begin
+        io_opBSelect = (4'b1101);
+        io_loadOpB = 1'b1;
+        io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+        io_addrOp = `AddrOp_binary_sequancial_Dec;
+        io_memWrite = 1'b0;
+        io_nextMCycle = (io_mCycle + (3'b001));
+      end
+      if((io_mCycle == (3'b011)))begin
+        io_addrOp = `AddrOp_binary_sequancial_Int_1;
       end
     end else begin
-      if((io_ir == (8'b11110011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Di;
-      end
-      if((io_ir == (8'b11111011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Ei;
-      end
-      if((io_ir == (8'b01110110)))begin
-        io_nextHalt = 1'b1;
-      end
-      if((io_ir == (8'b10000000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10000110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10000111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Add;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10001110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10001111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Adc;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10010110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10010111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sub;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10011110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10011111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Sbc;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100000)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100001)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100010)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100011)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100100)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100101)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10100110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_And_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10100111)))begin
-        io_aluOp = `AluOp_binary_sequancial_And_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10101110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Xor_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10101111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Xor_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10110110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Or_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10110111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Or_1;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b10111000)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111001)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111010)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111011)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b10111110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Cp;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b10111111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cp;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-      end
-      if((io_ir == (8'b01000000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01000110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01000111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01001110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01001111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01010110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0110);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01010111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01011110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01011111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01100110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01100111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01101110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01101111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111000)))begin
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111001)))begin
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111010)))begin
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111011)))begin
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111100)))begin
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111101)))begin
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b01111110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01111111)))begin
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add1;
-          io_opBSelect = (4'b0101);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b0101);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc1;
+      if(io_prefix)begin
+        if((io_ir == (8'b00000000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
           io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0100);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00010100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add1;
-          io_opBSelect = (4'b0111);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc1;
-          io_opBSelect = (4'b0110);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b0110);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00100100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00100011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add1;
-          io_opBSelect = (4'b1001);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc1;
-          io_opBSelect = (4'b1000);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00110011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add1;
-          io_opBSelect = (4'b1011);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1011);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc1;
-          io_opBSelect = (4'b1010);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1010);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00110100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Inc;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00111100)))begin
-        io_aluOp = `AluOp_binary_sequancial_Inc;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b0100);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0100);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b0101);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0101);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub1;
+        if((io_ir == (8'b00000001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
           io_opBSelect = (4'b0101);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0101);
           io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc1;
-          io_opBSelect = (4'b0100);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b0100);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00010101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b0110);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0110);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b0111);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0111);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub1;
-          io_opBSelect = (4'b0111);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc1;
+        if((io_ir == (8'b00000010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
           io_opBSelect = (4'b0110);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b0110);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00100101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b1000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b1001);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b1001);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00101011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub1;
-          io_opBSelect = (4'b1001);
+        if((io_ir == (8'b00000011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
+          io_opBSelect = (4'b0111);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
+          io_storeSelect = (4'b0111);
           io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc1;
+        if((io_ir == (8'b00000100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
           io_opBSelect = (4'b1000);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00111011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub1;
-          io_opBSelect = (4'b1011);
+        if((io_ir == (8'b00000101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
+          io_opBSelect = (4'b1001);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1011);
+          io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc1;
-          io_opBSelect = (4'b1010);
+        if((io_ir == (8'b00000110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Rlc;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00000111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlc;
+          io_opBSelect = (4'b0000);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1010);
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00110101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Dec;
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0011);
+        if((io_ir == (8'b00001000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
+          io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00111101)))begin
-        io_aluOp = `AluOp_binary_sequancial_Dec;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00000111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rlca;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00001111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rrca;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00010111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rla;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00011111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Rra;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00110111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Scf;
-      end
-      if((io_ir == (8'b00101111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Cpl;
-        io_opBSelect = (4'b0000);
-        io_loadOpB = 1'b1;
-        io_storeSelect = (4'b0000);
-        io_store = 1'b1;
-      end
-      if((io_ir == (8'b00111111)))begin
-        io_aluOp = `AluOp_binary_sequancial_Ccf;
-      end
-      if((io_ir == (8'b11111110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Cp;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11000110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_storeSelect = (4'b0000);
+          io_storeSelect = (4'b0100);
           io_store = 1'b1;
-          io_memRead = 1'b1;
         end
-      end
-      if((io_ir == (8'b11010110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sub;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11100110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_And_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11110110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Or_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11001110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11011110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Sbc;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b11101110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Xor_1;
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00001001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_opA = (4'b1001);
+        if((io_ir == (8'b00001001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
           io_opBSelect = (4'b0101);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
+          io_storeSelect = (4'b0101);
           io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_opA = (4'b1000);
-          io_opBSelect = (4'b0100);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00011001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_opA = (4'b1001);
-          io_opBSelect = (4'b0111);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_opA = (4'b1000);
+        if((io_ir == (8'b00001010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
           io_opBSelect = (4'b0110);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1000);
+          io_storeSelect = (4'b0110);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00101001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_opA = (4'b1001);
-          io_opBSelect = (4'b1001);
+        if((io_ir == (8'b00001011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
+          io_opBSelect = (4'b0111);
           io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
+          io_storeSelect = (4'b0111);
           io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_opA = (4'b1000);
+        if((io_ir == (8'b00001100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
           io_opBSelect = (4'b1000);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b00111001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_aluOp = `AluOp_binary_sequancial_Add;
-          io_opA = (4'b1001);
-          io_opBSelect = (4'b1011);
-          io_loadOpB = 1'b1;
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_aluOp = `AluOp_binary_sequancial_Adc;
-          io_opA = (4'b1000);
-          io_opBSelect = (4'b1010);
+        if((io_ir == (8'b00001101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
+          io_opBSelect = (4'b1001);
           io_loadOpB = 1'b1;
           io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
         end
-      end
-      if((io_ir == (8'b11111001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opA = (4'b1001);
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
+        if((io_ir == (8'b00001110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Rrc;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
         end
-        if((io_mCycle == (3'b001)))begin
-          io_opA = (4'b1000);
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00000110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00001110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00010110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0110);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00011110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00100110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00101110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00111110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
+        if((io_ir == (8'b00001111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrc;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
           io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
         end
-      end
-      if((io_ir == (8'b01110000)))begin
-        if((io_mCycle == (3'b000)))begin
+        if((io_ir == (8'b00010000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
           io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
         end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110001)))begin
-        if((io_mCycle == (3'b000)))begin
+        if((io_ir == (8'b00010001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
           io_opBSelect = (4'b0101);
           io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0110);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0111);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b1000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b1001);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b01110111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00000010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_BC;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00010010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_DE;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00001010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_BC;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00011010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_DE;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00110110)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00100010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-        end
-      end
-      if((io_ir == (8'b00110010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-        end
-      end
-      if((io_ir == (8'b00101010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-        end
-      end
-      if((io_ir == (8'b00111010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_HL;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-        end
-      end
-      if((io_ir == (8'b11100000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_FFZ;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11110000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_FFZ;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11100010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_FFC;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11110010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_FFC;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11101010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b0000);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00001000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1011);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1010);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11111010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b00000001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
           io_storeSelect = (4'b0101);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-        end
-      end
-      if((io_ir == (8'b00010001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b00010010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
           io_storeSelect = (4'b0110);
           io_store = 1'b1;
-          io_memRead = 1'b1;
         end
-      end
-      if((io_ir == (8'b00100001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1001);
+        if((io_ir == (8'b00010011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b00010100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
           io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
         end
-      end
-      if((io_ir == (8'b00110001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1011);
+        if((io_ir == (8'b00010101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1010);
+        if((io_ir == (8'b00010110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Rl;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00010111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rl;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
         end
-      end
-      if((io_ir == (8'b11111000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_HLR8;
-        end
-      end
-      if((io_ir == (8'b11001001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1101);
+        if((io_ir == (8'b00011000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1100);
+        if((io_ir == (8'b00011001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
         end
-      end
-      if((io_ir == (8'b11011001)))begin
-        if((io_mCycle == (3'b000)))begin
+        if((io_ir == (8'b00011010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Rr;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00011111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rr;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sla_1;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00100111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sla_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sra_1;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00101111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sra_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Swap;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00110111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Swap;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Srl_1;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00111111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Srl_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b01000000)) || ((io_ir == (8'b01001000)) || ((io_ir == (8'b01010000)) || ((io_ir == (8'b01011000)) || ((io_ir == (8'b01100000)) || ((io_ir == (8'b01101000)) || ((io_ir == (8'b01110000)) || (io_ir == (8'b01111000))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000001)) || ((io_ir == (8'b01001001)) || ((io_ir == (8'b01010001)) || ((io_ir == (8'b01011001)) || ((io_ir == (8'b01100001)) || ((io_ir == (8'b01101001)) || ((io_ir == (8'b01110001)) || (io_ir == (8'b01111001))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000010)) || ((io_ir == (8'b01001010)) || ((io_ir == (8'b01010010)) || ((io_ir == (8'b01011010)) || ((io_ir == (8'b01100010)) || ((io_ir == (8'b01101010)) || ((io_ir == (8'b01110010)) || (io_ir == (8'b01111010))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000011)) || ((io_ir == (8'b01001011)) || ((io_ir == (8'b01010011)) || ((io_ir == (8'b01011011)) || ((io_ir == (8'b01100011)) || ((io_ir == (8'b01101011)) || ((io_ir == (8'b01110011)) || (io_ir == (8'b01111011))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000100)) || ((io_ir == (8'b01001100)) || ((io_ir == (8'b01010100)) || ((io_ir == (8'b01011100)) || ((io_ir == (8'b01100100)) || ((io_ir == (8'b01101100)) || ((io_ir == (8'b01110100)) || (io_ir == (8'b01111100))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000101)) || ((io_ir == (8'b01001101)) || ((io_ir == (8'b01010101)) || ((io_ir == (8'b01011101)) || ((io_ir == (8'b01100101)) || ((io_ir == (8'b01101101)) || ((io_ir == (8'b01110101)) || (io_ir == (8'b01111101))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b01000110)) || ((io_ir == (8'b01001110)) || ((io_ir == (8'b01010110)) || ((io_ir == (8'b01011110)) || ((io_ir == (8'b01100110)) || ((io_ir == (8'b01101110)) || ((io_ir == (8'b01110110)) || (io_ir == (8'b01111110))))))))))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Bit_1;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if(((io_ir == (8'b01000111)) || ((io_ir == (8'b01001111)) || ((io_ir == (8'b01010111)) || ((io_ir == (8'b01011111)) || ((io_ir == (8'b01100111)) || ((io_ir == (8'b01101111)) || ((io_ir == (8'b01110111)) || (io_ir == (8'b01111111))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Bit_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+        end
+        if(((io_ir == (8'b10000000)) || ((io_ir == (8'b10001000)) || ((io_ir == (8'b10010000)) || ((io_ir == (8'b10011000)) || ((io_ir == (8'b10100000)) || ((io_ir == (8'b10101000)) || ((io_ir == (8'b10110000)) || (io_ir == (8'b10111000))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000001)) || ((io_ir == (8'b10001001)) || ((io_ir == (8'b10010001)) || ((io_ir == (8'b10011001)) || ((io_ir == (8'b10100001)) || ((io_ir == (8'b10101001)) || ((io_ir == (8'b10110001)) || (io_ir == (8'b10111001))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000010)) || ((io_ir == (8'b10001010)) || ((io_ir == (8'b10010010)) || ((io_ir == (8'b10011010)) || ((io_ir == (8'b10100010)) || ((io_ir == (8'b10101010)) || ((io_ir == (8'b10110010)) || (io_ir == (8'b10111010))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000011)) || ((io_ir == (8'b10001011)) || ((io_ir == (8'b10010011)) || ((io_ir == (8'b10011011)) || ((io_ir == (8'b10100011)) || ((io_ir == (8'b10101011)) || ((io_ir == (8'b10110011)) || (io_ir == (8'b10111011))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000100)) || ((io_ir == (8'b10001100)) || ((io_ir == (8'b10010100)) || ((io_ir == (8'b10011100)) || ((io_ir == (8'b10100100)) || ((io_ir == (8'b10101100)) || ((io_ir == (8'b10110100)) || (io_ir == (8'b10111100))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000101)) || ((io_ir == (8'b10001101)) || ((io_ir == (8'b10010101)) || ((io_ir == (8'b10011101)) || ((io_ir == (8'b10100101)) || ((io_ir == (8'b10101101)) || ((io_ir == (8'b10110101)) || (io_ir == (8'b10111101))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b10000110)) || ((io_ir == (8'b10001110)) || ((io_ir == (8'b10010110)) || ((io_ir == (8'b10011110)) || ((io_ir == (8'b10100110)) || ((io_ir == (8'b10101110)) || ((io_ir == (8'b10110110)) || (io_ir == (8'b10111110))))))))))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Reset;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if(((io_ir == (8'b10000111)) || ((io_ir == (8'b10001111)) || ((io_ir == (8'b10010111)) || ((io_ir == (8'b10011111)) || ((io_ir == (8'b10100111)) || ((io_ir == (8'b10101111)) || ((io_ir == (8'b10110111)) || (io_ir == (8'b10111111))))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Reset;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000000)) || ((io_ir == (8'b11001000)) || ((io_ir == (8'b11010000)) || ((io_ir == (8'b11011000)) || ((io_ir == (8'b11100000)) || ((io_ir == (8'b11101000)) || (io_ir == (8'b11110000)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000001)) || ((io_ir == (8'b11001001)) || ((io_ir == (8'b11010001)) || ((io_ir == (8'b11011001)) || ((io_ir == (8'b11100001)) || ((io_ir == (8'b11101001)) || (io_ir == (8'b11110001)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000010)) || ((io_ir == (8'b11001010)) || ((io_ir == (8'b11010010)) || ((io_ir == (8'b11011010)) || ((io_ir == (8'b11100010)) || ((io_ir == (8'b11101010)) || (io_ir == (8'b11110010)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000011)) || ((io_ir == (8'b11001011)) || ((io_ir == (8'b11010011)) || ((io_ir == (8'b11011011)) || ((io_ir == (8'b11100011)) || ((io_ir == (8'b11101011)) || (io_ir == (8'b11110011)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000100)) || ((io_ir == (8'b11001100)) || ((io_ir == (8'b11010100)) || ((io_ir == (8'b11011100)) || ((io_ir == (8'b11100100)) || ((io_ir == (8'b11101100)) || (io_ir == (8'b11110100)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000101)) || ((io_ir == (8'b11001101)) || ((io_ir == (8'b11010101)) || ((io_ir == (8'b11011101)) || ((io_ir == (8'b11100101)) || ((io_ir == (8'b11101101)) || (io_ir == (8'b11110101)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if(((io_ir == (8'b11000110)) || ((io_ir == (8'b11001110)) || ((io_ir == (8'b11010110)) || ((io_ir == (8'b11011110)) || ((io_ir == (8'b11100110)) || ((io_ir == (8'b11101110)) || (io_ir == (8'b11110110)))))))))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Set;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if(((io_ir == (8'b11000111)) || ((io_ir == (8'b11001111)) || ((io_ir == (8'b11010111)) || ((io_ir == (8'b11011111)) || ((io_ir == (8'b11100111)) || ((io_ir == (8'b11101111)) || (io_ir == (8'b11110111)))))))))begin
+          io_aluOp = `AluOp_binary_sequancial_Set;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+      end else begin
+        if((io_ir == (8'b11110011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Di;
+        end
+        if((io_ir == (8'b11111011)))begin
           io_aluOp = `AluOp_binary_sequancial_Ei;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
+        if((io_ir == (8'b01110110)))begin
+          io_nextHalt = 1'b1;
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11001000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b0;
-          if(io_flags[7])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_storeSelect = (4'b1100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11000000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b0;
-          if((! io_flags[7]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_storeSelect = (4'b1100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11011000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b0;
-          if(io_flags[4])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_storeSelect = (4'b1100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11010000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-          io_memWrite = 1'b0;
-          if((! io_flags[4]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_storeSelect = (4'b1100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11000111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11001111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11010111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11011111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11100111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11101111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11110111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11111111)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_addrOp = `AddrOp_binary_sequancial_Rst;
-        end
-      end
-      if((io_ir == (8'b11001011)))begin
-        io_nextPrefix = 1'b1;
-      end
-      if((io_ir == (8'b11001101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b101)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11001100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = io_flags[7];
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          if(io_flags[7])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b101)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11011100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = io_flags[4];
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          if(io_flags[4])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b101)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11000100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = (! io_flags[7]);
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          if((! io_flags[7]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b101)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11010100)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = (! io_flags[4]);
-          io_memRead = 1'b1;
-          io_memWrite = 1'b1;
-          if((! io_flags[4]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b1100);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b100)))begin
-          io_opBSelect = (4'b1101);
-          io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP1;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b101)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11000001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0101);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0100);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11010001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0111);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0110);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11100001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b1001);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b1000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11110001)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0001);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0000);
-          io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-        end
-      end
-      if((io_ir == (8'b11000101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b10000000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-        if((io_mCycle == (3'b011)))begin
+        if((io_ir == (8'b10000001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b0101);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-      end
-      if((io_ir == (8'b11010101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b10000010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b0110);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-        if((io_mCycle == (3'b011)))begin
+        if((io_ir == (8'b10000011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b0111);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-      end
-      if((io_ir == (8'b11100101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b10000100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b1000);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-        if((io_mCycle == (3'b011)))begin
+        if((io_ir == (8'b10000101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b1001);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-      end
-      if((io_ir == (8'b11110101)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
+        if((io_ir == (8'b10000110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
         end
-        if((io_mCycle == (3'b001)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
+        if((io_ir == (8'b10000111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Add;
           io_opBSelect = (4'b0000);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Dec;
-          io_memWrite = 1'b1;
-          io_nextMCycle = (io_mCycle + (3'b001));
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
         end
-        if((io_mCycle == (3'b011)))begin
-          io_opBSelect = (4'b0001);
+        if((io_ir == (8'b10001000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b0100);
           io_loadOpB = 1'b1;
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_Nop;
-        end
-      end
-      if((io_ir == (8'b11101000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_SP;
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b00011000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b00101000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if(io_flags[7])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b00111000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if(io_flags[4])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b00100000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if((! io_flags[7]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b00110000)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if((! io_flags[4]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
-            io_memWrite = 1'b0;
-          end
-        end
-        if((io_mCycle == (3'b010)))begin
-          io_addrOp = `AddrOp_binary_sequancial_R8;
-        end
-      end
-      if((io_ir == (8'b11000010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = (! io_flags[7]);
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if((! io_flags[7]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
+        if((io_ir == (8'b10001001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10001010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10001011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10001100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10001101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10001110)))begin
+          if((io_mCycle == (3'b000)))begin
             io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
           end
         end
-        if((io_mCycle == (3'b011)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11000011)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
+        if((io_ir == (8'b10001111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Adc;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
+        if((io_ir == (8'b10010000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b011)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11001010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
+        if((io_ir == (8'b10010001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = io_flags[7];
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if(io_flags[7])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
+        if((io_ir == (8'b10010010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10010011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10010100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10010101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10010110)))begin
+          if((io_mCycle == (3'b000)))begin
             io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
           end
         end
-        if((io_mCycle == (3'b011)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11010010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
+        if((io_ir == (8'b10010111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sub;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = (! io_flags[4]);
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if((! io_flags[4]))begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
+        if((io_ir == (8'b10011000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10011110)))begin
+          if((io_mCycle == (3'b000)))begin
             io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
           end
         end
-        if((io_mCycle == (3'b011)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
-        end
-      end
-      if((io_ir == (8'b11011010)))begin
-        if((io_mCycle == (3'b000)))begin
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
-        end
-        if((io_mCycle == (3'b001)))begin
-          io_storeSelect = (4'b0011);
+        if((io_ir == (8'b10011111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Sbc;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
           io_store = 1'b1;
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          io_nextMCycle = (io_mCycle + (3'b001));
         end
-        if((io_mCycle == (3'b010)))begin
-          io_storeSelect = (4'b0010);
-          io_store = io_flags[4];
-          io_memRead = 1'b1;
-          io_memWrite = 1'b0;
-          if(io_flags[4])begin
-            io_nextMCycle = (io_mCycle + (3'b001));
-          end else begin
+        if((io_ir == (8'b10100000)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100001)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100010)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100011)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100100)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100101)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10100110)))begin
+          if((io_mCycle == (3'b000)))begin
             io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_And_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
           end
         end
-        if((io_mCycle == (3'b011)))begin
-          io_addrSrc = `AddrSrc_binary_sequancial_WZ;
-          io_addrOp = `AddrOp_binary_sequancial_ToPC;
+        if((io_ir == (8'b10100111)))begin
+          io_aluOp = `AluOp_binary_sequancial_And_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10101110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Xor_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b10101111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Xor_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10110110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Or_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b10110111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Or_1;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b10111000)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111001)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111010)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111011)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b10111110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Cp;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b10111111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cp;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+        end
+        if((io_ir == (8'b01000000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01000110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01000111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01001110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01001111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01010110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01010111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01011110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01011111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01100110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01100111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01101110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01101111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111000)))begin
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111001)))begin
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111010)))begin
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111011)))begin
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111100)))begin
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111101)))begin
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b01111110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01111111)))begin
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00000100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00001100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00000011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add1;
+            io_opBSelect = (4'b0101);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc1;
+            io_opBSelect = (4'b0100);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00010100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00010011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add1;
+            io_opBSelect = (4'b0111);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc1;
+            io_opBSelect = (4'b0110);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00100100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00100011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add1;
+            io_opBSelect = (4'b1001);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc1;
+            io_opBSelect = (4'b1000);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00110011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add1;
+            io_opBSelect = (4'b1011);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1011);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc1;
+            io_opBSelect = (4'b1010);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1010);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00110100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Inc;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00111100)))begin
+          io_aluOp = `AluOp_binary_sequancial_Inc;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00000101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b0100);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0100);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00001101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b0101);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0101);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00001011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub1;
+            io_opBSelect = (4'b0101);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc1;
+            io_opBSelect = (4'b0100);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00010101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b0110);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0110);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b0111);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0111);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub1;
+            io_opBSelect = (4'b0111);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc1;
+            io_opBSelect = (4'b0110);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00100101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b1000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b1001);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b1001);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00101011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub1;
+            io_opBSelect = (4'b1001);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc1;
+            io_opBSelect = (4'b1000);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00111011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub1;
+            io_opBSelect = (4'b1011);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1011);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc1;
+            io_opBSelect = (4'b1010);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1010);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00110101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Dec;
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00111101)))begin
+          io_aluOp = `AluOp_binary_sequancial_Dec;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00000111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rlca;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00001111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rrca;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00010111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rla;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00011111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Rra;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00110111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Scf;
+        end
+        if((io_ir == (8'b00101111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Cpl;
+          io_opBSelect = (4'b0000);
+          io_loadOpB = 1'b1;
+          io_storeSelect = (4'b0000);
+          io_store = 1'b1;
+        end
+        if((io_ir == (8'b00111111)))begin
+          io_aluOp = `AluOp_binary_sequancial_Ccf;
+        end
+        if((io_ir == (8'b11111110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Cp;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11000110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11010110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sub;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11100110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_And_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11110110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Or_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11001110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11011110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Sbc;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11101110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Xor_1;
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00001001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_opA = (4'b1001);
+            io_opBSelect = (4'b0101);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_opA = (4'b1000);
+            io_opBSelect = (4'b0100);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00011001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_opA = (4'b1001);
+            io_opBSelect = (4'b0111);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_opA = (4'b1000);
+            io_opBSelect = (4'b0110);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00101001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_opA = (4'b1001);
+            io_opBSelect = (4'b1001);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_opA = (4'b1000);
+            io_opBSelect = (4'b1000);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00111001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Add;
+            io_opA = (4'b1001);
+            io_opBSelect = (4'b1011);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_aluOp = `AluOp_binary_sequancial_Adc;
+            io_opA = (4'b1000);
+            io_opBSelect = (4'b1010);
+            io_loadOpB = 1'b1;
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11111001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opA = (4'b1001);
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opA = (4'b1000);
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00000110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00001110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00010110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00011110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00100110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00101110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00111110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b01110000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0100);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0101);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0110);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0111);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b1000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b1001);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b01110111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00000010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_BC;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00010010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_DE;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00001010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_BC;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00011010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_DE;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00110110)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00100010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+          end
+        end
+        if((io_ir == (8'b00110010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+          end
+        end
+        if((io_ir == (8'b00101010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+          end
+        end
+        if((io_ir == (8'b00111010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_HL;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+          end
+        end
+        if((io_ir == (8'b11100000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_FFZ;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11110000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_FFZ;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11100010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_FFC;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11110010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_FFC;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11101010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00001000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1011);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1010);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11111010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b00000001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00010001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00100001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b00110001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+          end
+        end
+        if((io_ir == (8'b11111000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_HLR8;
+          end
+        end
+        if((io_ir == (8'b11001001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11011001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_aluOp = `AluOp_binary_sequancial_Ei;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11001000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b0;
+            if(io_flags[7])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11000000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b0;
+            if((! io_flags[7]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11011000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b0;
+            if(io_flags[4])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11010000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+            io_memWrite = 1'b0;
+            if((! io_flags[4]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_storeSelect = (4'b1100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11000111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11001111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11010111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11011111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11100111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11101111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11110111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11111111)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrOp = `AddrOp_binary_sequancial_Rst;
+          end
+        end
+        if((io_ir == (8'b11001011)))begin
+          io_nextPrefix = 1'b1;
+        end
+        if((io_ir == (8'b11001101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b101)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11001100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = io_flags[7];
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            if(io_flags[7])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b101)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11011100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = io_flags[4];
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            if(io_flags[4])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b101)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11000100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = (! io_flags[7]);
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            if((! io_flags[7]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b101)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11010100)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = (! io_flags[4]);
+            io_memRead = 1'b1;
+            io_memWrite = 1'b1;
+            if((! io_flags[4]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b100)))begin
+            io_opBSelect = (4'b1101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP1;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b101)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11000001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0101);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0100);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11010001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0111);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0110);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11100001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b1001);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b1000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11110001)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0001);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0000);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+          end
+        end
+        if((io_ir == (8'b11000101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0100);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b0101);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11010101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0110);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b0111);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11100101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b1000);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b1001);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11110101)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_opBSelect = (4'b0000);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Dec;
+            io_memWrite = 1'b1;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_opBSelect = (4'b0001);
+            io_loadOpB = 1'b1;
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_Nop;
+          end
+        end
+        if((io_ir == (8'b11101000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_SP;
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b00011000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b00101000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if(io_flags[7])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b00111000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if(io_flags[4])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b00100000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if((! io_flags[7]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b00110000)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if((! io_flags[4]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_addrOp = `AddrOp_binary_sequancial_R8;
+          end
+        end
+        if((io_ir == (8'b11000010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = (! io_flags[7]);
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if((! io_flags[7]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11000011)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11001010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = io_flags[7];
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if(io_flags[7])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11010010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = (! io_flags[4]);
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if((! io_flags[4]))begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
+        end
+        if((io_ir == (8'b11011010)))begin
+          if((io_mCycle == (3'b000)))begin
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b001)))begin
+            io_storeSelect = (4'b0011);
+            io_store = 1'b1;
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            io_nextMCycle = (io_mCycle + (3'b001));
+          end
+          if((io_mCycle == (3'b010)))begin
+            io_storeSelect = (4'b0010);
+            io_store = io_flags[4];
+            io_memRead = 1'b1;
+            io_memWrite = 1'b0;
+            if(io_flags[4])begin
+              io_nextMCycle = (io_mCycle + (3'b001));
+            end else begin
+              io_memWrite = 1'b0;
+            end
+          end
+          if((io_mCycle == (3'b011)))begin
+            io_addrSrc = `AddrSrc_binary_sequancial_WZ;
+            io_addrOp = `AddrOp_binary_sequancial_ToPC;
+          end
         end
       end
     end
@@ -7657,66 +7687,71 @@ module Cpu (
       input  [7:0] io_dataIn,
       output [7:0] io_dataOut,
       input   io_irq,
-      output reg  io_ack,
+      output  io_ack,
       output  io_mreq,
       output  io_write,
       output  io_halt,
       output [7:0] io_diag,
+      output  io_ime,
       input   clkout0,
-      input   _zz_2);
-  reg [7:0] _zz_3;
+      input   _zz_3);
   reg [7:0] _zz_4;
-  wire [2:0] _zz_5;
-  wire `AluOp_binary_sequancial_type _zz_6;
-  wire [3:0] _zz_7;
+  reg [7:0] _zz_5;
+  wire [2:0] _zz_6;
+  wire `AluOp_binary_sequancial_type _zz_7;
   wire [3:0] _zz_8;
-  wire  _zz_9;
-  wire [3:0] _zz_10;
-  wire  _zz_11;
+  wire [3:0] _zz_9;
+  wire  _zz_10;
+  wire [3:0] _zz_11;
   wire  _zz_12;
   wire  _zz_13;
-  wire `AddrSrc_binary_sequancial_type _zz_14;
-  wire `AddrOp_binary_sequancial_type _zz_15;
-  wire  _zz_16;
+  wire  _zz_14;
+  wire `AddrSrc_binary_sequancial_type _zz_15;
+  wire `AddrOp_binary_sequancial_type _zz_16;
   wire  _zz_17;
-  wire [7:0] _zz_18;
+  wire  _zz_18;
   wire [7:0] _zz_19;
-  wire  _zz_20;
-  wire [7:0] _zz_21;
-  wire [7:0] _zz_22;
-  wire [15:0] _zz_23;
+  wire [7:0] _zz_20;
+  wire  _zz_21;
+  wire  _zz_22;
+  wire  _zz_23;
   wire [7:0] _zz_24;
-  wire [15:0] _zz_25;
-  wire [7:0] _zz_26;
+  wire [7:0] _zz_25;
+  wire [15:0] _zz_26;
   wire [7:0] _zz_27;
   wire [15:0] _zz_28;
   wire [7:0] _zz_29;
-  wire [15:0] _zz_30;
-  wire [7:0] _zz_31;
+  wire [7:0] _zz_30;
+  wire [15:0] _zz_31;
   wire [7:0] _zz_32;
   wire [15:0] _zz_33;
   wire [7:0] _zz_34;
-  wire [15:0] _zz_35;
-  wire [7:0] _zz_36;
+  wire [7:0] _zz_35;
+  wire [15:0] _zz_36;
   wire [7:0] _zz_37;
   wire [15:0] _zz_38;
   wire [7:0] _zz_39;
-  wire [15:0] _zz_40;
-  wire [7:0] _zz_41;
+  wire [7:0] _zz_40;
+  wire [15:0] _zz_41;
   wire [7:0] _zz_42;
   wire [15:0] _zz_43;
   wire [7:0] _zz_44;
-  wire [15:0] _zz_45;
-  wire [7:0] _zz_46;
+  wire [7:0] _zz_45;
+  wire [15:0] _zz_46;
   wire [7:0] _zz_47;
   wire [15:0] _zz_48;
   wire [7:0] _zz_49;
-  wire [15:0] _zz_50;
-  wire [7:0] _zz_51;
+  wire [7:0] _zz_50;
+  wire [15:0] _zz_51;
   wire [7:0] _zz_52;
   wire [15:0] _zz_53;
   wire [7:0] _zz_54;
-  wire [15:0] _zz_55;
+  wire [7:0] _zz_55;
+  wire [15:0] _zz_56;
+  wire [7:0] _zz_57;
+  wire [15:0] _zz_58;
+  reg  ack;
+  reg  _zz_1;
   reg [31:0] tCount;
   reg  mreq;
   reg  write;
@@ -7748,123 +7783,80 @@ module Cpu (
   reg [2:0] mCycle;
   reg  writeCycle;
   reg  halt;
+  reg  interrupt;
   wire  tCycleFsm_wantExit;
   reg `tCycleFsm_enumDefinition_binary_sequancial_type tCycleFsm_stateReg;
   reg `tCycleFsm_enumDefinition_binary_sequancial_type tCycleFsm_stateNext;
-  wire [15:0] _zz_1;
-  assign _zz_21 = (ir - (8'b11000111));
-  assign _zz_22 = temp;
-  assign _zz_23 = {{8{_zz_22[7]}}, _zz_22};
-  assign _zz_24 = temp;
-  assign _zz_25 = {{8{_zz_24[7]}}, _zz_24};
-  assign _zz_26 = (ir - (8'b11000111));
+  wire [15:0] _zz_2;
+  assign _zz_22 = ((_zz_6 == (3'b000)) && (! _zz_18));
+  assign _zz_23 = (io_irq && _zz_21);
+  assign _zz_24 = (ir - (8'b11000111));
+  assign _zz_25 = temp;
+  assign _zz_26 = {{8{_zz_25[7]}}, _zz_25};
   assign _zz_27 = temp;
   assign _zz_28 = {{8{_zz_27[7]}}, _zz_27};
-  assign _zz_29 = temp;
-  assign _zz_30 = {{8{_zz_29[7]}}, _zz_29};
-  assign _zz_31 = (ir - (8'b11000111));
+  assign _zz_29 = (ir - (8'b11000111));
+  assign _zz_30 = temp;
+  assign _zz_31 = {{8{_zz_30[7]}}, _zz_30};
   assign _zz_32 = temp;
   assign _zz_33 = {{8{_zz_32[7]}}, _zz_32};
-  assign _zz_34 = temp;
-  assign _zz_35 = {{8{_zz_34[7]}}, _zz_34};
-  assign _zz_36 = (ir - (8'b11000111));
+  assign _zz_34 = (ir - (8'b11000111));
+  assign _zz_35 = temp;
+  assign _zz_36 = {{8{_zz_35[7]}}, _zz_35};
   assign _zz_37 = temp;
   assign _zz_38 = {{8{_zz_37[7]}}, _zz_37};
-  assign _zz_39 = temp;
-  assign _zz_40 = {{8{_zz_39[7]}}, _zz_39};
-  assign _zz_41 = (ir - (8'b11000111));
+  assign _zz_39 = (ir - (8'b11000111));
+  assign _zz_40 = temp;
+  assign _zz_41 = {{8{_zz_40[7]}}, _zz_40};
   assign _zz_42 = temp;
   assign _zz_43 = {{8{_zz_42[7]}}, _zz_42};
-  assign _zz_44 = temp;
-  assign _zz_45 = {{8{_zz_44[7]}}, _zz_44};
-  assign _zz_46 = (ir - (8'b11000111));
+  assign _zz_44 = (ir - (8'b11000111));
+  assign _zz_45 = temp;
+  assign _zz_46 = {{8{_zz_45[7]}}, _zz_45};
   assign _zz_47 = temp;
   assign _zz_48 = {{8{_zz_47[7]}}, _zz_47};
-  assign _zz_49 = temp;
-  assign _zz_50 = {{8{_zz_49[7]}}, _zz_49};
-  assign _zz_51 = (ir - (8'b11000111));
+  assign _zz_49 = (ir - (8'b11000111));
+  assign _zz_50 = temp;
+  assign _zz_51 = {{8{_zz_50[7]}}, _zz_50};
   assign _zz_52 = temp;
   assign _zz_53 = {{8{_zz_52[7]}}, _zz_52};
-  assign _zz_54 = temp;
-  assign _zz_55 = {{8{_zz_54[7]}}, _zz_54};
+  assign _zz_54 = (ir - (8'b11000111));
+  assign _zz_55 = temp;
+  assign _zz_56 = {{8{_zz_55[7]}}, _zz_55};
+  assign _zz_57 = temp;
+  assign _zz_58 = {{8{_zz_57[7]}}, _zz_57};
   CpuDecoder decoder ( 
     .io_mCycle(mCycle),
-    .io_nextMCycle(_zz_5),
+    .io_nextMCycle(_zz_6),
     .io_ir(ir),
-    .io_aluOp(_zz_6),
-    .io_opA(_zz_7),
-    .io_opBSelect(_zz_8),
-    .io_loadOpB(_zz_9),
-    .io_storeSelect(_zz_10),
-    .io_store(_zz_11),
-    .io_memRead(_zz_12),
-    .io_memWrite(_zz_13),
-    .io_addrSrc(_zz_14),
-    .io_addrOp(_zz_15),
-    .io_nextHalt(_zz_16),
+    .io_aluOp(_zz_7),
+    .io_opA(_zz_8),
+    .io_opBSelect(_zz_9),
+    .io_loadOpB(_zz_10),
+    .io_storeSelect(_zz_11),
+    .io_store(_zz_12),
+    .io_memRead(_zz_13),
+    .io_memWrite(_zz_14),
+    .io_addrSrc(_zz_15),
+    .io_addrOp(_zz_16),
+    .io_nextHalt(_zz_17),
     .io_flags(registers8_1),
     .io_prefix(prefix),
-    .io_nextPrefix(_zz_17) 
+    .io_nextPrefix(_zz_18),
+    .io_interrupt(interrupt) 
   );
   CpuAlu alu ( 
-    .io_op(_zz_6),
+    .io_op(_zz_7),
     .io_flagsIn(registers8_1),
-    .io_flagsOut(_zz_18),
+    .io_flagsOut(_zz_19),
     .io_operandA(opA),
     .io_operandB(temp),
-    .io_result(_zz_19),
+    .io_result(_zz_20),
     .io_ir(ir),
-    .io_ime(_zz_20),
+    .io_ime(_zz_21),
     .clkout0(clkout0),
-    ._zz_1(_zz_2) 
+    ._zz_1(_zz_3) 
   );
-  always @(*) begin
-    case(_zz_7)
-      4'b0000 : begin
-        _zz_3 = registers8_0;
-      end
-      4'b0001 : begin
-        _zz_3 = registers8_1;
-      end
-      4'b0010 : begin
-        _zz_3 = registers8_2;
-      end
-      4'b0011 : begin
-        _zz_3 = registers8_3;
-      end
-      4'b0100 : begin
-        _zz_3 = registers8_4;
-      end
-      4'b0101 : begin
-        _zz_3 = registers8_5;
-      end
-      4'b0110 : begin
-        _zz_3 = registers8_6;
-      end
-      4'b0111 : begin
-        _zz_3 = registers8_7;
-      end
-      4'b1000 : begin
-        _zz_3 = registers8_8;
-      end
-      4'b1001 : begin
-        _zz_3 = registers8_9;
-      end
-      4'b1010 : begin
-        _zz_3 = registers8_10;
-      end
-      4'b1011 : begin
-        _zz_3 = registers8_11;
-      end
-      4'b1100 : begin
-        _zz_3 = registers8_12;
-      end
-      default : begin
-        _zz_3 = registers8_13;
-      end
-    endcase
-  end
-
   always @(*) begin
     case(_zz_8)
       4'b0000 : begin
@@ -7912,6 +7904,54 @@ module Cpu (
     endcase
   end
 
+  always @(*) begin
+    case(_zz_9)
+      4'b0000 : begin
+        _zz_5 = registers8_0;
+      end
+      4'b0001 : begin
+        _zz_5 = registers8_1;
+      end
+      4'b0010 : begin
+        _zz_5 = registers8_2;
+      end
+      4'b0011 : begin
+        _zz_5 = registers8_3;
+      end
+      4'b0100 : begin
+        _zz_5 = registers8_4;
+      end
+      4'b0101 : begin
+        _zz_5 = registers8_5;
+      end
+      4'b0110 : begin
+        _zz_5 = registers8_6;
+      end
+      4'b0111 : begin
+        _zz_5 = registers8_7;
+      end
+      4'b1000 : begin
+        _zz_5 = registers8_8;
+      end
+      4'b1001 : begin
+        _zz_5 = registers8_9;
+      end
+      4'b1010 : begin
+        _zz_5 = registers8_10;
+      end
+      4'b1011 : begin
+        _zz_5 = registers8_11;
+      end
+      4'b1100 : begin
+        _zz_5 = registers8_12;
+      end
+      default : begin
+        _zz_5 = registers8_13;
+      end
+    endcase
+  end
+
+  assign io_ack = _zz_1;
   assign io_mreq = mreq;
   assign io_write = write;
   assign registers8_0 = registers16_0[15 : 8];
@@ -7931,8 +7971,9 @@ module Cpu (
   assign io_diag = registers8_11;
   assign io_dataOut = temp;
   assign io_halt = halt;
+  assign io_ime = _zz_21;
   always @ (*) begin
-    case(_zz_14)
+    case(_zz_15)
       `AddrSrc_binary_sequancial_PC : begin
         io_address = registers16_6;
       end
@@ -7965,8 +8006,8 @@ module Cpu (
     endcase
   end
 
+  assign tCycleFsm_wantExit = 1'b0;
   always @ (*) begin
-    io_ack = 1'b0;
     tCycleFsm_stateNext = tCycleFsm_stateReg;
     case(tCycleFsm_stateReg)
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State : begin
@@ -7979,8 +8020,10 @@ module Cpu (
         tCycleFsm_stateNext = `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State;
       end
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State : begin
-        if((io_irq && _zz_20))begin
-          io_ack = 1'b1;
+        if(_zz_22)begin
+          if(_zz_23)begin
+            tCycleFsm_stateNext = `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State;
+          end
         end
         if((! halt))begin
           tCycleFsm_stateNext = `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State;
@@ -7992,10 +8035,10 @@ module Cpu (
     endcase
   end
 
-  assign tCycleFsm_wantExit = 1'b0;
-  assign _zz_1 = ({15'd0,(1'b1)} <<< _zz_10);
-  always @ (posedge clkout0 or negedge _zz_2) begin
-    if (!_zz_2) begin
+  assign _zz_2 = ({15'd0,(1'b1)} <<< _zz_11);
+  always @ (posedge clkout0 or negedge _zz_3) begin
+    if (!_zz_3) begin
+      ack <= 1'b0;
       tCount <= (32'b00000000000000000000000000000000);
       mreq <= 1'b0;
       write <= 1'b0;
@@ -8012,8 +8055,10 @@ module Cpu (
       mCycle <= (3'b000);
       writeCycle <= 1'b0;
       halt <= 1'b0;
+      interrupt <= 1'b0;
       tCycleFsm_stateReg <= `tCycleFsm_enumDefinition_binary_sequancial_boot;
     end else begin
+      ack <= 1'b0;
       if((! halt))begin
         tCount <= (tCount + (32'b00000000000000000000000000000001));
       end
@@ -8023,7 +8068,7 @@ module Cpu (
           mreq <= 1'b0;
         end
         `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State : begin
-          if(_zz_12)begin
+          if(_zz_13)begin
             temp <= io_dataIn;
           end else begin
             if((mCycle == (3'b000)))begin
@@ -8036,20 +8081,20 @@ module Cpu (
             mreq <= 1'b1;
             write <= 1'b1;
           end
-          if(_zz_9)begin
-            temp <= _zz_4;
+          if(_zz_10)begin
+            temp <= _zz_5;
           end
-          halt <= _zz_16;
+          halt <= _zz_17;
         end
         `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State : begin
           mreq <= 1'b0;
           write <= 1'b0;
-          if((_zz_5 == (3'b000)))begin
-            prefix <= _zz_17;
+          if((_zz_6 == (3'b000)))begin
+            prefix <= _zz_18;
           end
-          case(_zz_14)
+          case(_zz_15)
             `AddrSrc_binary_sequancial_PC : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_6 <= (registers16_6 + (16'b0000000000000001));
                 end
@@ -8057,23 +8102,26 @@ module Cpu (
                   registers16_6 <= (registers16_6 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_6 <= {8'd0, _zz_21};
+                  registers16_6 <= {8'd0, _zz_24};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_6 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_6;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_6 <= (registers16_6 + _zz_23);
+                  registers16_6 <= (registers16_6 + _zz_26);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_6 + _zz_25);
+                  registers16_4 <= (registers16_6 + _zz_28);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_HL : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_4 <= (registers16_4 + (16'b0000000000000001));
                 end
@@ -8081,23 +8129,26 @@ module Cpu (
                   registers16_4 <= (registers16_4 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_4 <= {8'd0, _zz_26};
+                  registers16_4 <= {8'd0, _zz_29};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_4 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_4;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_4 <= (registers16_4 + _zz_28);
+                  registers16_4 <= (registers16_4 + _zz_31);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_4 + _zz_30);
+                  registers16_4 <= (registers16_4 + _zz_33);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_WZ : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_1 <= (registers16_1 + (16'b0000000000000001));
                 end
@@ -8105,23 +8156,26 @@ module Cpu (
                   registers16_1 <= (registers16_1 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_1 <= {8'd0, _zz_31};
+                  registers16_1 <= {8'd0, _zz_34};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_1 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_1;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_1 <= (registers16_1 + _zz_33);
+                  registers16_1 <= (registers16_1 + _zz_36);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_1 + _zz_35);
+                  registers16_4 <= (registers16_1 + _zz_38);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_BC : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_2 <= (registers16_2 + (16'b0000000000000001));
                 end
@@ -8129,23 +8183,26 @@ module Cpu (
                   registers16_2 <= (registers16_2 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_2 <= {8'd0, _zz_36};
+                  registers16_2 <= {8'd0, _zz_39};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_2 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_2;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_2 <= (registers16_2 + _zz_38);
+                  registers16_2 <= (registers16_2 + _zz_41);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_2 + _zz_40);
+                  registers16_4 <= (registers16_2 + _zz_43);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_DE : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_3 <= (registers16_3 + (16'b0000000000000001));
                 end
@@ -8153,23 +8210,26 @@ module Cpu (
                   registers16_3 <= (registers16_3 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_3 <= {8'd0, _zz_41};
+                  registers16_3 <= {8'd0, _zz_44};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_3 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_3;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_3 <= (registers16_3 + _zz_43);
+                  registers16_3 <= (registers16_3 + _zz_46);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_3 + _zz_45);
+                  registers16_4 <= (registers16_3 + _zz_48);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_SP : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_5 <= (registers16_5 + (16'b0000000000000001));
                 end
@@ -8177,23 +8237,26 @@ module Cpu (
                   registers16_5 <= (registers16_5 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_5 <= {8'd0, _zz_46};
+                  registers16_5 <= {8'd0, _zz_49};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_5 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_5;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_5 <= (registers16_5 + _zz_48);
+                  registers16_5 <= (registers16_5 + _zz_51);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_5 + _zz_50);
+                  registers16_4 <= (registers16_5 + _zz_53);
                 end
                 default : begin
                 end
               endcase
             end
             `AddrSrc_binary_sequancial_SP1 : begin
-              case(_zz_15)
+              case(_zz_16)
                 `AddrOp_binary_sequancial_Inc : begin
                   registers16_5 <= (registers16_5 + (16'b0000000000000001));
                 end
@@ -8201,16 +8264,19 @@ module Cpu (
                   registers16_5 <= (registers16_5 - (16'b0000000000000001));
                 end
                 `AddrOp_binary_sequancial_Rst : begin
-                  registers16_5 <= {8'd0, _zz_51};
+                  registers16_5 <= {8'd0, _zz_54};
+                end
+                `AddrOp_binary_sequancial_Int_1 : begin
+                  registers16_5 <= {8'd0, ir};
                 end
                 `AddrOp_binary_sequancial_ToPC : begin
                   registers16_6 <= registers16_5;
                 end
                 `AddrOp_binary_sequancial_R8 : begin
-                  registers16_5 <= (registers16_5 + _zz_53);
+                  registers16_5 <= (registers16_5 + _zz_56);
                 end
                 `AddrOp_binary_sequancial_HLR8 : begin
-                  registers16_4 <= (registers16_5 + _zz_55);
+                  registers16_4 <= (registers16_5 + _zz_58);
                 end
                 default : begin
                 end
@@ -8221,59 +8287,68 @@ module Cpu (
             default : begin
             end
           endcase
-          if(_zz_11)begin
-            if(_zz_1[0])begin
-              registers16_0[15 : 8] <= _zz_19;
+          if(_zz_12)begin
+            if(_zz_2[0])begin
+              registers16_0[15 : 8] <= _zz_20;
             end
-            if(_zz_1[1])begin
-              registers16_0[7 : 0] <= _zz_19;
+            if(_zz_2[1])begin
+              registers16_0[7 : 0] <= _zz_20;
             end
-            if(_zz_1[2])begin
-              registers16_1[15 : 8] <= _zz_19;
+            if(_zz_2[2])begin
+              registers16_1[15 : 8] <= _zz_20;
             end
-            if(_zz_1[3])begin
-              registers16_1[7 : 0] <= _zz_19;
+            if(_zz_2[3])begin
+              registers16_1[7 : 0] <= _zz_20;
             end
-            if(_zz_1[4])begin
-              registers16_2[15 : 8] <= _zz_19;
+            if(_zz_2[4])begin
+              registers16_2[15 : 8] <= _zz_20;
             end
-            if(_zz_1[5])begin
-              registers16_2[7 : 0] <= _zz_19;
+            if(_zz_2[5])begin
+              registers16_2[7 : 0] <= _zz_20;
             end
-            if(_zz_1[6])begin
-              registers16_3[15 : 8] <= _zz_19;
+            if(_zz_2[6])begin
+              registers16_3[15 : 8] <= _zz_20;
             end
-            if(_zz_1[7])begin
-              registers16_3[7 : 0] <= _zz_19;
+            if(_zz_2[7])begin
+              registers16_3[7 : 0] <= _zz_20;
             end
-            if(_zz_1[8])begin
-              registers16_4[15 : 8] <= _zz_19;
+            if(_zz_2[8])begin
+              registers16_4[15 : 8] <= _zz_20;
             end
-            if(_zz_1[9])begin
-              registers16_4[7 : 0] <= _zz_19;
+            if(_zz_2[9])begin
+              registers16_4[7 : 0] <= _zz_20;
             end
-            if(_zz_1[10])begin
-              registers16_5[15 : 8] <= _zz_19;
+            if(_zz_2[10])begin
+              registers16_5[15 : 8] <= _zz_20;
             end
-            if(_zz_1[11])begin
-              registers16_5[7 : 0] <= _zz_19;
+            if(_zz_2[11])begin
+              registers16_5[7 : 0] <= _zz_20;
             end
-            if(_zz_1[12])begin
-              registers16_6[15 : 8] <= _zz_19;
+            if(_zz_2[12])begin
+              registers16_6[15 : 8] <= _zz_20;
             end
-            if(_zz_1[13])begin
-              registers16_6[7 : 0] <= _zz_19;
+            if(_zz_2[13])begin
+              registers16_6[7 : 0] <= _zz_20;
             end
           end
-          registers16_0[7 : 0] <= _zz_18;
-          mCycle <= _zz_5;
+          registers16_0[7 : 0] <= _zz_19;
+          mCycle <= _zz_6;
+          if(_zz_22)begin
+            if(_zz_23)begin
+              interrupt <= 1'b1;
+              halt <= 1'b0;
+              ack <= 1'b1;
+            end else begin
+              interrupt <= 1'b0;
+            end
+          end
         end
         default : begin
         end
       endcase
       if(((! (tCycleFsm_stateReg == `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State)) && (tCycleFsm_stateNext == `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State)))begin
-        writeCycle <= _zz_13;
-        if((! _zz_13))begin
+        writeCycle <= _zz_14;
+        if((! _zz_14))begin
           mreq <= 1'b1;
         end
       end
@@ -8281,13 +8356,14 @@ module Cpu (
   end
 
   always @ (posedge clkout0) begin
+    _zz_1 <= ack;
     case(tCycleFsm_stateReg)
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t1State : begin
       end
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t2State : begin
       end
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t3State : begin
-        opA <= _zz_3;
+        opA <= _zz_4;
       end
       `tCycleFsm_enumDefinition_binary_sequancial_tCycleFsm_t4State : begin
       end
@@ -8372,9 +8448,9 @@ module PPUUlx3s (
   wire  bit0;
   wire  bit1;
   wire [1:0] color;
-  assign _zz_13 = (bitCycle == (5'b00010));
-  assign _zz_14 = (bitCycle == (5'b00011));
-  assign _zz_15 = (bitCycle == (5'b00001));
+  assign _zz_13 = (bitCycle == (5'b00011));
+  assign _zz_14 = (bitCycle == (5'b00001));
+  assign _zz_15 = (bitCycle == (5'b00010));
   assign _zz_16 = (bitCycle == (5'b00000));
   assign _zz_17 = ((8'b11110000) + hExtra);
   assign _zz_18 = (bitx - io_startX[2 : 0]);
@@ -8456,21 +8532,21 @@ module PPUUlx3s (
         io_address = (bgScrnAddress + {{(3'b000),tileY[7 : 3]},tileX[7 : 3]});
       end
     end else begin
-      if(_zz_15)begin
+      if(_zz_14)begin
         if(inWindow)begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},winTileY[2 : 0]},(1'b0)});
         end else begin
           io_address = (textureAddress + {{{(1'b0),io_dataIn},tileY[2 : 0]},(1'b0)});
         end
       end else begin
-        if(_zz_13)begin
+        if(_zz_15)begin
           if(inWindow)begin
             io_address = (textureAddress + {{{(1'b0),tile},winTileY[2 : 0]},(1'b1)});
           end else begin
             io_address = (textureAddress + {{{(1'b0),tile},tileY[2 : 0]},(1'b1)});
           end
         end else begin
-          if(_zz_14)begin
+          if(_zz_13)begin
             io_address = {{(1'b0),_zz_10},(1'b0)};
           end else begin
             if((bitCycle == (5'b00100)))begin
@@ -8515,17 +8591,17 @@ module PPUUlx3s (
   always @ (posedge clkout0) begin
     bitCycle <= (bitCycle + (5'b00001));
     if(! _zz_16) begin
-      if(_zz_15)begin
+      if(_zz_14)begin
         tile <= io_dataIn;
       end else begin
-        if(_zz_13)begin
+        if(_zz_15)begin
           if(bgOn)begin
             texture0 <= io_dataIn;
           end else begin
             texture0 <= (8'b00000000);
           end
         end else begin
-          if(_zz_14)begin
+          if(_zz_13)begin
             if(bgOn)begin
               texture1 <= io_dataIn;
             end else begin
@@ -8586,11 +8662,11 @@ module ST7789 (
   reg [7:0] C_oled_init [0:35];
   assign io_x = _zz_4;
   assign io_y = _zz_5;
-  assign _zz_6 = ((25'b0000000000000000000000000) < delayCnt);
-  assign _zz_7 = (! byteToggle);
-  assign _zz_8 = (initCnt[3 : 0] == (4'b0000));
+  assign _zz_6 = (! byteToggle);
+  assign _zz_7 = ((25'b0000000000000000000000000) < delayCnt);
+  assign _zz_8 = (! resetCnt[22]);
   assign _zz_9 = (initCnt[10 : 4] != (7'b0100100));
-  assign _zz_10 = (! resetCnt[22]);
+  assign _zz_10 = (initCnt[3 : 0] == (4'b0000));
   assign _zz_11 = _zz_1[5:0];
   assign _zz_12 = (numArgs + (5'b00001));
   assign _zz_13 = {1'd0, _zz_12};
@@ -8610,12 +8686,12 @@ module ST7789 (
   assign nextByte = _zz_3;
   always @ (*) begin
     io_pixels_ready = 1'b0;
-    if(! _zz_10) begin
-      if(! _zz_6) begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
         if(_zz_9)begin
-          if(_zz_8)begin
+          if(_zz_10)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_6)begin
                 io_pixels_ready = 1'b1;
               end
             end
@@ -8641,15 +8717,15 @@ module ST7789 (
       delaySet <= 1'b0;
       lastCmd <= (8'b00000000);
     end else begin
-      if(_zz_10)begin
+      if(_zz_8)begin
         resetCnt <= (resetCnt + (23'b00000000000000000000001));
       end else begin
-        if(_zz_6)begin
+        if(_zz_7)begin
           delayCnt <= (delayCnt - (25'b0000000000000000000000001));
         end else begin
           if(_zz_9)begin
             initCnt <= (initCnt + (11'b00000000001));
-            if(_zz_8)begin
+            if(_zz_10)begin
               if(init)begin
                 dc <= 1'b0;
                 arg <= (arg + (6'b000001));
@@ -8689,7 +8765,7 @@ module ST7789 (
                 byteToggle <= (! byteToggle);
                 dc <= 1'b1;
                 data <= (byteToggle ? io_pixels_payload[7 : 0] : io_pixels_payload[15 : 8]);
-                if(_zz_7)begin
+                if(_zz_6)begin
                   if((_zz_4 == (8'b10011111)))begin
                     _zz_4 <= (8'b00000000);
                     if((_zz_5 == (8'b10001111)))begin
@@ -8717,12 +8793,12 @@ module ST7789 (
   end
 
   always @ (posedge clkout0) begin
-    if(! _zz_10) begin
-      if(! _zz_6) begin
+    if(! _zz_8) begin
+      if(! _zz_7) begin
         if(_zz_9)begin
-          if(_zz_8)begin
+          if(_zz_10)begin
             if(! init) begin
-              if(_zz_7)begin
+              if(_zz_6)begin
                 io_next_pixel <= 1'b1;
               end
             end
@@ -8768,17 +8844,17 @@ module GameBoySystem (
   wire  _zz_30;
   wire  _zz_31;
   wire [7:0] _zz_32;
-  wire [1:0] _zz_33;
-  wire [12:0] _zz_34;
-  wire [7:0] _zz_35;
+  wire  _zz_33;
+  wire [1:0] _zz_34;
+  wire [12:0] _zz_35;
   wire [7:0] _zz_36;
-  wire [15:0] _zz_37;
-  wire [7:0] _zz_38;
+  wire [7:0] _zz_37;
+  wire [15:0] _zz_38;
   wire [7:0] _zz_39;
-  wire  _zz_40;
-  wire [7:0] _zz_41;
+  wire [7:0] _zz_40;
+  wire  _zz_41;
   wire [7:0] _zz_42;
-  wire  _zz_43;
+  wire [7:0] _zz_43;
   wire  _zz_44;
   wire  _zz_45;
   wire  _zz_46;
@@ -8788,23 +8864,24 @@ module GameBoySystem (
   wire  _zz_50;
   wire  _zz_51;
   wire  _zz_52;
-  wire [1:0] _zz_53;
-  wire [15:0] _zz_54;
+  wire  _zz_53;
+  wire [1:0] _zz_54;
   wire [15:0] _zz_55;
   wire [15:0] _zz_56;
-  wire [12:0] _zz_57;
-  wire [15:0] _zz_58;
-  wire [7:0] _zz_59;
-  wire [15:0] _zz_60;
-  wire [12:0] _zz_61;
-  wire [15:0] _zz_62;
-  wire [12:0] _zz_63;
-  wire [15:0] _zz_64;
-  wire [12:0] _zz_65;
-  wire [15:0] _zz_66;
-  wire [12:0] _zz_67;
-  wire [15:0] _zz_68;
-  wire [12:0] _zz_69;
+  wire [15:0] _zz_57;
+  wire [12:0] _zz_58;
+  wire [15:0] _zz_59;
+  wire [7:0] _zz_60;
+  wire [15:0] _zz_61;
+  wire [12:0] _zz_62;
+  wire [15:0] _zz_63;
+  wire [12:0] _zz_64;
+  wire [15:0] _zz_65;
+  wire [12:0] _zz_66;
+  wire [15:0] _zz_67;
+  wire [12:0] _zz_68;
+  wire [15:0] _zz_69;
+  wire [12:0] _zz_70;
   reg  _zz_1;
   reg  _zz_2;
   reg  _zz_3;
@@ -8829,7 +8906,7 @@ module GameBoySystem (
   reg [4:0] rIF;
   reg [1:0] rButtonSelect;
   reg  rIRQ;
-  reg [7:0] rIV;
+  wire [7:0] iV;
   reg [7:0] romIn;
   reg [7:0] vramIn;
   reg [7:0] eramIn;
@@ -8852,59 +8929,59 @@ module GameBoySystem (
   reg [7:0] eram [0:8191];
   reg [7:0] iram [0:8191];
   reg [7:0] hram [0:8191];
-  assign _zz_49 = (_zz_26 < (16'b1100000000000000));
-  assign _zz_50 = (_zz_26 < (16'b1110000000000000));
-  assign _zz_51 = (((16'b1000000000000000) <= _zz_26) && (_zz_26 < (16'b1010000000000000)));
-  assign _zz_52 = (_zz_26 < (16'b1111110111111111));
-  assign _zz_53 = rTAC[1 : 0];
-  assign _zz_54 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_50 = (((16'b1000000000000000) <= _zz_26) && (_zz_26 < (16'b1010000000000000)));
+  assign _zz_51 = (_zz_26 < (16'b1111110111111111));
+  assign _zz_52 = (_zz_26 < (16'b1100000000000000));
+  assign _zz_53 = (_zz_26 < (16'b1110000000000000));
+  assign _zz_54 = rTAC[1 : 0];
   assign _zz_55 = (_zz_26 - (16'b1010000000000000));
-  assign _zz_56 = (_zz_26 - (16'b1100000000000000));
-  assign _zz_57 = _zz_56[12:0];
-  assign _zz_58 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_59 = (rWX - (8'b00000111));
-  assign _zz_60 = (_zz_26 - (16'b1000000000000000));
-  assign _zz_61 = _zz_60[12:0];
-  assign _zz_62 = (_zz_26 - (16'b1010000000000000));
-  assign _zz_63 = _zz_62[12:0];
-  assign _zz_64 = (_zz_26 - (16'b1100000000000000));
-  assign _zz_65 = _zz_64[12:0];
-  assign _zz_66 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_67 = _zz_66[12:0];
-  assign _zz_68 = (_zz_26 - (16'b1110000000000000));
-  assign _zz_69 = _zz_68[12:0];
+  assign _zz_56 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_57 = (_zz_26 - (16'b1100000000000000));
+  assign _zz_58 = _zz_57[12:0];
+  assign _zz_59 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_60 = (rWX - (8'b00000111));
+  assign _zz_61 = (_zz_26 - (16'b1000000000000000));
+  assign _zz_62 = _zz_61[12:0];
+  assign _zz_63 = (_zz_26 - (16'b1010000000000000));
+  assign _zz_64 = _zz_63[12:0];
+  assign _zz_65 = (_zz_26 - (16'b1100000000000000));
+  assign _zz_66 = _zz_65[12:0];
+  assign _zz_67 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_68 = _zz_67[12:0];
+  assign _zz_69 = (_zz_26 - (16'b1110000000000000));
+  assign _zz_70 = _zz_69[12:0];
   initial begin
     $readmemb("GameBoyUlx3s.v_toplevel_coreClockingArea_gameboy_rom.bin",rom);
   end
   assign _zz_20 = rom[_zz_6];
   always @ (posedge clkout0) begin
     if(_zz_5) begin
-      vram[_zz_61] <= ramOut;
+      vram[_zz_62] <= ramOut;
     end
   end
 
   assign _zz_21 = vram[_zz_7];
-  assign _zz_22 = vram[_zz_34];
+  assign _zz_22 = vram[_zz_35];
   always @ (posedge clkout0) begin
     if(_zz_4) begin
-      eram[_zz_63] <= ramOut;
+      eram[_zz_64] <= ramOut;
     end
   end
 
   assign _zz_23 = eram[_zz_8];
   always @ (posedge clkout0) begin
     if(_zz_3) begin
-      iram[_zz_65] <= ramOut;
+      iram[_zz_66] <= ramOut;
     end
     if(_zz_2) begin
-      iram[_zz_67] <= ramOut;
+      iram[_zz_68] <= ramOut;
     end
   end
 
   assign _zz_24 = iram[_zz_9];
   always @ (posedge clkout0) begin
     if(_zz_1) begin
-      hram[_zz_69] <= ramOut;
+      hram[_zz_70] <= ramOut;
     end
   end
 
@@ -8919,8 +8996,9 @@ module GameBoySystem (
     .io_write(_zz_30),
     .io_halt(_zz_31),
     .io_diag(_zz_32),
+    .io_ime(_zz_33),
     .clkout0(clkout0),
-    ._zz_2(_zz_11) 
+    ._zz_3(_zz_11) 
   );
   PPUUlx3s ppu ( 
     .io_lcdControl(rLCDC),
@@ -8930,33 +9008,33 @@ module GameBoySystem (
     .io_windowY(rWY),
     .io_bgPalette(rBGP),
     .io_dataIn(_zz_14),
-    .io_mode(_zz_33),
-    .io_address(_zz_34),
-    .io_x(_zz_35),
-    .io_y(_zz_36),
-    .io_pixel(_zz_37),
-    .io_nextPixel(_zz_40),
-    .io_diag(_zz_38),
+    .io_mode(_zz_34),
+    .io_address(_zz_35),
+    .io_x(_zz_36),
+    .io_y(_zz_37),
+    .io_pixel(_zz_38),
+    .io_nextPixel(_zz_41),
+    .io_diag(_zz_39),
     .io_cpuSelOam(_zz_15),
     .oamAddr(_zz_16),
     .io_cpuDataOut(_zz_17),
     .io_cpuWr(_zz_18),
-    .io_cpuDataIn(_zz_39),
+    .io_cpuDataIn(_zz_40),
     .clkout0(clkout0),
     ._zz_1(_zz_11) 
   );
   ST7789 lcd ( 
     .io_pixels_valid(_zz_19),
-    .io_pixels_ready(_zz_40),
-    .io_pixels_payload(_zz_37),
-    .io_x(_zz_41),
-    .io_y(_zz_42),
-    .io_next_pixel(_zz_43),
-    .io_oled_csn(_zz_44),
-    .io_oled_clk(_zz_45),
-    .io_oled_mosi(_zz_46),
-    .io_oled_dc(_zz_47),
-    .io_oled_resn(_zz_48),
+    .io_pixels_ready(_zz_41),
+    .io_pixels_payload(_zz_38),
+    .io_x(_zz_42),
+    .io_y(_zz_43),
+    .io_next_pixel(_zz_44),
+    .io_oled_csn(_zz_45),
+    .io_oled_clk(_zz_46),
+    .io_oled_mosi(_zz_47),
+    .io_oled_dc(_zz_48),
+    .io_oled_resn(_zz_49),
     .clkout0(clkout0),
     ._zz_2(_zz_11) 
   );
@@ -8967,16 +9045,16 @@ module GameBoySystem (
     _zz_4 = 1'b0;
     _zz_5 = 1'b0;
     if(_zz_30)begin
-      if(_zz_51)begin
+      if(_zz_50)begin
         _zz_5 = 1'b1;
       end else begin
-        if(_zz_49)begin
+        if(_zz_52)begin
           _zz_4 = 1'b1;
         end else begin
-          if(_zz_50)begin
+          if(_zz_53)begin
             _zz_3 = 1'b1;
           end else begin
-            if(_zz_52)begin
+            if(_zz_51)begin
               _zz_2 = 1'b1;
             end else begin
               _zz_1 = 1'b1;
@@ -8987,87 +9065,92 @@ module GameBoySystem (
     end
   end
 
+  assign iV = ((rIF[0] && rIE[0]) ? (8'b01000000) : ((rIF[1] && rIE[1]) ? (8'b01001000) : ((rIF[2] && rIE[2]) ? (8'b01010000) : ((rIF[3] && rIE[3]) ? (8'b01011000) : ((rIF[4] && rIE[4]) ? (8'b01100000) : (8'b00000000))))));
   assign ramOut = _zz_27;
   assign _zz_6 = _zz_26[14 : 0];
-  assign _zz_7 = _zz_54[12:0];
-  assign _zz_8 = _zz_55[12:0];
-  assign _zz_9 = (dmaActive ? {dmaPage,dmaOffset[9 : 2]} : _zz_57);
-  assign _zz_10 = _zz_58[12:0];
+  assign _zz_7 = _zz_55[12:0];
+  assign _zz_8 = _zz_56[12:0];
+  assign _zz_9 = (dmaActive ? {dmaPage,dmaOffset[9 : 2]} : _zz_58);
+  assign _zz_10 = _zz_59[12:0];
   assign _zz_14 = ppuIn;
-  assign _zz_13 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_59);
+  assign _zz_13 = ((rWX < (8'b00000111)) ? (8'b00000000) : _zz_60);
   assign _zz_15 = (dmaActive || (_zz_26[15 : 8] == (8'b11111110)));
   assign _zz_16 = (dmaActive ? dmaOffset[9 : 2] : _zz_26[7 : 0]);
   assign _zz_18 = (_zz_30 || (dmaActive && (dmaOffset[1 : 0] == (2'b10))));
   assign _zz_17 = (dmaActive ? dmaData : ramOut);
   always @ (*) begin
-    if((_zz_26 < (16'b1000000000000000)))begin
-      _zz_12 = romIn;
+    if(_zz_28)begin
+      _zz_12 = iV;
     end else begin
-      if((_zz_26 < (16'b1010000000000000)))begin
-        _zz_12 = vramIn;
+      if((_zz_26 < (16'b1000000000000000)))begin
+        _zz_12 = romIn;
       end else begin
-        if((_zz_26 < (16'b1100000000000000)))begin
-          _zz_12 = eramIn;
+        if((_zz_26 < (16'b1010000000000000)))begin
+          _zz_12 = vramIn;
         end else begin
-          if((_zz_26 < (16'b1110000000000000)))begin
-            _zz_12 = iramIn;
+          if((_zz_26 < (16'b1100000000000000)))begin
+            _zz_12 = eramIn;
           end else begin
-            if((_zz_26 < (16'b1111110111111111)))begin
+            if((_zz_26 < (16'b1110000000000000)))begin
               _zz_12 = iramIn;
             end else begin
-              case(_zz_26)
-                16'b1111111101000000 : begin
-                  _zz_12 = (rLCDC & (8'b01111111));
-                end
-                16'b1111111101000001 : begin
-                  _zz_12 = {{rSTAT[7 : 3],(_zz_36 == rLYC)},_zz_33};
-                end
-                16'b1111111101000010 : begin
-                  _zz_12 = rSCY;
-                end
-                16'b1111111101000011 : begin
-                  _zz_12 = rSCX;
-                end
-                16'b1111111101000100 : begin
-                  _zz_12 = _zz_36;
-                end
-                16'b1111111101000101 : begin
-                  _zz_12 = rLYC;
-                end
-                16'b1111111101000111 : begin
-                  _zz_12 = rBGP;
-                end
-                16'b1111111101001000 : begin
-                  _zz_12 = rOBP0;
-                end
-                16'b1111111101001001 : begin
-                  _zz_12 = rOBP1;
-                end
-                16'b1111111101001010 : begin
-                  _zz_12 = rWY;
-                end
-                16'b1111111101001011 : begin
-                  _zz_12 = rWX;
-                end
-                16'b1111111100000100 : begin
-                  _zz_12 = rDIV;
-                end
-                16'b1111111100000101 : begin
-                  _zz_12 = rTIMA;
-                end
-                16'b1111111100000110 : begin
-                  _zz_12 = rTMA;
-                end
-                16'b1111111100000111 : begin
-                  _zz_12 = rTAC;
-                end
-                16'b1111111100000000 : begin
-                  _zz_12 = rJOYP;
-                end
-                default : begin
-                  _zz_12 = hramIn;
-                end
-              endcase
+              if((_zz_26 < (16'b1111110111111111)))begin
+                _zz_12 = iramIn;
+              end else begin
+                case(_zz_26)
+                  16'b1111111101000000 : begin
+                    _zz_12 = (rLCDC & (8'b01111111));
+                  end
+                  16'b1111111101000001 : begin
+                    _zz_12 = {{rSTAT[7 : 3],(_zz_37 == rLYC)},_zz_34};
+                  end
+                  16'b1111111101000010 : begin
+                    _zz_12 = rSCY;
+                  end
+                  16'b1111111101000011 : begin
+                    _zz_12 = rSCX;
+                  end
+                  16'b1111111101000100 : begin
+                    _zz_12 = _zz_37;
+                  end
+                  16'b1111111101000101 : begin
+                    _zz_12 = rLYC;
+                  end
+                  16'b1111111101000111 : begin
+                    _zz_12 = rBGP;
+                  end
+                  16'b1111111101001000 : begin
+                    _zz_12 = rOBP0;
+                  end
+                  16'b1111111101001001 : begin
+                    _zz_12 = rOBP1;
+                  end
+                  16'b1111111101001010 : begin
+                    _zz_12 = rWY;
+                  end
+                  16'b1111111101001011 : begin
+                    _zz_12 = rWX;
+                  end
+                  16'b1111111100000100 : begin
+                    _zz_12 = rDIV;
+                  end
+                  16'b1111111100000101 : begin
+                    _zz_12 = rTIMA;
+                  end
+                  16'b1111111100000110 : begin
+                    _zz_12 = rTMA;
+                  end
+                  16'b1111111100000111 : begin
+                    _zz_12 = rTAC;
+                  end
+                  16'b1111111100000000 : begin
+                    _zz_12 = rJOYP;
+                  end
+                  default : begin
+                    _zz_12 = hramIn;
+                  end
+                endcase
+              end
             end
           end
         end
@@ -9076,45 +9159,172 @@ module GameBoySystem (
   end
 
   assign io_oled_csn = 1'b1;
-  assign io_oled_resn = _zz_48;
-  assign io_oled_dc = _zz_47;
-  assign io_oled_mosi = _zz_46;
-  assign io_oled_clk = _zz_45;
-  assign _zz_19 = (((_zz_35 < (8'b10100000)) && (_zz_36 < (8'b10010000))) && rLCDC[7]);
-  assign io_led = _zz_38;
-  assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},_zz_31};
-  always @ (posedge clkout0) begin
-    rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
-    if(((rIF & rIE) != (5'b00000)))begin
-      rIRQ <= 1'b1;
-    end
-    if(_zz_28)begin
+  assign io_oled_resn = _zz_49;
+  assign io_oled_dc = _zz_48;
+  assign io_oled_mosi = _zz_47;
+  assign io_oled_clk = _zz_46;
+  assign _zz_19 = (((_zz_36 < (8'b10100000)) && (_zz_37 < (8'b10010000))) && rLCDC[7]);
+  assign io_leds = {{{{io_btn[7],io_btn[6]},io_btn[4]},io_btn[5]},_zz_33};
+  assign io_led = _zz_32;
+  always @ (posedge clkout0 or negedge _zz_11) begin
+    if (!_zz_11) begin
+      rLCDC <= (8'b00000000);
+      rSTAT <= (8'b00000000);
+      rSCY <= (8'b00000000);
+      rSCX <= (8'b00000000);
+      rLYC <= (8'b00000000);
+      rBGP <= (8'b00000000);
+      rOBP0 <= (8'b00000000);
+      rOBP1 <= (8'b00000000);
+      rWY <= (8'b00000000);
+      rWX <= (8'b00000000);
+      rJOYP <= (8'b00000000);
+      rDIV <= (8'b00000000);
+      rTIMA <= (8'b00000000);
+      rTMA <= (8'b00000000);
+      rTAC <= (8'b00000000);
+      rIE <= (5'b00000);
+      rIF <= (5'b00000);
+      rButtonSelect <= (2'b00);
       rIRQ <= 1'b0;
-      if(rIF[0])begin
-        rIV <= (8'b01000000);
-        rIF[0] <= 1'b0;
-      end else begin
-        if(rIF[1])begin
-          rIV <= (8'b01001000);
-          rIF[1] <= 1'b0;
+      dmaActive <= 1'b0;
+      timer <= (12'b000000000000);
+    end else begin
+      rJOYP <= ((! rButtonSelect[0]) ? {(4'b0000),(~ io_btn[7 : 4])} : {(4'b0000),(~ io_btn[3 : 0])});
+      if(((rIF & rIE) != (5'b00000)))begin
+        rIRQ <= 1'b1;
+      end
+      if(_zz_28)begin
+        rIRQ <= 1'b0;
+        if((rIF[0] && rIE[0]))begin
+          rIF[0] <= 1'b0;
         end else begin
-          if(rIF[2])begin
-            rIV <= (8'b01010000);
-            rIF[2] <= 1'b0;
+          if((rIF[1] && rIE[1]))begin
+            rIF[1] <= 1'b0;
           end else begin
-            if(rIF[3])begin
-              rIV <= (8'b01011000);
-              rIF[3] <= 1'b0;
+            if((rIF[2] && rIE[2]))begin
+              rIF[2] <= 1'b0;
             end else begin
-              if(rIF[4])begin
-                rIV <= (8'b01100000);
-                rIF[4] <= 1'b0;
+              if((rIF[3] && rIE[3]))begin
+                rIF[3] <= 1'b0;
+              end else begin
+                if((rIF[4] && rIE[4]))begin
+                  rIF[4] <= 1'b0;
+                end
               end
             end
           end
         end
       end
+      if(_zz_30)begin
+        if(! _zz_50) begin
+          if(! _zz_52) begin
+            if(! _zz_53) begin
+              if(! _zz_51) begin
+                case(_zz_26)
+                  16'b1111111101000000 : begin
+                    rLCDC <= ramOut;
+                  end
+                  16'b1111111101000001 : begin
+                    rSTAT <= ramOut;
+                  end
+                  16'b1111111101000010 : begin
+                    rSCY <= ramOut;
+                  end
+                  16'b1111111101000011 : begin
+                    rSCX <= ramOut;
+                  end
+                  16'b1111111101000101 : begin
+                    rLYC <= ramOut;
+                  end
+                  16'b1111111101000111 : begin
+                    rBGP <= ramOut;
+                  end
+                  16'b1111111101001000 : begin
+                    rOBP0 <= ramOut;
+                  end
+                  16'b1111111101001001 : begin
+                    rOBP1 <= ramOut;
+                  end
+                  16'b1111111101001010 : begin
+                    rWY <= ramOut;
+                  end
+                  16'b1111111101001011 : begin
+                    rWX <= ramOut;
+                  end
+                  16'b1111111100000100 : begin
+                    rDIV <= (8'b00000000);
+                  end
+                  16'b1111111100000101 : begin
+                    rTIMA <= ramOut;
+                  end
+                  16'b1111111100000110 : begin
+                    rTMA <= ramOut;
+                  end
+                  16'b1111111100000111 : begin
+                    rTAC <= ramOut;
+                  end
+                  16'b1111111100000000 : begin
+                    rButtonSelect <= ramOut[5 : 4];
+                  end
+                  16'b1111111111111111 : begin
+                    rIE <= ramOut[4 : 0];
+                  end
+                  16'b1111111100001111 : begin
+                    rIF <= ramOut[4 : 0];
+                  end
+                  16'b1111111101000110 : begin
+                    dmaActive <= 1'b1;
+                  end
+                  default : begin
+                  end
+                endcase
+              end
+            end
+          end
+        end
+      end
+      if(dmaActive)begin
+        if((dmaOffset == (10'b1001111111)))begin
+          dmaActive <= 1'b0;
+        end
+      end
+      timer <= (timer + (12'b000000000001));
+      if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
+        rDIV <= (rDIV + (8'b00000001));
+      end
+      if(rTAC[2])begin
+        case(_zz_54)
+          2'b00 : begin
+            if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
+              rTIMA <= (rTIMA + (8'b00000001));
+            end
+          end
+          2'b01 : begin
+            if(((timer & (12'b000000111111)) == (12'b000000000000)))begin
+              rTIMA <= (rTIMA + (8'b00000001));
+            end
+          end
+          2'b10 : begin
+            if(((timer & (12'b000011111111)) == (12'b000000000000)))begin
+              rTIMA <= (rTIMA + (8'b00000001));
+            end
+          end
+          default : begin
+            if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
+              rTIMA <= (rTIMA + (8'b00000001));
+            end
+          end
+        endcase
+        if((rTIMA == (8'b11111111)))begin
+          rIF[2] <= 1'b1;
+          rTIMA <= rTMA;
+        end
+      end
     end
+  end
+
+  always @ (posedge clkout0) begin
     romIn <= _zz_20;
     vramIn <= _zz_21;
     eramIn <= _zz_23;
@@ -9122,64 +9332,46 @@ module GameBoySystem (
     hramIn <= _zz_25;
     ppuIn <= _zz_22;
     if(_zz_30)begin
-      if(! _zz_51) begin
-        if(! _zz_49) begin
-          if(! _zz_50) begin
-            if(! _zz_52) begin
+      if(! _zz_50) begin
+        if(! _zz_52) begin
+          if(! _zz_53) begin
+            if(! _zz_51) begin
               case(_zz_26)
                 16'b1111111101000000 : begin
-                  rLCDC <= ramOut;
                 end
                 16'b1111111101000001 : begin
-                  rSTAT <= ramOut;
                 end
                 16'b1111111101000010 : begin
-                  rSCY <= ramOut;
                 end
                 16'b1111111101000011 : begin
-                  rSCX <= ramOut;
                 end
                 16'b1111111101000101 : begin
-                  rLYC <= ramOut;
                 end
                 16'b1111111101000111 : begin
-                  rBGP <= ramOut;
                 end
                 16'b1111111101001000 : begin
-                  rOBP0 <= ramOut;
                 end
                 16'b1111111101001001 : begin
-                  rOBP1 <= ramOut;
                 end
                 16'b1111111101001010 : begin
-                  rWY <= ramOut;
                 end
                 16'b1111111101001011 : begin
-                  rWX <= ramOut;
                 end
                 16'b1111111100000100 : begin
-                  rDIV <= (8'b00000000);
                 end
                 16'b1111111100000101 : begin
-                  rTIMA <= ramOut;
                 end
                 16'b1111111100000110 : begin
-                  rTMA <= ramOut;
                 end
                 16'b1111111100000111 : begin
-                  rTAC <= ramOut;
                 end
                 16'b1111111100000000 : begin
-                  rButtonSelect <= ramOut[5 : 4];
                 end
                 16'b1111111111111111 : begin
-                  rIE <= ramOut[4 : 0];
                 end
                 16'b1111111100001111 : begin
-                  rIF <= ramOut[4 : 0];
                 end
                 16'b1111111101000110 : begin
-                  dmaActive <= 1'b1;
                   dmaOffset <= (10'b0000000000);
                   dmaPage <= ramOut[4 : 0];
                 end
@@ -9194,41 +9386,6 @@ module GameBoySystem (
     if(dmaActive)begin
       dmaOffset <= (dmaOffset + (10'b0000000001));
       dmaData <= iramIn;
-      if((dmaOffset == (10'b1001111111)))begin
-        dmaActive <= 1'b0;
-      end
-    end
-    timer <= (timer + (12'b000000000001));
-    if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
-      rDIV <= (rDIV + (8'b00000001));
-    end
-    if(rTAC[2])begin
-      case(_zz_53)
-        2'b00 : begin
-          if(((timer & (12'b111111111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        2'b01 : begin
-          if(((timer & (12'b000000111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        2'b10 : begin
-          if(((timer & (12'b000011111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-        default : begin
-          if(((timer & (12'b001111111111)) == (12'b000000000000)))begin
-            rTIMA <= (rTIMA + (8'b00000001));
-          end
-        end
-      endcase
-      if((rTIMA == (8'b11111111)))begin
-        rIF[2] <= 1'b1;
-        rTIMA <= rTMA;
-      end
     end
   end
 

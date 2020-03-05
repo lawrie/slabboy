@@ -13,6 +13,8 @@ class SlabBoy extends Component {
     val en = out Bool
     val write = out Bool
     val halt = out Bool
+    val irq = in Bool
+    val ack = out Bool
   }
 
   val cpu = new Cpu(
@@ -22,10 +24,12 @@ class SlabBoy extends Component {
 
   io.address := cpu.io.address
   cpu.io.dataIn := io.dataIn
+  cpu.io.irq := io.irq
   io.dataOut := cpu.io.dataOut
   io.en := cpu.io.mreq
   io.write := cpu.io.write
   io.halt := cpu.io.halt
+  io.ack := cpu.io.ack
 }
 
 object Cpu {
@@ -70,7 +74,7 @@ object Cpu {
   }
 
   object AddrOp extends SpinalEnum {
-    val Nop, Inc, Dec, Rst, ToPC, R8, HLR8 = newElement()
+    val Nop, Inc, Dec, Rst, ToPC, R8, HLR8, Int = newElement()
   }
 
   object Condition extends SpinalEnum {
@@ -91,7 +95,12 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
     val write = out Bool
     val halt = out Bool
     val diag = out UInt(8 bits)
+    val ime = out Bool
   }
+
+  val ack = Reg(Bool) init False
+  io.ack := RegNext(ack)
+  ack := False
 
   // count tStates
   val tCount = Reg(UInt(32 bits)) init 0
@@ -137,11 +146,14 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
     tCount := tCount + 1
   }
 
+  val interrupt = Reg(Bool) init False
+  
   val decoder = new CpuDecoder
   decoder.io.mCycle := mCycle
   decoder.io.ir := ir
   decoder.io.flags := registers8(Reg8.F)
   decoder.io.prefix := prefix
+  decoder.io.interrupt := interrupt
 
   val alu = new CpuAlu
   alu.io.op := decoder.io.aluOp
@@ -150,7 +162,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
   alu.io.operandB := temp
   alu.io.ir := ir
 
-  val ime = alu.io.ime
+  io.ime := alu.io.ime
 
   switch(decoder.io.addrSrc) {
     is(AddrSrc.PC) { io.address := registers16(Reg16.PC) }
@@ -169,8 +181,6 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
       io.address(7 downto 0) := registers8(Reg8.C)
     }
   }
-
-  io.ack := False
 
   val tCycleFsm = new StateMachine {
     val t1State: State = new State with EntryPoint {
@@ -217,8 +227,6 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
       whenIsActive {
         mreq := False
         write := False
-        // Acknowledge interrupt if requested and not masked
-        when (io.irq && ime) (io.ack := True)
         when (decoder.io.nextMCycle === 0) {
           prefix := decoder.io.nextPrefix
         }
@@ -228,6 +236,7 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
             is(AddrOp.Inc) { reg := reg + 1 }
             is(AddrOp.Dec) { reg := reg - 1 }
             is(AddrOp.Rst) { reg := (ir - 0xC7).resize(16) }
+            is(AddrOp.Int) { reg := ir.resize(16) }
             is(AddrOp.ToPC) { registers16(Reg16.PC) := reg }
             is(AddrOp.R8)  { reg := reg + (temp.asSInt).resize(16).asUInt }
             is(AddrOp.HLR8)  { registers16(Reg16.HL) := reg + (temp.asSInt).resize(16).asUInt }
@@ -250,6 +259,21 @@ class Cpu(bootVector: Int, spInit: Int) extends Component {
         }
         registers8(Reg8.F) := alu.io.flagsOut
         mCycle := decoder.io.nextMCycle
+       
+        // Test if interrupt is requested and not masked, if next cycle is start of instruction
+        when (decoder.io.nextMCycle === 0 && !decoder.io.nextPrefix) {
+          when (io.irq && alu.io.ime) {
+            // Request an interrupt instruction
+            interrupt := True
+            halt := False
+            ack := True  // Set io.ack next cycle
+            goto(t1State)
+          } otherwise {
+            // End of interrupt instruction
+            interrupt := False;
+          }
+        }
+
         when (!halt) {
           goto(t1State)
         }
@@ -382,6 +406,16 @@ object CpuDecoder {
       (base + 7, Seq(fetchCycle(AluOp.Nop, Some(Reg8.A), Some(dest))))
     )
   }
+
+  val interruptMicrocode = Seq(
+    // Get the interrupt vector into ir and disable interrupts
+    MCycle(AluOp.Di, addrOp=AddrOp.Nop),
+    // Push PC to the stack
+    memWriteCycle(Some(Reg8.PCH), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+    memWriteCycle(Some(Reg8.PCL), addrSrc=AddrSrc.SP1, addrOp=AddrOp.Dec),
+    // Jump to the interrupt vector address
+    addrCycle(addrSrc=AddrSrc.PC, addrOp=AddrOp.Int)
+  )
 
   // Microcode for prefix operations
   val prefixMicrocode = 
@@ -875,6 +909,7 @@ class CpuDecoder extends Component {
     val flags = in UInt(8 bits)
     val prefix = in Bool
     val nextPrefix = out Bool
+    val interrupt = in Bool
   }
 
   def decodeCycle(cycle: MCycle, nextCycle: Option[MCycle]=None) = {
@@ -944,9 +979,20 @@ class CpuDecoder extends Component {
   io.nextHalt := False
   io.nextPrefix := False
   io.memWrite := False
-
+  
   // decode microcode instructions
-  when (io.prefix) {
+  when (io.interrupt) { // interrupt
+    for((cycle, i) <- interruptMicrocode.zipWithIndex) {
+      when(io.mCycle === i) {
+        if (i == interruptMicrocode.length - 1) {
+          decodeCycle(cycle)
+        } else {
+          decodeCycle(cycle, Some(interruptMicrocode(i + 1)))
+          io.nextMCycle := io.mCycle + 1
+        }
+      }
+    }
+  } elsewhen (io.prefix) { // prefix instruction
     for(icode <- prefixMicrocode) {
       if (icode._2.length == 1) {
         when (testOpCode(icode._1)) {
@@ -967,7 +1013,7 @@ class CpuDecoder extends Component {
         }
       }             
     }
-  } otherwise {
+  } otherwise { // non-prefix instructions
     // track assigned op-codes to prevent repeats
     var assignedOpCodes = collection.mutable.HashMap[Int, Boolean]()
       .withDefaultValue(false)
